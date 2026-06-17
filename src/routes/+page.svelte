@@ -14,6 +14,9 @@
     <div class="header">
         <h1 class="title">כוורת המומחים</h1>
         <p class="subtitle">העבירו את העכבר על כל תא לקבלת פרטים</p>
+        <a class="problems-cta" href="/problems">
+            💡 לוח בעיות לפתרון — הצע פתרון או העלה בעיה עם תקציב →
+        </a>
     </div>
 
     <div class="hive-wrapper">
@@ -136,6 +139,25 @@
     .subtitle {
         color: #9ca3af;
         font-size: 0.95rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .problems-cta {
+        display: inline-block;
+        padding: 0.75rem 1.4rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(234, 88, 12, 0.18));
+        border: 1px solid rgba(245, 158, 11, 0.45);
+        color: #fde68a;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .problems-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.32), rgba(234, 88, 12, 0.32));
     }
 
     .hive-wrapper {
