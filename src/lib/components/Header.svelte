@@ -226,7 +226,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <h1
-                                class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-xl font-black text-transparent leading-tight truncate"
+                                class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-xl font-black text-transparent leading-tight"
                             >
                                 {tFn("welcome")}
                             </h1>
