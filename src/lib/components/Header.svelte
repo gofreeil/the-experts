@@ -230,7 +230,7 @@
                             >
                                 {tFn("welcome")}
                             </h1>
-                            <p class="text-xs text-gray-400 leading-tight truncate">
+                            <p class="text-xs text-gray-400 leading-tight">
                                 {tFn("app_description")}
                             </p>
                         </div>
