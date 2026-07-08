@@ -12,7 +12,7 @@
 	import { beforeNavigate } from "$app/navigation";
 	import { closeAdPopup } from "$lib/adPopupStore";
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	beforeNavigate(() => {
 		closeAdPopup();
@@ -30,7 +30,7 @@
 <MobileAdsDrawer />
 <MobileAdPopup />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
-	<Header />
+	<Header user={data.user} />
 
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
