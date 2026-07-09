@@ -6,18 +6,17 @@
     import { page } from '$app/state';
 
     interface Props {
-        currentUser?: any;
+        // משתמש מחובר (מגיע מ-+layout.server דרך +layout.svelte); null = אנונימי
+        currentUser?: { username: string } | null;
         onLogout?: () => void;
         onShowAuth?: () => void;
-        // משתמש מחובר (מגיע מ-+layout.server דרך +layout.svelte); null = אנונימי
-        user?: { name: string; email: string } | null;
     }
 
     import { fade } from "svelte/transition";
     import { ads, type Ad } from "$lib/adsData";
     import FullAdModal from "$lib/components/FullAdModal.svelte";
 
-    let { currentUser, onLogout, onShowAuth, user = null }: Props = $props();
+    let { currentUser, onLogout, onShowAuth }: Props = $props();
 
     let languages = [
         { name: "עברית", code: "he", flag: "il" },
@@ -302,9 +301,9 @@
                             </a>
                         {:else}
                             <a
-                                href="/profile"
+                                href="/login?redirect=/profile"
                                 class="relative group flex-shrink-0"
-                                aria-label="האזור האישי"
+                                aria-label="התחברות"
                             >
                                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                     <circle cx="20" cy="20" r="20" fill="#374151"/>
@@ -364,25 +363,6 @@
                 </a>
             </div>
 <div class="flex items-center gap-2">
-                <!-- התחברות / אזור אישי -->
-                {#if user}
-                    <a
-                        href="/profile"
-                        class="flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/20 px-3 py-2 text-sm font-bold text-white transition-colors"
-                        title="האזור האישי"
-                    >
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-pink-600 text-xs">👤</span>
-                        <span class="hidden sm:inline max-w-[120px] truncate">{user.name || user.email}</span>
-                    </a>
-                {:else}
-                    <a
-                        href="/login?redirect=/profile"
-                        class="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-pink-600 hover:from-amber-400 hover:to-pink-500 px-3 py-2 text-sm font-bold text-white transition-all"
-                    >
-                        <span>🕊️</span>
-                        <span class="hidden sm:inline">התחברות</span>
-                    </a>
-                {/if}
                 <!-- כפתור אודות עם תצוגה מקדימה -->
                 <div class="relative" id="about-btn-wrapper">
                     <button
@@ -517,9 +497,9 @@
                         </div>
                     {:else}
                         <a
-                            href="/profile"
+                            href="/login?redirect=/profile"
                             class="relative group flex-shrink-0"
-                            aria-label="האזור האישי"
+                            aria-label="התחברות"
                         >
                             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                 <circle cx="20" cy="20" r="20" fill="#374151"/>
