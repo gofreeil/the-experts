@@ -214,11 +214,11 @@
                         class="flex items-center gap-2.5 flex-1 min-w-0"
                     >
                         <div class="relative">
-                            <div class="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
+                            <div class="h-12 w-12 flex-shrink-0">
                                 <img
-                                    src="/images/community-logo1.png"
-                                    alt=""
-                                    class="w-full h-full object-cover scale-[1.2]"
+                                    src="/images/experts-logo.png"
+                                    alt="מומחים"
+                                    class="w-full h-full object-contain"
                                 />
                             </div>
                             <div
@@ -331,11 +331,11 @@
                         href="/"
                         class="flex h-28 w-28 items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
-                        <div class="h-16 w-16 rounded-full overflow-hidden">
+                        <div class="h-20 w-20 flex items-center justify-center">
                             <img
-                                src="/images/community-logo1.png"
-                                alt=""
-                                class="w-full h-full object-cover scale-[1.2]"
+                                src="/images/experts-logo.png"
+                                alt="מומחים"
+                                class="w-full h-full object-contain"
                             />
                         </div>
                     </a>

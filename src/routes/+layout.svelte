@@ -21,8 +21,8 @@
 
 <svelte:head>
 	<title>המומחים</title>
-	<link rel="icon" href="/images/community-logo1.png" type="image/png" />
-	<link rel="apple-touch-icon" href="/images/community-logo1.png" />
+	<link rel="icon" href="/images/experts-logo.png" type="image/png" />
+	<link rel="apple-touch-icon" href="/images/experts-logo.png" />
 </svelte:head>
 
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
