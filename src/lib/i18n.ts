@@ -1,7 +1,7 @@
 import { register, init } from 'svelte-i18n';
 
 register('he', () => Promise.resolve({
-    welcome: "קהילה בשכונה",
+    welcome: "המומחים של העם",
     app_description: "כל יתרונות השכונה תחת קורת גג אחת",
     hello: "שלום",
     greeting: "שלום,",
@@ -229,7 +229,7 @@ register('he', () => Promise.resolve({
 }));
 
 register('en', () => Promise.resolve({
-    welcome: "Neighborhood Community",
+    welcome: "The Nation's Experts",
     app_description: "All your neighborhood's benefits under one roof",
     hello: "Hello",
     greeting: "Hello,",
@@ -444,7 +444,7 @@ register('en', () => Promise.resolve({
 }));
 
 register('ru', () => Promise.resolve({
-    welcome: "Соседская община",
+    welcome: "Эксперты народа",
     app_description: "Все преимущества района под одной крышей",
     hello: "Привет",
     greeting: "Привет,",

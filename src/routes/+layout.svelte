@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>המומחים</title>
+	<title>המומחים של העם</title>
 	<link rel="icon" href="/images/experts-logo.png" type="image/png" />
 	<link rel="apple-touch-icon" href="/images/experts-logo.png" />
 </svelte:head>
