@@ -13,7 +13,7 @@ export interface Ad {
 
 export const ads: Ad[] = [
     {
-        id: 11,
+        id: 7,
         title: "קהילה בשכונה",
         description: "כל יתרונות השכונה תחת קורת גג אחת",
         cta: "תהנה מכל היתרונות של הקהילה בשכונה שלך",

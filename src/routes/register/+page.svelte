@@ -32,11 +32,14 @@
 				loading = true;
 				return async ({ result, update }) => {
 					if (result.type === 'success') {
-						// נרשם ב-Strapi המשותף — מתחברים אוטומטית
+						// נרשם ב-Strapi המשותף — מתחברים אוטומטית.
+						// welcome=new מפעיל את מסך "ברוכים המצטרפים" עם רשת האתרים.
+						const cbUrl = new URL(data.redirectTo || '/', window.location.origin);
+						cbUrl.searchParams.set('welcome', 'new');
 						await signIn('credentials', {
 							email: email.trim().toLowerCase(),
 							password,
-							callbackUrl: data.redirectTo || '/'
+							callbackUrl: `${cbUrl.pathname}${cbUrl.search}${cbUrl.hash}`
 						});
 					} else {
 						loading = false;

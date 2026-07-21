@@ -9,6 +9,7 @@
 	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
+	import WelcomeScreen from "$lib/components/WelcomeScreen.svelte";
 	import { beforeNavigate } from "$app/navigation";
 	import { closeAdPopup } from "$lib/adPopupStore";
 
@@ -26,6 +27,10 @@
 </svelte:head>
 
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+
+<!-- מסך פתיחה אחרי הרשמה / זיהוי ראשון — גלובלי, מופעל ע"י ?welcome ב-URL -->
+<WelcomeScreen />
+
 <CoinAnimation />
 <MobileAdsDrawer />
 <MobileAdPopup />
