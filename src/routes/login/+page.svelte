@@ -8,9 +8,20 @@
 	let loading = $state<'google' | 'facebook' | 'credentials' | null>(null);
 	let err = $state<string | null>(null);
 
+	// מוסיף welcome=back ליעד — מפעיל את מסך "ברוכים השבים" אחרי ההתחברות
+	function withWelcome(dest: string): string {
+		try {
+			const u = new URL(dest, window.location.origin);
+			u.searchParams.set('welcome', 'back');
+			return `${u.pathname}${u.search}${u.hash}`;
+		} catch {
+			return '/?welcome=back';
+		}
+	}
+
 	function oauth(provider: 'google' | 'facebook') {
 		loading = provider;
-		signIn(provider, { callbackUrl: data.redirectTo || '/' });
+		signIn(provider, { callbackUrl: withWelcome(data.redirectTo || '/') });
 	}
 
 	async function credentials(e: Event) {
@@ -27,7 +38,7 @@
 			err = 'אימייל או סיסמה שגויים';
 			loading = null;
 		} else {
-			window.location.href = data.redirectTo || '/';
+			window.location.href = withWelcome(data.redirectTo || '/');
 		}
 	}
 

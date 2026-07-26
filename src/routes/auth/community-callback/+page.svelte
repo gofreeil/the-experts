@@ -14,14 +14,15 @@
 		// ה-SSO שלנו נקרא "gofreeil-sso", לכן חייבים לפנות ישירות לכתובת ה-callback,
 		// שהיא היחידה שמריצה authorize() וקוראת את עוגיית gofreeil-auth המשותפת.
 		try {
-			// פעם ראשונה בדפדפן הזה → welcome=new מפעיל את מסך "ברוכים המצטרפים";
-			// משתמש חוזר לא מקבל שום פרמטר ולא רואה מסך.
-			const callbackUrl = new URL(data.returnTo || '/', location.origin);
+			// פעם ראשונה בדפדפן הזה → "ברוכים המצטרפים"; אחרת "ברוכים השבים"
+			let kind = 'back';
 			try {
-				if (!localStorage.getItem('gofreeil-welcomed')) callbackUrl.searchParams.set('welcome', 'new');
+				if (!localStorage.getItem('gofreeil-welcomed')) kind = 'new';
 			} catch {
-				/* localStorage חסום — ממשיכים בלי הברכה */
+				/* localStorage חסום — נשאר 'back' */
 			}
+			const callbackUrl = new URL(data.returnTo || '/', location.origin);
+			callbackUrl.searchParams.set('welcome', kind);
 			const res = await fetch('/auth/callback/gofreeil-sso', {
 				method: 'POST',
 				headers: {
