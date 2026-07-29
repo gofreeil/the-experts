@@ -5,9 +5,25 @@
     import { onMount } from "svelte";
     import { page } from '$app/state';
 
+    // פרטי המשתמש המחובר. רק username מגיע היום מה-layout; שאר השדות
+    // הם שדות הפרופיל האופציונליים שמזינים את מעגל השלמת-הפרופיל בהדר.
+    interface HeaderUser {
+        username: string;
+        avatar_url?: string | null;
+        name?: string | null;
+        nickname?: string | null;
+        phone?: string | null;
+        city?: string | null;
+        neighborhood?: string | null;
+        gender?: string | null;
+        business?: string | null;
+        family_status?: string | null;
+        notifications?: boolean | null;
+    }
+
     interface Props {
         // משתמש מחובר (מגיע מ-+layout.server דרך +layout.svelte); null = אנונימי
-        currentUser?: { username: string } | null;
+        currentUser?: HeaderUser | null;
         onLogout?: () => void;
         onShowAuth?: () => void;
     }
