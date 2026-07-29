@@ -114,6 +114,7 @@
 			<div class="h-px flex-1 bg-white/10"></div>
 		</div>
 
+		{#if data.oauth?.google}
 		<button
 			type="button"
 			onclick={() => oauth('google')}
@@ -128,6 +129,8 @@
 			</svg>
 			המשך עם Google
 		</button>
+		{/if}
+		{#if data.oauth?.facebook}
 		<button
 			type="button"
 			onclick={() => oauth('facebook')}
@@ -139,6 +142,7 @@
 			</svg>
 			המשך עם Facebook
 		</button>
+		{/if}
 
 		<p class="text-center text-sm text-gray-400">
 			אין לכם חשבון?
