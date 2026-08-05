@@ -1,32 +1,13 @@
 <script lang="ts">
-    import { ads, type Ad } from '$lib/adsData';
+    import { ads } from '$lib/adsData';
 
-    type ApprovedAd = {
-        id: string;
-        title: string;
-        subtitle: string;
-        cta: string;
-        hover: string;
-        gradient: string;
-        mainImage: string;
-    };
+    // נעילה מכוונת: הטור השמאלי מחזיק אך ורק אתרי "יוצאים לחירות".
+    // ענף approvedAds הוסר - הוא הועתק לכאן מאתר האם יחד עם הרכיב, אבל
+    // אין באתר הזה מערכת פרסומות בכלל, והקישור /ads/<id> שהוא בנה הוביל
+    // לנתיב שלא קיים. approvedAds?: never מונע החזרה שלו בשקט.
+    let {}: { approvedAds?: never } = $props();
 
-    let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
-
-    // Build merged list. Approved (user-submitted) ads come first, then static partner ads.
     let merged = $derived([
-        ...approvedAds.map(a => ({
-            id: a.id,
-            title: a.title,
-            description: a.subtitle,
-            cta: a.cta || a.title,
-            hover: a.hover || undefined,
-            href: `/ads/${a.id}`,
-            target: '_self' as const,
-            image: a.mainImage,
-            color: a.gradient,
-            imageHeight: undefined as string | undefined,
-        })),
         ...ads.map(a => ({
             id: String(a.id),
             title: a.title,
@@ -43,7 +24,7 @@
 </script>
 
 <aside
-    aria-label="פרסומות ושותפים"
+    aria-label="אתרי יוצאים לחירות"
     class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2">
