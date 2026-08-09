@@ -1,9 +1,17 @@
 <script lang="ts">
     import { problemsStore, formatTimeAgo, formatBounty, type ProblemType } from '$lib/problemsStore.svelte';
     import { teams, teamBySlug } from '$lib/teamsData';
+    import { triggerAdPopup } from '$lib/adPopupStore';
     import { onMount } from 'svelte';
 
     onMount(() => problemsStore.refresh());
+
+    // בנייד: פרסומת ביניים קצרה בדרך לדף הבעיה (כמו באתר הקהילה).
+    // triggerAdPopup מחזיר false בדסקטופ - ואז הקישור מנווט כרגיל.
+    function adThenGo(e: MouseEvent, href: string) {
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        if (triggerAdPopup(href)) e.preventDefault();
+    }
 
     let typeFilter = $state<'all' | ProblemType>('all');
     let categoryFilter = $state<string>('all');
@@ -92,7 +100,7 @@
         <div class="cards">
             {#each filtered() as p (p.id)}
                 {@const team = teamBySlug(p.category)}
-                <a class="card" href="/problems/{p.id}" style="--c:{team?.color ?? '#f59e0b'}">
+                <a class="card" href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)} style="--c:{team?.color ?? '#f59e0b'}">
                     <div class="card-head">
                         <span class="badge badge-{p.type}">
                             {p.type === 'community' ? '🏘️ קהילה' : '👤 פרטי'}
