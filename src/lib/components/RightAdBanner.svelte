@@ -3,7 +3,6 @@
 
     let currentGroup = $state(0);
     let totalSwaps = $state(0);
-    const MAX_SWAPS = 8; // 3 full cycles of 3 groups (original + 8 swaps = 9 steps)
 
     const ads = [
         {
@@ -138,38 +137,78 @@
             hoverText: "group-hover:text-fuchsia-200",
             buttonColor: "bg-fuchsia-600 hover:bg-fuchsia-500",
         },
+        {
+            text: "מקום פרסום",
+            description: "יכול להיות שלך",
+            borderColor: "border-cyan-500/30",
+            bgColor: "bg-cyan-900/10",
+            hoverBorder: "hover:border-cyan-500",
+            hoverBg: "hover:bg-cyan-900/20",
+            textColor: "text-cyan-400",
+            hoverText: "group-hover:text-cyan-200",
+            buttonColor: "bg-cyan-600 hover:bg-cyan-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "יכול להיות שלך",
+            borderColor: "border-rose-500/30",
+            bgColor: "bg-rose-900/10",
+            hoverBorder: "hover:border-rose-500",
+            hoverBg: "hover:bg-rose-900/20",
+            textColor: "text-rose-400",
+            hoverText: "group-hover:text-rose-200",
+            buttonColor: "bg-rose-600 hover:bg-rose-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "יכול להיות שלך",
+            borderColor: "border-lime-500/30",
+            bgColor: "bg-lime-900/10",
+            hoverBorder: "hover:border-lime-500",
+            hoverBg: "hover:bg-lime-900/20",
+            textColor: "text-lime-400",
+            hoverText: "group-hover:text-lime-200",
+            buttonColor: "bg-lime-600 hover:bg-lime-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "יכול להיות שלך",
+            borderColor: "border-sky-500/30",
+            bgColor: "bg-sky-900/10",
+            hoverBorder: "hover:border-sky-500",
+            hoverBg: "hover:bg-sky-900/20",
+            textColor: "text-sky-400",
+            hoverText: "group-hover:text-sky-200",
+            buttonColor: "bg-sky-600 hover:bg-sky-500",
+        },
     ];
 
-    const VIEW_MS = 14000;   // כמה זמן כל קבוצה נשארת על המסך (החלפה איטית)
-    const FADE_MS = 900;     // אורך הדעיכה בין קבוצה לקבוצה — חייב להתאים ל-CSS
-
-    let fading = $state(false);
+    const VIEW_MS = 7000;    // כמה זמן כל קבוצה נשארת על המסך — חצי מהקצב הישן (14 ש׳)
+    // מספר הקבוצות נגזר מאורך המערך: 16 תבניות בקבוצות של 4 ⇒ 4 קבוצות
+    const GROUP_COUNT = Math.ceil(ads.length / 4);
+    // עצירה אחרי 3 סבבים מלאים של כל הקבוצות (המקורית + 11 החלפות = 12 צעדים)
+    const MAX_SWAPS = 3 * GROUP_COUNT - 1;
 
     onMount(() => {
-        let fadeTimer: ReturnType<typeof setTimeout> | undefined;
-        // דעיכה החוצה → החלפת הקבוצה בזמן שהטור שקוף → דעיכה פנימה.
-        // כך אין קפיצה: המשבצות לא מתחלפות מול העין אלא מתוך שקיפות מלאה.
+        // ההחלפה עצמה היא מיזוג שקיפות (crossfade) שקורה כולו ב-CSS —
+        // כאן רק מקדמים את מספר הקבוצה, בלי מכונת מצבים של דעיכה.
         const interval = setInterval(() => {
             if (totalSwaps < MAX_SWAPS) {
-                fading = true;
-                fadeTimer = setTimeout(() => {
-                    currentGroup = (currentGroup + 1) % 3;
-                    totalSwaps++;
-                    fading = false;
-                }, FADE_MS);
+                currentGroup = (currentGroup + 1) % GROUP_COUNT;
+                totalSwaps++;
             } else {
                 clearInterval(interval);
             }
         }, VIEW_MS);
 
-        return () => {
-            clearInterval(interval);
-            clearTimeout(fadeTimer);
-        };
+        return () => clearInterval(interval);
     });
 
-    let displayedAds = $derived(
-        ads.slice(currentGroup * 4, (currentGroup + 1) * 4),
+    // המערך בקבוצות של 4 (1-4, 5-8, 9-12, 13-16). כל הקבוצות מרונדרות
+    // זו על גבי זו ורק הפעילה נראית, כך שההחלפה היא מיזוג עדין בין שתי
+    // שכבות ולא החלפת תוכן מול העין.
+    let groups = $derived(
+        Array.from({ length: GROUP_COUNT }, (_, g) => ads.slice(g * 4, (g + 1) * 4)),
     );
 </script>
 
@@ -183,8 +222,12 @@
     >
         תוכן שיווקי
     </h4>
-    <div class="space-y-3 ads-track" class:fading>
-        {#each displayedAds as ad, index}
+    <!-- כל הקבוצות שוכבות זו על זו באותו תא grid; ההחלפה היא מיזוג
+         שקיפות איטי בין השכבות - בלי רגע ריק ובלי קפיצות תוכן. -->
+    <div class="ads-stage">
+        {#each groups as grp, gi}
+        <div class="space-y-3 ads-group" class:active={gi === currentGroup}>
+        {#each grp as ad, index}
             <a
                 href="/about/advertise"
                 aria-label="מקום פרסום פנוי — לפרטים על פרסום באתר"
@@ -194,7 +237,7 @@
                 <div
                     class="absolute top-3 right-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
                 >
-                    {currentGroup * 4 + index + 1}
+                    {gi * 4 + index + 1}
                 </div>
 
                 <div
@@ -233,22 +276,38 @@
                 </div>
             </a>
         {/each}
+        </div>
+        {/each}
     </div>
 </aside>
 
 <style>
-    /* דעיכה רכה בין קבוצות המודעות — במקום החלקה קופצנית של כל כרטיס.
-       הערך חייב להתאים ל-FADE_MS שבסקריפט. */
-    .ads-track {
-        opacity: 1;
-        transition: opacity 900ms ease-in-out;
+    /* מעבר עדין בין קבוצות הלוח: כל הקבוצות שוכבות זו על זו באותו תא
+       grid, וההחלפה היא מיזוג שקיפות איטי (crossfade) - הקבוצה הנכנסת
+       מופיעה בהדרגה בזמן שהיוצאת נמוגה. אין רגע שבו הטור ריק, אין הבזק
+       ואין שום תזוזה. */
+    .ads-stage {
+        display: grid;
     }
-    .ads-track.fading {
+    .ads-group {
+        grid-area: 1 / 1;
         opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity 1800ms ease-in-out,
+            visibility 0s linear 1800ms;
+    }
+    .ads-group.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity 1800ms ease-in-out;
     }
     @media (prefers-reduced-motion: reduce) {
-        .ads-track {
-            transition-duration: 1ms;
+        .ads-group,
+        .ads-group.active {
+            transition: none;
         }
     }
 </style>
