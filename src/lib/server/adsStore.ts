@@ -173,6 +173,31 @@ function emptyLanding(): AdLanding {
 }
 
 /** חותם התמונות של רשומה — לכתיבה (landing._imgV) ולנפילה-אחורה בקריאה */
+
+/**
+ * כתובת אתר בטוחה להצמדה ל-href. Svelte לא מחטאת href, ולכן מפרסם
+ * שהזין `javascript:...` בשדה האתר היה מקבל קוד שרץ בדומיין של האתר
+ * ברגע שגולש לוחץ. מחזירה '' לכל מה שאינו http/https תקין (וגם
+ * לכתובת שנושאת שם משתמש/סיסמה, שמשמשת להטעיה).
+ */
+function safeHttpUrl(value: unknown): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    try {
+        const u = new URL(raw);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+        if (u.username || u.password) return '';
+        return u.toString().slice(0, 400);
+    } catch {
+        return '';
+    }
+}
+
+/** מנקה את דף הנחיתה בקריאה: כל כתובת שנשלחת לדפדפן עוברת דרך safeHttpUrl */
+function sanitizeLanding(l: Record<string, any> | null | undefined): Partial<AdLanding> {
+    const src = (l ?? {}) as Record<string, any>;
+    return { ...src, website: safeHttpUrl(src.website) } as Partial<AdLanding>;
+}
 function stampOf(logo: string, mainImage: string, landing: Record<string, any> | null | undefined): string {
     const landingImages: string[] = [
         typeof landing?.image === 'string' ? landing.image : '',
@@ -205,7 +230,7 @@ function fromStrapi(row: StrapiAd | null | undefined): SubmittedAd | null {
         mainImageFit: parseAdImageFit(l._mainImageFit),
         // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
         adStyle: parseAdStyle(l._adStyle),
-        landing: (row.landing ?? emptyLanding()) as Partial<AdLanding>,
+        landing: sanitizeLanding(row.landing ?? emptyLanding()),
         submittedBy: {
             id: row.submitted_by_id ?? '',
             email: row.submitted_by_email ?? '',
