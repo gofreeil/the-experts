@@ -1,8 +1,11 @@
 <script lang="ts">
     // דף "פרסם אצלנו" — היעד של הקישור בפוטר ובבאנרי הפרסום הפנויים.
-    // אין באתר הזה בילדר פרסומות, ולכן הפרסום מתואם ישירות מול המערכת.
+    // מכאן יוצאים לבילדר: מעצבים את הפרסומת ישירות באתר, משלמים,
+    // והמודעה עולה מיד אחרי אישור מנהל (/admin/ads).
     import { adPlans } from "$lib/adPlans";
+    import { setAdIntent } from "$lib/adIntent";
 
+    const builderUrl = "/about/advertise/builder";
     const email = "freedomhasbegun@gmail.com";
     const waNumber = "972508750632";
     const waHref = (planTitle: string, price: number) =>
@@ -91,7 +94,7 @@
 
         <!-- מחירון -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
-        <div class="p-6 md:p-8">
+        <div class="p-6 md:p-8" id="plans">
             <h2 class="text-2xl font-black text-white mb-2 text-center">לבחור ולשלם מראש</h2>
             <p class="text-sm text-gray-300 text-center mb-6">
                 פרסומת אחת באתר — בדסקטופ בטור הימני ובנייד אחרי לחיצה על פריט. בוחרים תקופה ומשלמים מראש.
@@ -125,17 +128,33 @@
             <ol class="text-right max-w-md mx-auto space-y-4 mb-8">
                 <li class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-amber-400 text-black text-sm font-black flex items-center justify-center flex-shrink-0">1</span>
-                    <span class="text-gray-200 text-sm md:text-base leading-relaxed">בוחרים מסלול מהמחירון ופונים אלינו בוואטסאפ או במייל.</span>
+                    <span class="text-gray-200 text-sm md:text-base leading-relaxed">מעצבים את הפרסומת בקלות ישירות על האתר.</span>
                 </li>
                 <li class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-amber-400 text-black text-sm font-black flex items-center justify-center flex-shrink-0">2</span>
-                    <span class="text-gray-200 text-sm md:text-base leading-relaxed">שולחים את חומרי הפרסומת (תמונה, כותרת, קישור) ומשלמים מראש.</span>
+                    <span class="text-gray-200 text-sm md:text-base leading-relaxed">בוחרים תקופת פרסום ומשלמים מראש.</span>
                 </li>
                 <li class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-amber-400 text-black text-sm font-black flex items-center justify-center flex-shrink-0">3</span>
-                    <span class="text-gray-200 text-sm md:text-base leading-relaxed">הפרסומת עוברת אישור — ומיד עולה לאוויר.</span>
+                    <span class="text-gray-200 text-sm md:text-base leading-relaxed">הפרסומת עוברת אישור מנהל — ומיד עולה לאוויר.</span>
                 </li>
             </ol>
+            <!-- הגעה מדף המחירים = רכישת מודעה *נוספת*, לא עריכה של הקיימת.
+                 בלי הסימון הזה השרת מזהה "מפרסם חוזר" והאישור מוריד את המודעה
+                 שכבר רצה - גם כשהמפרסם שילם בכוונה על שתיים. -->
+            <a
+                href={builderUrl}
+                onclick={() => setAdIntent('new')}
+                class="inline-block rounded-2xl bg-gradient-to-r from-amber-500 to-pink-600 px-8 py-4 font-black text-white text-lg shadow-xl transition hover:opacity-90 hover:scale-[1.02]"
+            >
+                🎨 לעיצוב הפרסומת
+            </a>
+            <p class="mt-4 text-sm text-gray-300">
+                כבר יש לכם פרסומת?
+                <a href="/about/advertise/manage" class="font-bold text-amber-300 underline hover:text-amber-200 transition-colors">
+                    לנתונים ולעריכה בדשבורד שלכם ←
+                </a>
+            </p>
             <p class="mt-4 text-xs text-gray-400">
                 שאלות? כתבו לנו:
                 <a href={mailto} class="underline hover:text-white transition-colors" dir="ltr">{email}</a>

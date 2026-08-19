@@ -10,6 +10,7 @@
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
 	import WelcomeScreen from "$lib/components/WelcomeScreen.svelte";
+	import AdInterstitial from "$lib/components/AdInterstitial.svelte";
 	import { beforeNavigate } from "$app/navigation";
 	import { closeAdPopup } from "$lib/adPopupStore";
 
@@ -47,6 +48,9 @@
 
 	<Footer />
 </div>
+
+<!-- פרסומת-הביניים (נייד) — שכבה גלובלית; נפתחת רק דרך adGate -->
+<AdInterstitial />
 
 <style>
 	.layout-container {
