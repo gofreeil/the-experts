@@ -4,6 +4,7 @@
     import { ctr } from '$lib/adOwner';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/rightAdsData';
+    import AdCardPreview from '$lib/components/AdCardPreview.svelte';
 
     // מסך ניהול הפרסומות לסופר-אדמין:
     //   1. לוח מלאי — כמה משבצות תפוסות, עד מתי, וכמה פנויות לפרסום עכשיו
@@ -100,6 +101,71 @@
         if (a.daysLeft === 1) return 'מתפנה מחר';
         return `נותרו ${a.daysLeft} ימים`;
     }
+
+    // ===== בורר המקום: מי תופסת כל מקום בלוח =====
+    // גם מושהית/פגה שומרת את המספר שלה ולכן עדיין "תופסת" את המקום
+    let slotOccupants = $derived(new Map(
+        data.ads
+            .filter((a: any) => a.status === 'approved' && typeof a.slot === 'number')
+            .map((a: any) => [a.slot, { id: a.id, title: a.title }] as [number, { id: string; title: string }])
+    ));
+    function shortTitle(t: string): string {
+        return t.length > 22 ? t.slice(0, 21) + '…' : t;
+    }
+    /** תווית אפשרות בבורר המקום — מקום תפוס מסומן עם שם הפרסומת שיושבת בו */
+    function slotOptionLabel(n: number, selfId: string): string {
+        const occ = slotOccupants.get(n);
+        if (!occ) return `${n}`;
+        if (occ.id === selfId) return `${n} — המקום הנוכחי`;
+        return `${n} ⚠ תפוס: ${shortTitle(occ.title)}`;
+    }
+    // אזהרה חיה ליד הבורר ברגע שנבחר מקום תפוס (לפי מזהה המודעה)
+    let slotWarning = $state<Record<string, string>>({});
+    function onSlotPick(e: Event, self: { id: string }) {
+        const n = Number((e.currentTarget as HTMLSelectElement).value);
+        const occ = slotOccupants.get(n);
+        slotWarning = {
+            ...slotWarning,
+            [self.id]: occ && occ.id !== self.id
+                ? `מקום ${n} תפוס ע"י "${shortTitle(occ.title)}" — לחיצה על "העבר" תחליף ביניהן`
+                : '',
+        };
+    }
+    /** אישור אחרון לפני העברה למקום תפוס — אישור = החלפה, ביטול = כלום לא זז */
+    function confirmSlotMove(e: MouseEvent, self: { id: string; title: string; slot?: number | null }) {
+        const form = (e.currentTarget as HTMLButtonElement).form;
+        const sel = form?.elements.namedItem('slot');
+        const n = Number((sel as HTMLSelectElement | null)?.value);
+        const occ = slotOccupants.get(n);
+        if (!occ || occ.id === self.id) return;
+        const ok = confirm(
+            `⚠ מקום ${n} כבר תפוס על ידי "${occ.title}".\n\n` +
+            `אישור — החלפה: "${self.title}" תעבור למקום ${n}, ו"${occ.title}" תעבור למקום ${self.slot ?? '-'}.\n` +
+            `ביטול — ההעברה מתבטלת ושתי הפרסומות נשארות במקומן.`
+        );
+        if (!ok) e.preventDefault();
+    }
+
+    // ===== תצוגה מקדימה של הכרטיס כפי שהוא באמת מוצג בטור הפרסומות =====
+    // ריחוף על כותרת של מודעה מאושרת (דסקטופ) או הקשה עליה (נייד/דסקטופ)
+    let approvedById = $derived(new Map(
+        data.ads
+            .filter((a: any) => a.status === 'approved')
+            .map((a: any) => [a.id, a] as [string, any])
+    ));
+    let hoverPreview = $state<{ id: string; x: number; y: number } | null>(null);
+    let modalPreviewId = $state<string | null>(null);
+    const PREVIEW_W = 144, PREVIEW_H = 490; // מידות הכרטיס האמיתי בטור (w-36 × h-[490px])
+    function openHoverPreview(e: MouseEvent, id: string) {
+        if (!approvedById.has(id)) return;
+        // מסך מגע — אין ריחוף אמיתי; ההקשה פותחת את המודאל במקום
+        if (window.matchMedia('(hover: none)').matches) return;
+        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        // הכרטיס צף משמאל לכותרת, מוצמד לגבולות המסך (fixed — לא נחתך ע"י overflow)
+        const y = Math.max(8, Math.min(window.innerHeight - PREVIEW_H - 8, r.top + r.height / 2 - PREVIEW_H / 2));
+        const x = Math.max(8, r.left - PREVIEW_W - 16);
+        hoverPreview = { id, x, y };
+    }
 </script>
 
 <svelte:head>
@@ -159,7 +225,14 @@
                 {#each active as a (a.id)}
                     <div class="occ-row">
                         <div class="occ-head">
-                            <span class="occ-title">{a.title}</span>
+                            <!-- ריחוף = תצוגה מקדימה צפה של הכרטיס; הקשה = מודאל עם הכרטיס עצמו -->
+                            <button type="button" class="occ-title title-preview-btn"
+                                    onmouseenter={(e) => openHoverPreview(e, a.id)}
+                                    onmouseleave={() => hoverPreview = null}
+                                    onclick={() => { hoverPreview = null; modalPreviewId = a.id; }}
+                                    title="תצוגה מקדימה של הפרסומת כפי שהיא מוצגת באתר">
+                                {a.title}
+                            </button>
                             <span class="occ-who">{a.submittedBy?.email || a.submittedBy?.name || 'ללא זיהוי'}</span>
                         </div>
                         <div class="occ-bar" title="נוצלו {a.usedPct}% מהתקופה">
@@ -272,7 +345,20 @@
                 </div>
                 <div class="ad-card-body">
                     <div class="ad-card-head">
-                        <h2>{ad.title}</h2>
+                        {#if ad.status === 'approved'}
+                            <!-- ריחוף = תצוגה מקדימה צפה של הכרטיס; הקשה = מודאל עם הכרטיס עצמו -->
+                            <h2>
+                                <button type="button" class="title-preview-btn"
+                                        onmouseenter={(e) => openHoverPreview(e, ad.id)}
+                                        onmouseleave={() => hoverPreview = null}
+                                        onclick={() => { hoverPreview = null; modalPreviewId = ad.id; }}
+                                        title="תצוגה מקדימה של הפרסומת כפי שהיא מוצגת באתר">
+                                    {ad.title}
+                                </button>
+                            </h2>
+                        {:else}
+                            <h2>{ad.title}</h2>
+                        {/if}
                         <span class="status-pill {ad.isExpired ? 'rejected' : ad.status}">
                             {ad.isExpired ? 'פג תוקף' : ad.status === 'pending' ? 'ממתינה' : ad.status === 'approved' ? 'מאושרת' : 'נדחתה'}
                         </span>
@@ -357,16 +443,27 @@
                             </form>
                             <form method="POST" action="?/setSlot" use:enhance class="slot-jump-form">
                                 <input type="hidden" name="id" value={ad.id} />
-                                <select name="slot" class="duration-select" aria-label="מספר מקום בלוח">
+                                <select name="slot" class="duration-select" aria-label="מספר מקום בלוח"
+                                        onchange={(e) => onSlotPick(e, ad)}>
                                     {#each slotOptions as n (n)}
-                                        <!-- רקע לבן + טקסט כהה חובה: רקע כהה נבלע בהדגשת הבחירה של המערכת -->
-                                        <option value={n} selected={n === ad.slot} style="background:#fff;color:#111">{n}</option>
+                                        {@const occ = slotOccupants.get(n)}
+                                        {@const takenByOther = !!occ && occ.id !== ad.id}
+                                        <!-- רקע לבן + טקסט כהה חובה: רקע כהה נבלע בהדגשת הבחירה של המערכת;
+                                             מקום שתפוס ע"י מודעה אחרת מסומן ברקע אדמדם + שם הפרסומת -->
+                                        <option value={n} selected={n === ad.slot}
+                                                style="background:{takenByOther ? '#fee2e2' : '#fff'};color:{takenByOther ? '#991b1b' : '#111'}">
+                                            {slotOptionLabel(n, ad.id)}
+                                        </option>
                                     {/each}
                                 </select>
                                 <button type="submit" class="a-btn ghost"
-                                        title="העבר למקום שנבחר; אם המקום תפוס — שתי הפרסומות מתחלפות">
+                                        onclick={(e) => confirmSlotMove(e, ad)}
+                                        title="העבר למקום שנבחר; מקום תפוס — תתבקש לאשר החלפה בין השתיים">
                                     ⇄ העבר
                                 </button>
+                                {#if slotWarning[ad.id]}
+                                    <span class="slot-warning">⚠ {slotWarning[ad.id]}</span>
+                                {/if}
                             </form>
                         </div>
                     {/if}
@@ -463,7 +560,48 @@
             </div>
         {/each}
     </div>
+
+    <!-- תצוגה מקדימה צפה בריחוף על כותרת מודעה מאושרת (דסקטופ בלבד) -->
+    {#if hoverPreview}
+        {@const pAd = approvedById.get(hoverPreview.id)}
+        {#if pAd}
+            <div class="fixed z-40 pointer-events-none drop-shadow-2xl hidden md:block"
+                 style="left:{hoverPreview.x}px; top:{hoverPreview.y}px">
+                <AdCardPreview ad={pAd} />
+            </div>
+        {/if}
+    {/if}
+
+    <!-- מודאל תצוגה מקדימה בהקשה על הכותרת (נייד ודסקטופ) -->
+    {#if modalPreviewId}
+        {@const mAd = approvedById.get(modalPreviewId)}
+        {#if mAd}
+            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+            <div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+                 role="presentation"
+                 onclick={() => modalPreviewId = null}>
+                <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                <div class="flex flex-col items-center gap-3 my-auto"
+                     role="dialog" aria-modal="true" aria-label="תצוגה מקדימה של הפרסומת" tabindex="-1"
+                     onclick={(e) => e.stopPropagation()}>
+                    <AdCardPreview ad={mAd} />
+                    <div class="flex items-center gap-2">
+                        <a href={`/ads/${mAd.id}`} target="_blank" rel="noopener"
+                           class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-black hover:bg-amber-500/30">
+                            פתח דף נחיתה
+                        </a>
+                        <button type="button" onclick={() => modalPreviewId = null}
+                                class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-gray-200 text-xs font-black hover:bg-white/20">
+                            ✕ סגור
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
+    {/if}
 </div>
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') { modalPreviewId = null; hoverPreview = null; } }} />
 
 <style>
     /* קופסה כהה על הרקע הוורוד — כמו שאר כרטיסי האדמין */
@@ -876,7 +1014,33 @@
         display: flex;
         gap: 0.4rem;
         align-items: center;
+        flex-wrap: wrap;
     }
+    /* אזהרה חיה ליד הבורר כשנבחר מקום שתפוס ע"י מודעה אחרת */
+    .slot-warning {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #fcd34d;
+        line-height: 1.35;
+        max-width: 220px;
+    }
+    /* כותרת-כפתור לתצוגה מקדימה — יורשת את עיצוב הכותרת, רק מסמנת קליקביליות */
+    .title-preview-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: inherit;
+        text-align: right;
+        cursor: pointer;
+        text-decoration: underline dotted rgba(255, 255, 255, 0.35);
+        text-underline-offset: 3px;
+    }
+    .title-preview-btn:hover { color: #fcd34d; }
+    /* בלוח התפוסה הכפתור שומר על עיצוב הכותרת המקורי (מודגש-לבן) */
+    .occ-title.title-preview-btn { font-weight: 900; color: #fff; font-size: 0.9rem; }
+    .occ-title.title-preview-btn:hover { color: #fcd34d; }
     .a-btn:disabled {
         opacity: 0.35;
         cursor: not-allowed;
