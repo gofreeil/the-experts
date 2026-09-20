@@ -964,7 +964,6 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 1rem;
         padding: 1rem;
-        scroll-margin-top: 6rem;
     }
     /* נחיתה מהעוגן שבהתראת הפרופיל — הכרטיס המבוקש מודגש */
     .promo-card:target {
