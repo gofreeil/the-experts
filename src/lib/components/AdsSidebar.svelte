@@ -43,7 +43,9 @@
                     <div class="absolute inset-0 overflow-hidden">
                         <img
                             src={ad.image}
-                            alt={ad.title}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
                             class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
                         />
                     </div>

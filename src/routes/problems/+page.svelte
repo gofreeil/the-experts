@@ -113,7 +113,7 @@
 
                     <div class="card-foot">
                         <div class="cat">
-                            {#if team?.image}<img src={team.image} alt={team.name} loading="lazy" />{:else}<span>{team?.emoji ?? '🔧'}</span>{/if}
+                            {#if team?.image}<img src={team.image} alt={team.name} width="22" height="22" loading="lazy" decoding="async" />{:else}<span>{team?.emoji ?? '🔧'}</span>{/if}
                             <span>{team?.name ?? p.category}</span>
                         </div>
                         <div class="meta">

@@ -47,7 +47,7 @@
                class="ad-int-creative bg-gradient-to-br {ad.color}"
                style={ad.gradientCss ? `background:${ad.gradientCss}` : undefined}>
                 {#if ad.image}
-                    <img class="ad-int-img" src={ad.image} alt={ad.title} draggable="false"
+                    <img class="ad-int-img" src={ad.image} alt={ad.title} draggable="false" decoding="async"
                          style={`${ad.imageHeight ? `max-height:${ad.imageHeight};` : ''}${ad.imageScale ? `transform:scale(${ad.imageScale});` : ''}`} />
                 {:else}
                     <!-- משבצת פנויה (בלי קריאייטיב) — 📢 כמו בטור הדסקטופ -->
@@ -136,6 +136,8 @@
     .ad-int-creative:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
     .ad-int-img {
+        width: 100%;
+        height: 130px;
         max-height: 130px;
         max-width: 100%;
         object-fit: contain;

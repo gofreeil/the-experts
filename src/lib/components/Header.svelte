@@ -233,8 +233,12 @@
                         <div class="relative">
                             <div class="h-12 w-12 flex-shrink-0">
                                 <img
-                                    src="/images/experts-logo.png"
-                                    alt="מומחים"
+                                    src="/images/experts-logo.webp"
+                                    alt="לוגו המומחים של העם – לדף הבית"
+                                    width="400"
+                                    height="344"
+                                    fetchpriority="high"
+                                    decoding="async"
                                     class="w-full h-full object-contain"
                                 />
                             </div>
@@ -350,8 +354,12 @@
                     >
                         <div class="h-20 w-20 flex items-center justify-center">
                             <img
-                                src="/images/experts-logo.png"
-                                alt="מומחים"
+                                src="/images/experts-logo.webp"
+                                alt="לוגו המומחים של העם – לדף הבית"
+                                width="400"
+                                height="344"
+                                fetchpriority="high"
+                                decoding="async"
                                 class="w-full h-full object-contain"
                             />
                         </div>
@@ -399,9 +407,13 @@
                             opacity:0; transform:scale(0.05);
                             transform-origin: top center;">
                     <img
-                        src="/images/community-neighborhood.png"
-                        alt="קהילה בשכונה"
-                        style="width:580px; border-radius:24px;
+                        src="/images/community-neighborhood.webp"
+                        alt="תצוגה מקדימה של אתר קהילה בשכונה"
+                        width="1200"
+                        height="801"
+                        loading="lazy"
+                        decoding="async"
+                        style="width:580px; height:auto; border-radius:24px;
                                -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
                                mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
                                filter: drop-shadow(0 0 40px rgba(0,0,0,0.95)) drop-shadow(0 0 80px rgba(0,0,0,0.7));"

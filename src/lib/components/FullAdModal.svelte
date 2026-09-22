@@ -127,6 +127,7 @@
             <img
                 src={ad.image}
                 alt={ad.title}
+                decoding="async"
                 class="w-full h-full object-cover"
             />
             <div

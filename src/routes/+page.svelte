@@ -24,7 +24,7 @@
             <!-- שורה עליונה -->
             <a class="cell" style="--c:{hiveCells[0].color}" href="/experts/{hiveCells[0].slug}" aria-label={hiveCells[0].name}>
                 <div class="cell-face">
-                    {#if hiveCells[0].image}<img src={hiveCells[0].image} alt={hiveCells[0].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[0].emoji}</span>{/if}
+                    {#if hiveCells[0].image}<img src={hiveCells[0].image} alt={hiveCells[0].name} decoding="async" />{:else}<span class="emoji">{hiveCells[0].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[0].name}</div>
@@ -33,7 +33,7 @@
             </a>
             <a class="cell" style="--c:{hiveCells[1].color}" href="/experts/{hiveCells[1].slug}" aria-label={hiveCells[1].name}>
                 <div class="cell-face">
-                    {#if hiveCells[1].image}<img src={hiveCells[1].image} alt={hiveCells[1].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[1].emoji}</span>{/if}
+                    {#if hiveCells[1].image}<img src={hiveCells[1].image} alt={hiveCells[1].name} decoding="async" />{:else}<span class="emoji">{hiveCells[1].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[1].name}</div>
@@ -44,7 +44,7 @@
             <!-- שורה אמצעית: שמאל | מרכז | ימין -->
             <a class="cell" style="--c:{hiveCells[2].color}" href="/experts/{hiveCells[2].slug}" aria-label={hiveCells[2].name}>
                 <div class="cell-face">
-                    {#if hiveCells[2].image}<img src={hiveCells[2].image} alt={hiveCells[2].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[2].emoji}</span>{/if}
+                    {#if hiveCells[2].image}<img src={hiveCells[2].image} alt={hiveCells[2].name} decoding="async" />{:else}<span class="emoji">{hiveCells[2].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[2].name}</div>
@@ -54,7 +54,7 @@
 
             <a class="cell cell-center" style="--c:{hiveCenter.color}" href="/experts/{hiveCenter.slug}" aria-label={hiveCenter.name}>
                 <div class="cell-face">
-                    {#if hiveCenter.image}<img src={hiveCenter.image} alt={hiveCenter.name} loading="lazy" />{:else}<span class="emoji">{hiveCenter.emoji}</span>{/if}
+                    {#if hiveCenter.image}<img src={hiveCenter.image} alt={hiveCenter.name} fetchpriority="high" decoding="async" />{:else}<span class="emoji">{hiveCenter.emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCenter.name}</div>
@@ -64,7 +64,7 @@
 
             <a class="cell" style="--c:{hiveCells[3].color}" href="/experts/{hiveCells[3].slug}" aria-label={hiveCells[3].name}>
                 <div class="cell-face">
-                    {#if hiveCells[3].image}<img src={hiveCells[3].image} alt={hiveCells[3].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[3].emoji}</span>{/if}
+                    {#if hiveCells[3].image}<img src={hiveCells[3].image} alt={hiveCells[3].name} loading="lazy" decoding="async" />{:else}<span class="emoji">{hiveCells[3].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[3].name}</div>
@@ -75,7 +75,7 @@
             <!-- שורת ביניים: ימין רחוק + שמאל רחוק (במישור הגובה של המרכז) -->
             <a class="cell" style="--c:{hiveCells[4].color}" href="/experts/{hiveCells[4].slug}" aria-label={hiveCells[4].name}>
                 <div class="cell-face">
-                    {#if hiveCells[4].image}<img src={hiveCells[4].image} alt={hiveCells[4].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[4].emoji}</span>{/if}
+                    {#if hiveCells[4].image}<img src={hiveCells[4].image} alt={hiveCells[4].name} loading="lazy" decoding="async" />{:else}<span class="emoji">{hiveCells[4].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[4].name}</div>
@@ -84,7 +84,7 @@
             </a>
             <a class="cell" style="--c:{hiveCells[5].color}" href="/experts/{hiveCells[5].slug}" aria-label={hiveCells[5].name}>
                 <div class="cell-face">
-                    {#if hiveCells[5].image}<img src={hiveCells[5].image} alt={hiveCells[5].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[5].emoji}</span>{/if}
+                    {#if hiveCells[5].image}<img src={hiveCells[5].image} alt={hiveCells[5].name} loading="lazy" decoding="async" />{:else}<span class="emoji">{hiveCells[5].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[5].name}</div>
@@ -95,7 +95,7 @@
             <!-- שורה תחתונה -->
             <a class="cell" style="--c:{hiveCells[6].color}" href="/experts/{hiveCells[6].slug}" aria-label={hiveCells[6].name}>
                 <div class="cell-face">
-                    {#if hiveCells[6].image}<img src={hiveCells[6].image} alt={hiveCells[6].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[6].emoji}</span>{/if}
+                    {#if hiveCells[6].image}<img src={hiveCells[6].image} alt={hiveCells[6].name} loading="lazy" decoding="async" />{:else}<span class="emoji">{hiveCells[6].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[6].name}</div>
@@ -104,7 +104,7 @@
             </a>
             <a class="cell" style="--c:{hiveCells[7].color}" href="/experts/{hiveCells[7].slug}" aria-label={hiveCells[7].name}>
                 <div class="cell-face">
-                    {#if hiveCells[7].image}<img src={hiveCells[7].image} alt={hiveCells[7].name} loading="lazy" />{:else}<span class="emoji">{hiveCells[7].emoji}</span>{/if}
+                    {#if hiveCells[7].image}<img src={hiveCells[7].image} alt={hiveCells[7].name} loading="lazy" decoding="async" />{:else}<span class="emoji">{hiveCells[7].emoji}</span>{/if}
                 </div>
                 <div class="cell-text">
                     <div class="cell-title">{hiveCells[7].name}</div>

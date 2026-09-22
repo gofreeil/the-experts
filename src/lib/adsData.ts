@@ -21,7 +21,7 @@ export const ads: Ad[] = [
         description: "כל יתרונות השכונה תחת קורת גג אחת",
         cta: "תהנה מכל היתרונות של הקהילה בשכונה שלך",
         href: "https://community.gofreeil.com/",
-        image: "/images/community-neighborhood.png",
+        image: "/images/community-neighborhood.webp",
         color: "from-blue-500 to-purple-600"
     },
     {

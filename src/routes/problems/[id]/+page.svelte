@@ -73,7 +73,7 @@
 
             <div class="poster">
                 <div class="team-chip">
-                    {#if team?.image}<img src={team.image} alt={team.name} loading="lazy" />{:else}<span class="t-emoji">{team?.emoji ?? '🔧'}</span>{/if}
+                    {#if team?.image}<img src={team.image} alt={team.name} width="24" height="24" loading="lazy" decoding="async" />{:else}<span class="t-emoji">{team?.emoji ?? '🔧'}</span>{/if}
                     <span>{team?.name ?? problem.category}</span>
                 </div>
                 <div class="poster-info">

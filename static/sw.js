@@ -15,8 +15,8 @@ self.addEventListener('push', (event) => {
     const title = data.title ?? 'קהילה בשכונה';
     const options = {
         body:    data.body   ?? '',
-        icon:    data.icon   ?? '/images/logos/לוגו2.png',
-        badge:   data.badge  ?? '/images/logos/לוגו2.png',
+        icon:    data.icon   ?? '/images/logos/logo2.png',
+        badge:   data.badge  ?? '/images/logos/logo2.png',
         tag:     data.tag    ?? 'kahal-notification',
         data:    { url: data.url ?? '/' },
         dir:     'rtl',
