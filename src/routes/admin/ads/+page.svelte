@@ -104,11 +104,28 @@
 
     // ===== בורר המקום: מי תופסת כל מקום בלוח =====
     // גם מושהית/פגה שומרת את המספר שלה ולכן עדיין "תופסת" את המקום
-    let slotOccupants = $derived(new Map(
-        data.ads
-            .filter((a: any) => a.status === 'approved' && typeof a.slot === 'number')
-            .map((a: any) => [a.slot, { id: a.id, title: a.title }] as [number, { id: string; title: string }])
-    ));
+    // extra = שכפל פרסומת: המקום תפוס בעותק נוסף של מודעה שמקומה הראשי אחר
+    let slotOccupants = $derived.by(() => {
+        const m = new Map<number, { id: string; title: string; extra?: boolean }>();
+        const list = (data.ads as any[]).filter((a: any) => a.status === 'approved');
+        for (const a of list) {
+            if (typeof a.slot === 'number') m.set(a.slot, { id: String(a.id), title: String(a.title ?? '') });
+        }
+        for (const a of list) {
+            for (const n of (a.extraSlots ?? []) as number[]) {
+                if (!m.has(n)) m.set(n, { id: String(a.id), title: String(a.title ?? ''), extra: true });
+            }
+        }
+        return m;
+    });
+    /** שכפל פרסומת — המקומות הפנויים: קודם אלה שבאותה רביעייה (אותה משבצת
+     *  בטור — שם המודעה נשארת קבועה בסבב), אחריהם כל השאר */
+    function dupOptions(ad: { slot?: number | null }): { same: number[]; rest: number[] } {
+        const free = SLOT_NUMBERS.filter((n) => !slotOccupants.has(n));
+        const pos = typeof ad.slot === 'number' ? (ad.slot - 1) % 4 : -1;
+        const same = free.filter((n) => (n - 1) % 4 === pos);
+        return { same, rest: free.filter((n) => !same.includes(n)) };
+    }
     function shortTitle(t: string): string {
         return t.length > 22 ? t.slice(0, 21) + '…' : t;
     }
@@ -146,8 +163,8 @@
         const base = `${n} · ${slotPosName(n)}`;
         const occ = slotOccupants.get(n);
         if (!occ) return `${base} — פנוי`;
-        if (occ.id === selfId) return `${base} — המקום הנוכחי`;
-        return `${base} ⚠ ${shortTitle(occ.title)}`;
+        if (occ.id === selfId) return occ.extra ? `${base} — שכפול שלה` : `${base} — המקום הנוכחי`;
+        return `${base} ⚠ ${occ.extra ? 'שכפול: ' : ''}${shortTitle(occ.title)}`;
     }
     // אזהרה חיה ליד הבורר ברגע שנבחר מקום תפוס (לפי מזהה המודעה)
     let slotWarning = $state<Record<string, string>>({});
@@ -156,9 +173,11 @@
         const occ = slotOccupants.get(n);
         slotWarning = {
             ...slotWarning,
-            [self.id]: occ && occ.id !== self.id
-                ? `מקום ${n} תפוס ע"י "${shortTitle(occ.title)}" — לחיצה על "העבר" תחליף ביניהן`
-                : '',
+            [self.id]: !occ || occ.id === self.id
+                ? ''
+                : occ.extra
+                    ? `מקום ${n} הוא שכפול של "${shortTitle(occ.title)}" — לחיצה על "העבר" תבטל את השכפול הזה`
+                    : `מקום ${n} תפוס ע"י "${shortTitle(occ.title)}" — לחיצה על "העבר" תחליף ביניהן`,
         };
     }
     /** אישור אחרון לפני העברה למקום תפוס — אישור = החלפה, ביטול = כלום לא זז */
@@ -168,6 +187,15 @@
         const n = Number((sel as HTMLSelectElement | null)?.value);
         const occ = slotOccupants.get(n);
         if (!occ || occ.id === self.id) return;
+        if (occ.extra) {
+            const okDup = confirm(
+                `⚠ מקום ${n} הוא שכפול של "${occ.title}".\n\n` +
+                `אישור — "${self.title}" תעבור למקום ${n}, והשכפול של "${occ.title}" שם יבוטל (המקום הראשי שלה לא זז).\n` +
+                `ביטול — ההעברה מתבטלת.`
+            );
+            if (!okDup) e.preventDefault();
+            return;
+        }
         const ok = confirm(
             `⚠ מקום ${n} כבר תפוס על ידי "${occ.title}".\n\n` +
             `אישור — החלפה: "${self.title}" תעבור למקום ${n}, ו"${occ.title}" תעבור למקום ${self.slot ?? '-'}.\n` +
@@ -511,6 +539,60 @@
                                 {/if}
                             </form>
                         </div>
+                    {/if}
+
+                    <!-- שכפל פרסומת (סופר-אדמין): אותה פרסומת גם במקומות נוספים — למשל
+                         2 ו-6 (אותה רביעייה), כך שהיא נשארת באותה משבצת ולא מתחלפת בסבב.
+                         תג ⧉ = שכפול קיים; לחיצה עליו מבטלת אותו -->
+                    {#if data.superAdmin && ad.status === 'approved' && typeof ad.slot === 'number'}
+                        {@const dup = dupOptions(ad)}
+                        {#if (ad.extraSlots ?? []).length + dup.same.length + dup.rest.length > 0}
+                            <div class="slot-row">
+                                {#each ad.extraSlots ?? [] as n (n)}
+                                    <form method="POST" action="?/removeExtraSlot" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <input type="hidden" name="slot" value={n} />
+                                        <button type="submit" class="slot-badge"
+                                                style="background:{slotOptionBg(n)};border-color:rgba(0,0,0,0.2);color:#111;cursor:pointer"
+                                                title="שכפול במקום {n} (רביעייה {slotGroupLetter(n)}׳ · המשבצת ה{slotPosName(n)} בטור) — לחיצה מבטלת את השכפול">
+                                            ⧉ {n} · {slotGroupLetter(n)}׳ <span style="color:#b91c1c">✕</span>
+                                        </button>
+                                    </form>
+                                {/each}
+                                {#if dup.same.length + dup.rest.length > 0}
+                                    <form method="POST" action="?/addExtraSlot" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <select name="slot" class="duration-select" aria-label="שכפל פרסומת"
+                                                onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+                                            <option value="" selected disabled>⧉ שכפל פרסומת</option>
+                                            {#if dup.same.length > 1}
+                                                <option value="same" style="background:#fff;color:#111;font-weight:700">
+                                                    ★ קבועה בכל הרביעייה ({dup.same.join(', ')})
+                                                </option>
+                                            {/if}
+                                            {#if dup.same.length > 0}
+                                                <optgroup label="★ אותה רביעייה (אותה משבצת)">
+                                                    {#each dup.same as n (n)}
+                                                        <option value={n} style="background:{slotOptionBg(n)};color:#111">
+                                                            {n} · {slotPosName(n)}
+                                                        </option>
+                                                    {/each}
+                                                </optgroup>
+                                            {/if}
+                                            {#each groupSlotOptions(dup.rest) as grp (grp.letter)}
+                                                <optgroup label="— רביעייה {grp.letter}׳ —">
+                                                    {#each grp.nums as n (n)}
+                                                        <option value={n} style="background:{slotOptionBg(n)};color:#111">
+                                                            {n} · {slotPosName(n)}
+                                                        </option>
+                                                    {/each}
+                                                </optgroup>
+                                            {/each}
+                                        </select>
+                                    </form>
+                                {/if}
+                            </div>
+                        {/if}
                     {/if}
 
                     <div class="ad-actions">

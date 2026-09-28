@@ -8,7 +8,10 @@ import {
     unapproveAd,
     moveApprovedAd,
     setAdSlot,
+    addAdExtraSlot,
+    removeAdExtraSlot,
     computeAdSlots,
+    computeAdExtraSlots,
     setAdDuration,
     setAdExpiry,
     normalizeDurationDays,
@@ -60,6 +63,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     // המספר הקבוע של כל מודעה מאושרת בלוח (1..16) — חישוב בזיכרון בלבד,
     // בלי כתיבה ל-Strapi; ההצמדה נעשית בפעולות הניהול עצמן.
     const slotMap = computeAdSlots(raw.filter((a) => a.status === 'approved'));
+    // שכפל פרסומת — המקומות הנוספים האפקטיביים (1-based) של כל מודעה
+    const extraMap = computeAdExtraSlots(raw.filter((a) => a.status === 'approved'));
     // סדר הלוח בין המודעות *שבאוויר* — לחצי ההחלפה (מי שכנה של מי, והקצוות)
     const liveOrder = raw
         .filter((a) => a.status === 'approved')
@@ -97,6 +102,8 @@ export const load: PageServerLoad = async ({ locals }) => {
             isPaused,
             // מספר המקום הקבוע בלוח (1..16) — מה שהבורר "⇄ העבר" משנה
             slot: slotMap.get(a.id) ?? null,
+            // שכפל פרסומת — גובר על extraSlots הגולמי (0-based) של הרשומה
+            extraSlots: extraMap.get(a.id) ?? [],
             slotIndex: liveOrder.indexOf(a.id),
             slotTotal: liveOrder.length,
         };
@@ -207,6 +214,42 @@ export const actions: Actions = {
         } catch (err) {
             console.error('setExpiry failed:', err);
             return fail(502, { error: 'קביעת התאריך נכשלה — נסו שוב' });
+        }
+    },
+    // שכפל פרסומת: אותה פרסומת במקום נוסף בטור (סופר-אדמין)
+    addExtraSlot: async ({ request, locals }) => {
+        const { superAdmin } = await getAdminContext(locals);
+        if (!superAdmin) return fail(403, { error: 'שכפל פרסומת שמור לסופר-אדמין' });
+        const form = await request.formData();
+        const id = String(form.get('id') ?? '');
+        if (!id) return fail(400, { error: 'חסר מזהה פרסומת' });
+        const raw = String(form.get('slot') ?? '');
+        try {
+            const r = await addAdExtraSlot(id, raw === 'same' ? 'same' : Number(raw));
+            if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+            if (!r.ok) return fail(409, { error: r.error });
+            return {
+                success: true,
+                message: `"${r.title}" שוכפלה גם ${r.slots.length > 1 ? 'למקומות' : 'למקום'} ${r.slots.join(', ')}`,
+            };
+        } catch (err) {
+            console.error('addExtraSlot failed:', err);
+            return fail(502, { error: 'השכפול נכשל — נסו שוב' });
+        }
+    },
+    removeExtraSlot: async ({ request, locals }) => {
+        const { superAdmin } = await getAdminContext(locals);
+        if (!superAdmin) return fail(403, { error: 'שכפל פרסומת שמור לסופר-אדמין' });
+        const form = await request.formData();
+        const id = String(form.get('id') ?? '');
+        if (!id) return fail(400, { error: 'חסר מזהה פרסומת' });
+        try {
+            const r = await removeAdExtraSlot(id, Number(form.get('slot')));
+            if (!r) return fail(404, { error: 'השכפול לא נמצא' });
+            return { success: true, message: `השכפול של "${r.title}" במקום ${r.slot} בוטל` };
+        } catch (err) {
+            console.error('removeExtraSlot failed:', err);
+            return fail(502, { error: 'ביטול השכפול נכשל — נסו שוב' });
         }
     },
     // השהיה — יורדת מהאתר ושומרת את הימים שנותרו

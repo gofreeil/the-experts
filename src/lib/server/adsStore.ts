@@ -104,6 +104,12 @@ export interface SubmittedAd {
      * הניהול/האישור הבאה, לפי מקומה הנוכחי על האתר).
      */
     slotOrder?: number;
+    /**
+     * שכפל פרסומת: מקומות נוספים בלוח (0-based) שבהם אותה מודעה מוצגת בנוסף
+     * למקומה — למשל 2 ו-6, כך שהיא לא מתחלפת בסבב הרביעיות. נקבע בידי
+     * סופר-אדמין; מקום ראשי של מודעה אחרת גובר עליו. נשמר ב-landing._extraSlots.
+     */
+    extraSlots?: number[];
     /** מושהית — יורדת מהאתר ושומרת את הימים שנותרו לה */
     paused?: boolean;
     /** הימים ששמורים לה מרגע ההשהיה — מהם היא ממשיכה בהפעלה מחדש */
@@ -136,6 +142,8 @@ export interface ApprovedAdPublic {
     adStyle: AdStyle | null;
     /** מספר המקום בלוח (1..16) — נקבע במסך הניהול, מחושב תמיד בשרת */
     slot: number;
+    /** שכפל פרסומת: מקומות נוספים בלוח (1-based) שבהם אותה מודעה מוצגת */
+    extraSlots: number[];
 }
 
 // ----- הצורה השטוחה של Strapi 5 באוסף submitted-ads -----
@@ -248,6 +256,7 @@ function fromStrapi(row: StrapiAd | null | undefined): SubmittedAd | null {
         codeRequested: l._codeRequested === true,
         requestedDurationDays: normalizePlanDays(l._requestedDurationDays),
         slotOrder: typeof l._order === 'number' ? l._order : undefined,
+        extraSlots: parseExtraSlots(l._extraSlots),
         paused: l._paused === true,
         pausedDaysLeft: typeof l._pausedDaysLeft === 'number' ? l._pausedDaysLeft : undefined,
         replacesAdId: typeof l._replacesAdId === 'string' ? l._replacesAdId : undefined,
@@ -720,6 +729,7 @@ export async function listApproved(): Promise<ApprovedAdPublic[]> {
         // מקומה (המשבצת שלה מוצגת כפנויה עד שתחזור). חישוב בזיכרון בלבד:
         // נתיב קריאה לא כותב ל-Strapi.
         const slots = computeSlots(approvedAll);
+        const extras = computeAdExtraSlots(approvedAll, slots);
         const list = approvedAll
             // מודעה שפג תוקפה יורדת מהאתר אוטומטית (הרשומה נשארת לארכיון)
             .filter((a) => !a.expiresAt || Date.parse(a.expiresAt) > now)
@@ -743,6 +753,8 @@ export async function listApproved(): Promise<ApprovedAdPublic[]> {
                 // המספר בלוח (1-based) — הלקוח מציב לפיו את המודעה בדיוק
                 // במקום שנקבע לה, והחורים ביניהם נשארים משבצות פנויות
                 slot: (slots.get(a.id) ?? 0) + 1,
+                // שכפל פרסומת — אותה מודעה גם במקומות האלה
+                extraSlots: extras.get(a.id) ?? [],
             }));
         approvedCache = { at: Date.now(), list };
         return list;
@@ -919,6 +931,7 @@ export async function approveAd(
         const approvedNow = (await listApprovedAll()).filter((a) => a.id !== id);
         const slots = await ensureSlotsPersisted(approvedNow);
         const taken = new Set(slots.values());
+        for (const a of approvedNow) for (const n of a.extraSlots ?? []) taken.add(n);
         const inherited = replacing ? slots.get(replacing.id) : undefined;
         if (inherited !== undefined) {
             slot = inherited;
@@ -943,6 +956,8 @@ export async function approveAd(
         expires_at: expires,
     }, {
         ...(slot !== undefined ? { _order: slot } : {}),
+        // גרסה מחליפה יורשת גם את השכפולים של הישנה
+        ...(replacing?.extraSlots?.length ? { _extraSlots: replacing.extraSlots } : {}),
         // "אשר כמודעה נוספת": הקישור לקודמת נמחק — אחרת withoutReplaced
         // הייתה מסתירה את הקודמת, שהמנהל ביקש במפורש להשאיר על האתר
         ...(keep && current?.replacesAdId ? { _replacesAdId: null, _replacesTitle: null } : {}),
@@ -1125,6 +1140,10 @@ function computeSlots(list: SubmittedAd[]): Map<string, number> {
             taken.add(ad.slotOrder);
         }
     }
+    // מקומות השכפול שמורים — מודעה בלי מספר לא נוחתת עליהם
+    for (const ad of display) {
+        for (const n of ad.extraSlots ?? []) taken.add(n);
+    }
     let next = 0;
     for (const ad of display) {
         if (bySlot.has(ad.id)) continue;
@@ -1138,6 +1157,38 @@ function computeSlots(list: SubmittedAd[]): Map<string, number> {
 /** מספרי המקומות לתצוגה (1-based) — למסך הניהול שמציג "משבצת N מתוך 16" */
 export function computeAdSlots(list: SubmittedAd[]): Map<string, number> {
     return new Map([...computeSlots(list)].map(([id, s]) => [id, s + 1]));
+}
+
+/** מקומות השכפול השמורים ב-landing._extraSlots (0-based, בלי כפילויות) */
+function parseExtraSlots(raw: unknown): number[] {
+    if (!Array.isArray(raw)) return [];
+    const nums = raw.filter(
+        (n): n is number => typeof n === 'number' && Number.isInteger(n) && n >= 0 && n < AD_SLOT_COUNT,
+    );
+    return [...new Set(nums)].sort((a, b) => a - b);
+}
+
+/**
+ * שכפל פרסומת: המקומות הנוספים האפקטיביים של כל מודעה (1-based). מקום
+ * ראשי של מודעה אחרת גובר על שכפול, ובהתנגשות בין שני שכפולים — הראשונה
+ * בסדר התצוגה.
+ */
+export function computeAdExtraSlots(
+    list: SubmittedAd[],
+    slots: Map<string, number> = computeSlots(list),
+): Map<string, number[]> {
+    const taken = new Set(slots.values());
+    const out = new Map<string, number[]>();
+    for (const ad of [...list].sort(byDisplayOrder)) {
+        const mine: number[] = [];
+        for (const n of ad.extraSlots ?? []) {
+            if (taken.has(n)) continue;
+            taken.add(n);
+            mine.push(n + 1);
+        }
+        if (mine.length > 0) out.set(ad.id, mine);
+    }
+    return out;
 }
 
 /**
@@ -1212,12 +1263,99 @@ export async function setAdSlot(
     if (cur === target) return { title: ad.title, slot: target + 1 };
 
     const occupant = list.find((a) => a.id !== id && slots.get(a.id) === target) ?? null;
-    await mergeAd(ad.id, {}, { _order: target });
+    // מקום שהוא שכפול של המודעה עצמה — הראשי והשכפול מתחלפים, והיא ממשיכה
+    // לתפוס את אותם מקומות. שכפול של מודעה אחרת — מתפנה עבורה.
+    const ownExtras = ad.extraSlots ?? [];
+    const extraOwner = occupant
+        ? null
+        : (list.find((a) => a.id !== id && (a.extraSlots ?? []).includes(target)) ?? null);
+    await mergeAd(ad.id, {}, {
+        _order: target,
+        ...(ownExtras.includes(target)
+            ? { _extraSlots: ownExtras.map((n) => (n === target ? cur : n)) }
+            : {}),
+    });
     if (occupant) await mergeAd(occupant.id, {}, { _order: cur });
+    if (extraOwner) {
+        await mergeAd(extraOwner.id, {}, {
+            _extraSlots: (extraOwner.extraSlots ?? []).filter((n) => n !== target),
+        });
+    }
     invalidateAdsCache();
     return {
         title: ad.title,
         slot: target + 1,
         ...(occupant ? { swappedTitle: occupant.title, swappedSlot: cur + 1 } : {}),
     };
+}
+
+/**
+ * שכפל פרסומת: מוסיף למודעה מאושרת מקום נוסף בלוח, כך שהיא מוצגת בכמה
+ * רביעיות — למשל 2 ו-6, והיא נשארת באותה משבצת בלי להתחלף. רק מקום פנוי:
+ * מקום של מודעה אחרת (גם מושהית/פגה) או שכפול שלה — נדחה.
+ * 'same' = כל המקומות הפנויים באותה רביעייה — אותה משבצת בטור (2 → 6, 10, 14),
+ * כך שהמודעה קבועה בטור לאורך כל הסבב.
+ */
+export async function addAdExtraSlot(
+    id: string,
+    requested: number | 'same',
+): Promise<{ ok: true; title: string; slots: number[] } | { ok: false; error: string } | null> {
+    const same = requested === 'same';
+    const n = same ? 0 : Math.round(Number(requested));
+    if (!same && (!Number.isFinite(n) || n < 1 || n > AD_SLOT_COUNT)) {
+        return { ok: false, error: `מקום לא תקין — בחרו מספר בין 1 ל-${AD_SLOT_COUNT}` };
+    }
+    const list = await listApprovedAll();
+    const ad = list.find((a) => a.id === id);
+    if (!ad) return null;
+    const slots = await ensureSlotsPersisted(list);
+    const own = slots.get(id)!;
+    const mine = ad.extraSlots ?? [];
+    const occupantOf = (t: number) =>
+        list.find((a) => a.id !== id && (slots.get(a.id) === t || (a.extraSlots ?? []).includes(t))) ?? null;
+
+    let targets: number[];
+    if (same) {
+        targets = [];
+        for (let t = own % 4; t < AD_SLOT_COUNT; t += 4) {
+            if (t !== own && !mine.includes(t) && !occupantOf(t)) targets.push(t);
+        }
+        if (targets.length === 0) {
+            return {
+                ok: false,
+                error: `אין מקום פנוי נוסף ברביעייה של המקום הזה — "${ad.title}" כבר שם או שהמקומות תפוסים`,
+            };
+        }
+    } else {
+        const target = n - 1;
+        if (own === target || mine.includes(target)) {
+            return { ok: false, error: `"${ad.title}" כבר מוצגת במקום ${n}` };
+        }
+        const occupant = occupantOf(target);
+        if (occupant) {
+            return {
+                ok: false,
+                error: `מקום ${n} תפוס בידי "${occupant.title}" — העבירו אותה קודם או בחרו מקום פנוי`,
+            };
+        }
+        targets = [target];
+    }
+    await mergeAd(ad.id, {}, { _extraSlots: [...mine, ...targets].sort((a, b) => a - b) });
+    invalidateAdsCache();
+    return { ok: true, title: ad.title, slots: targets.map((t) => t + 1) };
+}
+
+/** מבטל שכפול: מסיר מקום נוסף מהמודעה. המקום הראשי שלה לא זז. */
+export async function removeAdExtraSlot(
+    id: string,
+    requested: number,
+): Promise<{ title: string; slot: number } | null> {
+    const n = Math.round(Number(requested));
+    const list = await listApprovedAll();
+    const ad = list.find((a) => a.id === id);
+    const mine = ad?.extraSlots ?? [];
+    if (!ad || !mine.includes(n - 1)) return null;
+    await mergeAd(ad.id, {}, { _extraSlots: mine.filter((x) => x !== n - 1) });
+    invalidateAdsCache();
+    return { title: ad.title, slot: n };
 }
