@@ -24,6 +24,10 @@ export interface OwnerAdView {
     durationDays: number | null;
     requestedDurationDays: number | null;
     rejectionReason: string;
+    /** מושהית — ירדה מהאתר והימים שנותרו שמורים לה (לקיצורי הניהול) */
+    paused: boolean;
+    /** כותרת הגרסה הקודמת שהשליחה הזו מעדכנת — מוצג רק כל עוד ממתינה */
+    replacesTitle: string;
     totals: AdStats['totals'];
 }
 
@@ -65,6 +69,8 @@ export async function getOwnerAssets(user: OwnerSessionLike): Promise<OwnerAsset
             durationDays: a.durationDays,
             requestedDurationDays: a.requestedDurationDays,
             rejectionReason: a.rejectionReason,
+            paused: a.paused === true,
+            replacesTitle: a.replacesTitle ?? '',
             totals: stats[a.id]?.totals ?? { impressions: 0, clicks: 0, landing: 0, leads: 0 },
         })),
     };

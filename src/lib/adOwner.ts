@@ -34,12 +34,16 @@ export function needsRenewal(status: AdStatusKind, expiresAt: string | null | un
     return status === 'approved' && left !== null && left > 0 && left <= RENEW_WARNING_DAYS;
 }
 
-export function statusView(status: AdStatusKind, expiresAt?: string | null): StatusView {
+export function statusView(status: AdStatusKind, expiresAt?: string | null, paused = false): StatusView {
     if (status === 'rejected') {
         return { label: 'נדחתה', hint: 'המודעה לא אושרה לפרסום', tone: 'rose' };
     }
     if (status === 'pending') {
         return { label: 'ממתינה לאישור', hint: 'נבדקת אצלנו — בדרך כלל תוך יום', tone: 'amber' };
+    }
+    // מושהית בידי המנהל — לא באוויר, אבל הימים שנותרו לה שמורים
+    if (paused) {
+        return { label: 'מושהית', hint: 'הפרסום מושהה והימים שנותרו שמורים לה', tone: 'slate' };
     }
     if (isExpired('approved', expiresAt)) {
         return { label: 'פג תוקף', hint: 'הפרסום הסתיים והמודעה ירדה מהאתר', tone: 'slate' };
