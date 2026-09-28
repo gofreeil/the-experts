@@ -144,6 +144,8 @@ export interface ApprovedAdPublic {
     slot: number;
     /** שכפל פרסומת: מקומות נוספים בלוח (1-based) שבהם אותה מודעה מוצגת */
     extraSlots: number[];
+    /** כרטיס מוצר מחנות החירות (מסונכרן מקהילה בשכונה) - מוצג בלי רצועת המחיר */
+    shop: boolean;
 }
 
 // ----- הצורה השטוחה של Strapi 5 באוסף submitted-ads -----
@@ -755,6 +757,7 @@ export async function listApproved(): Promise<ApprovedAdPublic[]> {
                 slot: (slots.get(a.id) ?? 0) + 1,
                 // שכפל פרסומת — אותה מודעה גם במקומות האלה
                 extraSlots: extras.get(a.id) ?? [],
+                shop: Boolean((a.landing as Record<string, unknown>)._shopProduct),
             }));
         approvedCache = { at: Date.now(), list };
         return list;

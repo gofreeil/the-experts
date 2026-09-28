@@ -31,6 +31,8 @@ export interface ApprovedAd {
     slot?: number;
     /** שכפל פרסומת: מקומות נוספים בלוח (1..16) שבהם אותה מודעה מוצגת */
     extraSlots?: number[];
+    /** כרטיס מוצר מחנות החירות - בלי רצועת המחיר בתחתית */
+    shop?: boolean;
 }
 
 export type AdSlot =
