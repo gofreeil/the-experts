@@ -5,7 +5,13 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	const session = await locals.auth();
 	return {
 		user: session?.user
-			? { id: session.user.id, name: session.user.name ?? '', email: session.user.email ?? '' }
+			? {
+					id: session.user.id,
+					name: session.user.name ?? '',
+					email: session.user.email ?? '',
+					// תמונת הפרופיל; בלעדיה ההדר מציג את האות הראשונה
+					image: session.user.image ?? ''
+				}
 			: null
 	};
 };

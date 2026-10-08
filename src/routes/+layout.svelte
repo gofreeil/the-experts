@@ -40,7 +40,7 @@
 <MobileAdsDrawer />
 <MobileAdPopup />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
-	<Header currentUser={data.user ? { username: data.user.name || data.user.email } : null} />
+	<Header currentUser={data.user ? { username: data.user.name || data.user.email, avatar_url: data.user.image || null } : null} />
 
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
