@@ -1,0 +1,97 @@
+/* דף הבית: צבעים, טיפוגרפיה ורכיבים משותפים. מוגבל ל-.home כדי לא להשפיע על שאר האתר.
+   הפריסה מגיבה לרוחב העמודה הראשית (container query) ולא לרוחב המסך,
+   כי ליד העמודה יושבות עמודות הפרסומות. */
+
+.home {
+    --bg: #e2f2fc;
+    --bg-2: #cfe8f8;
+    --surface: #ffffff;
+    --surface-2: #eef7fd;
+    --line: #b4d4e9;
+    --line-soft: #cbe2f2;
+    --fg: #0a1d33;
+    --fg-mute: #38526d;
+    --fg-faint: #4d6883;
+    --honey: #f5a524;
+    --honey-bright: #ffb73a;
+    --honey-deep: #b9770e;
+    --honey-text: #965400;
+    --honey-ink: #1c1203;
+    --ok: #0e8a5c;
+    --warn: #c2570c;
+    --bad: #c62d2d;
+    --hexbase: #ffffff;
+    --hive-end: #f4faff;
+    --shadow: 0 10px 30px rgba(10, 45, 80, 0.22);
+    --c-law: #2f6fe0;
+    --c-economy: #0b8fb0;
+    --c-education: #1f9d55;
+    --c-agriculture: #6d9a12;
+    --c-technology: #7556e0;
+    --c-health: #0f9a8a;
+    --c-ethics: #66758d;
+    --c-rights: #d94646;
+    --font-display: 'Frank Ruhl Libre', 'David Libre', Georgia, 'Times New Roman', serif;
+
+    color-scheme: light;
+    container-type: inline-size;
+    container-name: home;
+    background: var(--bg);
+    color: var(--fg);
+    direction: rtl;
+    text-align: right;
+    font-size: 16px;
+    line-height: 1.6;
+    border-radius: 14px;
+    overflow: clip;
+    -webkit-font-smoothing: antialiased;
+}
+@media (max-width: 1024px) {
+    .home { border-radius: 0; }
+}
+
+.home *, .home *::before, .home *::after { box-sizing: border-box; }
+.home h1, .home h2, .home h3, .home h4, .home p { margin: 0; }
+.home a { color: inherit; text-decoration: none; }
+.home button { font: inherit; color: inherit; cursor: pointer; }
+.home :focus-visible { outline: 2px solid var(--honey-text); outline-offset: 3px; border-radius: 4px; }
+
+.home .num { direction: ltr; unicode-bidi: isolate; display: inline-block; font-variant-numeric: tabular-nums; }
+.home .inner { padding-inline: clamp(16px, 3.4cqi, 36px); }
+.home .section { padding-block: clamp(36px, 6cqi, 76px); }
+.home .section.alt { background: var(--bg-2); border-block: 1px solid var(--line-soft); }
+
+/* כותרות מקטעים */
+.home .sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: clamp(20px, 3cqi, 34px); }
+.home .sec-head > div { min-width: 0; max-width: 62ch; }
+.home .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--honey-text); margin-bottom: 8px; }
+.home .eyebrow::before { content: ""; width: 10px; height: 11px; background: var(--honey); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.home h2.title { font-family: var(--font-display); font-weight: 900; font-size: clamp(26px, 4.2cqi, 40px); line-height: 1.15; text-wrap: balance; }
+.home .lede { color: var(--fg-mute); margin-top: 10px; text-wrap: pretty; }
+.home .demo-tag { display: inline-block; margin-inline-start: 10px; padding: 1px 9px; border: 1px dashed var(--honey-deep); border-radius: 999px; color: var(--honey-text); font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em; vertical-align: middle; }
+
+/* כפתורים וצ'יפים */
+.home .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; border-radius: 6px; border: 1px solid transparent; font-weight: 700; font-size: 15px; line-height: 1.2; transition: background 0.18s, border-color 0.18s, transform 0.18s; white-space: nowrap; }
+.home .btn:active { transform: translateY(1px); }
+.home .btn-primary { background: var(--honey); color: var(--honey-ink); }
+.home .btn-primary:hover { background: var(--honey-bright); }
+.home .btn-ghost { background: transparent; border-color: var(--line); color: var(--fg); }
+.home .btn-ghost:hover { border-color: var(--honey-deep); color: var(--honey-text); }
+.home .btn-sm { padding: 8px 14px; font-size: 14px; }
+.home .btn[aria-pressed="true"] { background: color-mix(in srgb, var(--honey) 16%, transparent); border-color: var(--honey-deep); color: var(--honey-text); }
+.home .btn svg { width: 18px; height: 18px; flex: none; }
+
+.home .chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); background: transparent; font-size: 14px; font-weight: 500; color: var(--fg-mute); transition: all 0.15s; }
+.home .chip:hover { color: var(--fg); border-color: var(--fg-faint); }
+.home .chip[aria-pressed="true"] { color: var(--fg); background: var(--surface); border-color: var(--c, var(--honey-deep)); }
+.home .dot { width: 9px; height: 9px; background: var(--c, var(--honey)); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); flex: none; }
+
+/* אווטאר משושה */
+.home .mini-av { width: 26px; height: 29px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #0a1d33; background: var(--c2, var(--honey)); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); flex: none; }
+
+/* צורת משושה לאייקונים */
+.home .hex-clip { clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+
+@media (prefers-reduced-motion: reduce) {
+    .home * { transition: none !important; animation: none !important; }
+}

@@ -2,6 +2,7 @@
 // מודל: בעיה אחת -> מספר הצעות פתרון
 
 import { browser } from '$app/environment';
+import { demoProblems } from './demoProblems';
 
 export type ProblemType = 'individual' | 'community';
 export type ProblemStatus = 'open' | 'in-progress' | 'solved';
@@ -28,6 +29,8 @@ export type Problem = {
     status: ProblemStatus;
     createdAt: number;
     solutions: Solution[];
+    backers?: number;   // כמה אנשים הוסיפו לפרס (בעיות ציבוריות)
+    hands?: number;     // מומחים שהרימו יד, כולל כאלה שעוד לא הגישו הצעה מלאה
 };
 
 const STORAGE_KEY = 'experts_problems_v1';
@@ -49,7 +52,9 @@ const seed: Problem[] = [
         bounty: 3500,
         status: 'open',
         createdAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
-        solutions: []
+        solutions: [],
+        hands: 4,
+        backers: 17
     },
     {
         id: 'seed-2',
@@ -62,7 +67,9 @@ const seed: Problem[] = [
         bounty: 8000,
         status: 'open',
         createdAt: Date.now() - 1000 * 60 * 60 * 24 * 7,
-        solutions: []
+        solutions: [],
+        hands: 5,
+        backers: 22
     },
     {
         id: 'seed-3',
@@ -75,9 +82,15 @@ const seed: Problem[] = [
         bounty: 1200,
         status: 'open',
         createdAt: Date.now() - 1000 * 60 * 60 * 24 * 1,
-        solutions: []
-    }
+        solutions: [],
+        hands: 3,
+        backers: 1
+    },
+    ...demoProblems()
 ];
+
+// הבעיות ההתחלתיות - לשימוש הרינדור הראשון בדף הבית (זהה בשרת ובלקוח, לפני קריאת localStorage)
+export const seedProblems: Problem[] = seed;
 
 function load(): Problem[] {
     if (!browser) return seed;
@@ -117,6 +130,16 @@ class ProblemsStore {
         this.items = [next, ...this.items];
         save(this.items);
         return next;
+    }
+
+    // מוסיף לפרס של בעיה קיימת (תרומה נוספת של מישהו שמצטרף לבעיה ציבורית)
+    addToBounty(problemId: string, amount: number) {
+        const idx = this.items.findIndex((p) => p.id === problemId);
+        if (idx === -1 || !(amount > 0)) return;
+        const p = this.items[idx];
+        const updated = { ...p, bounty: p.bounty + amount, backers: (p.backers ?? 1) + 1 };
+        this.items = [...this.items.slice(0, idx), updated, ...this.items.slice(idx + 1)];
+        save(this.items);
     }
 
     getById(id: string): Problem | undefined {

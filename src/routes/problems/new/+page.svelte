@@ -2,14 +2,21 @@
     import { problemsStore, type ProblemType } from '$lib/problemsStore.svelte';
     import { teams } from '$lib/teamsData';
     import { goto } from '$app/navigation';
+    import { page } from '$app/state';
 
-    let title = $state('');
+    // הטופס המהיר בדף הבית מעביר לכאן כותרת, תחום, סוג ותקציב ב-query string
+    const q = page.url.searchParams;
+    const qCategory = q.get('category');
+    const qType = q.get('type');
+    const qBounty = Number(q.get('bounty'));
+
+    let title = $state((q.get('title') ?? '').slice(0, 120));
     let description = $state('');
-    let category = $state('law');
-    let type = $state<ProblemType>('individual');
+    let category = $state(teams.some((t) => t.slug === qCategory) ? (qCategory as string) : 'law');
+    let type = $state<ProblemType>(qType === 'community' ? 'community' : 'individual');
     let posterName = $state('');
     let contact = $state('');
-    let bounty = $state<number | null>(null);
+    let bounty = $state<number | null>(qBounty > 0 && qBounty <= 1_000_000 ? Math.round(qBounty) : null);
 
     let submitting = $state(false);
     let error = $state('');
