@@ -31,6 +31,7 @@
         return res;
     });
 
+    const hidden = $derived(nodes.length ? problems.length - nodes.length : 0);
     const byId = $derived(new Map(problems.map((p) => [p.id, p])));
     const top = $derived([...problems].sort((a, b) => b.bounty - a.bounty)[0] ?? null);
     const pickedId = $derived(selectedId ?? top?.id ?? null);
@@ -38,7 +39,7 @@
 
     // שורות התווית בתוך תא גדול: עד שתי שורות, חיתוך במילה
     function labelLines(title: string, r: number): string[] {
-        const maxChars = Math.floor((r * 1.55) / 6.3);
+        const maxChars = Math.floor((r * 1.5) / 6.8);
         const lines: string[] = [];
         let cur = '';
         for (const w of title.split(' ')) {
@@ -59,7 +60,7 @@
 <div class="hivebox">
     <div class="hive-top">
         <h2>מפת הבעיות הפתוחות</h2>
-        <small>גודל התא = גובה הפרס. לחצו על תא.</small>
+        <small>גודל התא = גובה הפרס. לחצו על תא.{#if hidden > 0} מוצגות הגדולות, עוד {hidden} בלוח.{/if}</small>
     </div>
 
     <div class="hive-canvas" bind:clientWidth={W} bind:clientHeight={H} role="group" aria-label="מפת כוורת של הבעיות הפתוחות, גודל כל תא לפי גובה הפרס" onmouseleave={() => (hoverId = null)}>
@@ -89,14 +90,14 @@
                             }}
                         >
                             <polygon class="hex" points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" style="transform: scale({n.r.toFixed(1)})" />
-                            {#if n.r >= 52}
+                            {#if n.r >= 44}
                                 {@const lines = labelLines(p.title, n.r)}
-                                <text class="t-amt" y={-n.r * 0.1} font-size={Math.max(20, Math.min(30, n.r * 0.3))}>{fmt(p.bounty)}</text>
+                                <text class="t-amt" y={-n.r * 0.08} font-size={Math.max(16, Math.min(30, n.r * 0.32))}>{n.r >= 60 ? fmt(p.bounty) : fmtShort(p.bounty)}</text>
                                 {#each lines as l, i}
-                                    <text class="t-sub" y={n.r * 0.2 + i * 14}>{l}</text>
+                                    <text class="t-sub" y={n.r * 0.24 + i * 15}>{l}</text>
                                 {/each}
-                            {:else if n.r >= 20}
-                                <text class="t-amt" y={n.r * 0.14} font-size={Math.max(11, Math.min(16, n.r * 0.5))}>{fmtShort(p.bounty)}</text>
+                            {:else}
+                                <text class="t-amt" y={n.r * 0.15} font-size={Math.max(11, Math.min(16, n.r * 0.44))}>{fmtShort(p.bounty)}</text>
                             {/if}
                         </g>
                     {/if}
@@ -139,7 +140,7 @@
     .hive-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 2px 4px 12px; }
     .hive-top h2 { font-size: 16px; font-weight: 800; }
     .hive-top small { color: var(--fg-faint); font-size: 13px; }
-    .hive-canvas { position: relative; width: 100%; height: clamp(360px, 52cqi, 500px); background: radial-gradient(circle at 50% 50%, rgba(245, 165, 36, 0.09), transparent 60%), var(--bg); border: 1px solid var(--line-soft); border-radius: 4px; overflow: hidden; }
+    .hive-canvas { position: relative; width: 100%; height: clamp(430px, 56cqi, 520px); background: radial-gradient(circle at 50% 50%, rgba(245, 165, 36, 0.09), transparent 60%), var(--bg); border: 1px solid var(--line-soft); border-radius: 4px; overflow: hidden; }
     .hive-canvas svg { display: block; width: 100%; height: 100%; }
 
     .hg { cursor: pointer; outline: none; transition: transform 0.55s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 0.25s; }
@@ -149,7 +150,7 @@
     .hg.dim { opacity: 0.16; }
     .hg text { fill: var(--fg); pointer-events: none; text-anchor: middle; }
     .hg .t-amt { font-family: var(--font-display); font-weight: 900; }
-    .hg .t-sub { font-size: 11px; font-weight: 500; fill: color-mix(in srgb, var(--fg) 80%, transparent); }
+    .hg .t-sub { font-size: 12px; font-weight: 600; fill: color-mix(in srgb, var(--fg) 85%, transparent); }
 
     .hive-sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; padding: 14px 4px 4px; }
     .sel-text { min-width: 0; }
