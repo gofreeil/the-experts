@@ -9,7 +9,7 @@ export const MORE_ID = '__more__';
 
 type Item = { id: string; value: number; area: number; more?: number };
 
-const MIN_AREA = 3400; // שטח מינימלי למשבצת: מספיק לסכום וכותרת קצרה
+const MIN_AREA = 5600; // שטח מינימלי למשבצת: מספיק לסכום קריא; קטנות יותר מתכנסות ל"עוד"
 const POWER = 0.5; // שטח ~ פרס^0.5
 
 function worst(row: Item[], sum: number, side: number): number {

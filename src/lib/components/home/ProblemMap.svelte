@@ -48,7 +48,7 @@
 <div class="mapbox">
     <div class="map-top">
         <h2>מפת הבעיות הפתוחות</h2>
-        <small>גודל המשבצת = גובה הפרס. לחצו על משבצת.</small>
+        <small>גודל וכהות המשבצת = גובה הפרס. לחצו על משבצת.</small>
     </div>
 
     <div class="map-canvas" bind:clientWidth={W} bind:clientHeight={H} role="group" aria-label="מפת הבעיות הפתוחות, גודל כל משבצת לפי גובה הפרס" onmouseleave={() => (hoverId = null)}>
@@ -67,7 +67,7 @@
                         class:dim={!isVisible(p)}
                         class:sel={t.id === pickedId}
                         type="button"
-                        style="--c:{catColor(p.category)}; --lines:{linesOf(size, t.h)}; --amt:{Math.max(11, Math.min(19, (t.w - 14) / 3.3)).toFixed(1)}px; left:{t.x.toFixed(1)}px; top:{t.y.toFixed(1)}px; width:{t.w.toFixed(1)}px; height:{t.h.toFixed(1)}px"
+                        style="--c:{catColor(p.category)}; --k:{Math.sqrt(p.bounty / (top?.bounty || 1)).toFixed(2)}; --lines:{linesOf(size, t.h)}; --amt:{Math.max(11, Math.min(19, (t.w - 14) / 3.3)).toFixed(1)}px; left:{t.x.toFixed(1)}px; top:{t.y.toFixed(1)}px; width:{t.w.toFixed(1)}px; height:{t.h.toFixed(1)}px"
                         aria-label="{p.title}, פרס {p.bounty} שקלים"
                         aria-pressed={t.id === pickedId}
                         onmouseenter={() => (hoverId = p.id)}
@@ -120,19 +120,20 @@
     .map-top small { color: var(--fg-faint); font-size: 13px; }
     .map-canvas { position: relative; width: 100%; height: clamp(380px, 50cqi, 470px); border-radius: 12px; overflow: hidden; }
 
+    /* מפה רגועה: גוון כחול אחד, עוצמתו לפי גובה הפרס (--k); הקטגוריה רק כנקודה קטנה */
     .tile {
         position: absolute; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 4px;
         padding: 10px 12px; text-align: right; border-radius: 12px; overflow: hidden; cursor: pointer; color: var(--fg);
-        background: linear-gradient(155deg, color-mix(in srgb, var(--c) 30%, #fff) 0%, color-mix(in srgb, var(--c) 14%, #fff) 100%);
-        border: 1px solid color-mix(in srgb, var(--c) 38%, transparent);
-        box-shadow: 0 1px 2px rgba(10, 29, 51, 0.06);
-        transition: transform 0.18s, box-shadow 0.18s, filter 0.18s, opacity 0.25s;
+        background: color-mix(in srgb, #2b6cb0 calc(var(--k, 0.3) * 22%), #fff);
+        border: 1px solid color-mix(in srgb, #2b6cb0 calc(10% + var(--k, 0.3) * 18%), transparent);
+        transition: background 0.15s, opacity 0.25s;
     }
-    .tile:hover, .tile:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--c) 32%, transparent); filter: saturate(1.15); z-index: 2; outline: none; }
-    .tile.sel { box-shadow: inset 0 0 0 2.5px var(--c), 0 6px 18px color-mix(in srgb, var(--c) 30%, transparent); background: linear-gradient(155deg, color-mix(in srgb, var(--c) 42%, #fff) 0%, color-mix(in srgb, var(--c) 22%, #fff) 100%); z-index: 1; }
+    .tile:hover, .tile:focus-visible { background: color-mix(in srgb, #2b6cb0 calc(10% + var(--k, 0.3) * 26%), #fff); outline: none; z-index: 2; }
+    .tile:focus-visible { box-shadow: 0 0 0 2px var(--honey-deep); }
+    .tile.sel { box-shadow: inset 0 0 0 2.5px var(--honey-deep); z-index: 1; }
     .tile.dim { opacity: 0.2; filter: grayscale(0.7); }
 
-    .t-amt { font-family: var(--font-display); font-weight: 900; line-height: 1.05; color: color-mix(in srgb, var(--c) 35%, #0a1d33); }
+    .t-amt { font-family: var(--font-display); font-weight: 900; line-height: 1.05; color: var(--fg); }
     .t-title { font-weight: 600; color: var(--fg); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lines, 2); line-clamp: var(--lines, 2); overflow: hidden; text-wrap: balance; }
     .t-cat { margin-top: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--fg-mute); }
     .t-cat::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
@@ -149,7 +150,7 @@
     .tile.more { align-items: center; justify-content: center; gap: 2px; background: transparent; border: 2px dashed var(--line); box-shadow: none; color: var(--fg-mute); }
     .tile.more b { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--fg); line-height: 1.1; direction: ltr; }
     .tile.more span { font-size: 12px; font-weight: 600; text-align: center; line-height: 1.2; white-space: nowrap; }
-    .tile.more:hover { border-color: var(--honey-deep); color: var(--honey-text); box-shadow: none; filter: none; }
+    .tile.more:hover { background: transparent; border-color: var(--honey-deep); color: var(--honey-text); }
 
     .map-sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; padding: 14px 4px 4px; }
     .sel-text { min-width: 0; }
@@ -165,8 +166,5 @@
     @container home (max-width: 560px) {
         .map-sel { grid-template-columns: minmax(0, 1fr); }
         .amt { text-align: right; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .tile:hover, .tile:focus-visible { transform: none; }
     }
 </style>
