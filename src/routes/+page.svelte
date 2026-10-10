@@ -12,6 +12,7 @@
     import ArchiveSection from '$lib/components/home/ArchiveSection.svelte';
     import ExpertsSection from '$lib/components/home/ExpertsSection.svelte';
     import ComposerSection from '$lib/components/home/ComposerSection.svelte';
+    import FloorLink from '$lib/components/home/FloorLink.svelte';
 
     // הרינדור הראשון משתמש בבעיות ההתחלתיות (זהה בשרת ובלקוח). אחרי הטעינה עוברים לנתוני הדפדפן.
     let mounted = $state(false);
@@ -25,7 +26,9 @@
     let cat = $state<string>('all');
     let scope = $state<'all' | ProblemType>('all');
     let sort = $state<'bounty' | 'hands' | 'new'>('bounty');
-    let shown = $state(6);
+    // בדף הבית רק דוגמאות. את שאר הבעיות רואים בלוח המלא (/problems)
+    const PREVIEW = 4;
+    let shown = $state(PREVIEW);
     let selectedId = $state<string | null>(null);
     let flashId = $state<string | null>(null);
 
@@ -42,7 +45,7 @@
 
     function setCat(c: string) {
         cat = cat === c ? 'all' : c;
-        shown = 6;
+        shown = PREVIEW;
     }
     function gotoBoard() {
         document.getElementById('board')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -114,8 +117,10 @@
             </div>
         </div>
     </section>
+    <FloorLink href="/how-it-works" label="איך זה עובד" note="ארבעה צעדים מהבעיה ועד התשלום" />
 
     <PaidSection />
+    <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
 
     <!-- ═════ לוח הבעיות ═════ -->
     <section class="section alt" id="board">
@@ -131,7 +136,7 @@
 
             <div class="controls">
                 <div class="chips" role="group" aria-label="סינון לפי תחום">
-                    <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => { cat = 'all'; shown = 6; }}>הכל <span class="num cnt">{all.length}</span></button>
+                    <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => { cat = 'all'; shown = PREVIEW; }}>הכל <span class="num cnt">{all.length}</span></button>
                     {#each CATS as c}
                         <button class="chip" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => setCat(c.slug)}>
                             <span class="dot" style="--c:{catColor(c.slug)}"></span>{c.short} <span class="num cnt">{all.filter((p) => p.category === c.slug).length}</span>
@@ -140,12 +145,12 @@
                 </div>
                 <div class="ctrl-right">
                     <div class="seg" role="group" aria-label="סוג בעיה">
-                        <button type="button" aria-pressed={scope === 'all'} onclick={() => { scope = 'all'; shown = 6; }}>הכל</button>
-                        <button type="button" aria-pressed={scope === 'community'} onclick={() => { scope = 'community'; shown = 6; }}>ציבוריות</button>
-                        <button type="button" aria-pressed={scope === 'individual'} onclick={() => { scope = 'individual'; shown = 6; }}>פרטיות</button>
+                        <button type="button" aria-pressed={scope === 'all'} onclick={() => { scope = 'all'; shown = PREVIEW; }}>הכל</button>
+                        <button type="button" aria-pressed={scope === 'community'} onclick={() => { scope = 'community'; shown = PREVIEW; }}>ציבוריות</button>
+                        <button type="button" aria-pressed={scope === 'individual'} onclick={() => { scope = 'individual'; shown = PREVIEW; }}>פרטיות</button>
                     </div>
                     <label class="sr" for="sortSel">מיון</label>
-                    <select class="sel" id="sortSel" bind:value={sort} onchange={() => (shown = 6)}>
+                    <select class="sel" id="sortSel" bind:value={sort} onchange={() => (shown = PREVIEW)}>
                         <option value="bounty">מיון: פרס גבוה</option>
                         <option value="hands">מיון: הכי הרבה ידיים</option>
                         <option value="new">מיון: חדשות</option>
@@ -160,14 +165,15 @@
                     <div class="empty">אין כרגע בעיות בסינון הזה. אפשר להיות הראשונים להעלות אחת.</div>
                 {/each}
             </div>
-            {#if sorted.length > shown}
-                <div class="more"><button class="btn btn-ghost" type="button" onclick={() => (shown += 6)}>הציגו עוד בעיות ({sorted.length - shown})</button></div>
-            {/if}
         </div>
     </section>
+    <FloorLink href="/problems" label="לוח הבעיות" note="מוצגות {Math.min(shown, sorted.length)} מתוך {sorted.length} בעיות פתוחות" />
 
     <MeetupSection />
-    <SolvedSection />
+    <FloorLink href="/meetup" label="מפגש מומחים" note="מועד, סדר יום ומה קורה במפגש" />
+
+    <SolvedSection preview />
+    <FloorLink href="/solved" label="פתרונות שהתקבלו" note="מוצגים 4 מתוך {SOLVED_COUNT} פתרונות" />
 
     <!-- ═════ תחומים ═════ -->
     <section class="section" id="cats">
@@ -196,10 +202,16 @@
             </div>
         </div>
     </section>
+    <FloorLink href="/categories" label="תחומים" note="תיאור כל צוות, בעיות פתוחות ומומחים" />
 
-    <ArchiveSection />
-    <ExpertsSection />
+    <ArchiveSection preview />
+    <FloorLink href="/archive" label="ארכיון ודיונים" note="כל המפגשים הקודמים והדיונים הפעילים" />
+
+    <ExpertsSection preview />
+    <FloorLink href="/experts" label="המומחים" note="הדירוג המלא וההיסטוריה של כל מומחה" />
+
     <ComposerSection problems={all} />
+    <FloorLink href="/problems/new" label="העלאת בעיה" note="הטופס המלא, עם כל השדות" />
 </div>
 
 <style>
@@ -249,7 +261,6 @@
     .sel { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; font: inherit; font-size: 14px; }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .more { display: flex; justify-content: center; margin-top: 26px; }
     .empty { grid-column: 1 / -1; text-align: center; color: var(--fg-mute); padding: 40px 0; border: 1px dashed var(--line); border-radius: 6px; }
 
     /* ───── תחומים ───── */

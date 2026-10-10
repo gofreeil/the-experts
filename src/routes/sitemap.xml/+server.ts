@@ -10,6 +10,13 @@ const STATIC_PAGES: Array<{ path: string; priority: number; changefreq: string }
     { path: '/',                      priority: 1.0, changefreq: 'daily' },
     { path: '/problems',              priority: 0.9, changefreq: 'daily' },   // לוח בעיות לפתרון
     { path: '/problems/new',          priority: 0.4, changefreq: 'monthly' }, // העלאת בעיה חדשה
+    { path: '/how-it-works',          priority: 0.6, changefreq: 'monthly' },
+    { path: '/paid',                  priority: 0.6, changefreq: 'weekly' },
+    { path: '/meetup',                priority: 0.6, changefreq: 'weekly' },
+    { path: '/solved',                priority: 0.6, changefreq: 'weekly' },
+    { path: '/categories',            priority: 0.6, changefreq: 'weekly' },
+    { path: '/archive',               priority: 0.5, changefreq: 'weekly' },
+    { path: '/experts',               priority: 0.6, changefreq: 'weekly' },
     { path: '/about',                 priority: 0.5, changefreq: 'monthly' },
     { path: '/about/advertise',       priority: 0.5, changefreq: 'monthly' },
     { path: '/about/advertise/terms', priority: 0.3, changefreq: 'yearly' },

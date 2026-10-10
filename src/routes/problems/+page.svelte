@@ -3,8 +3,12 @@
     import { teams, teamBySlug } from '$lib/teamsData';
     import { triggerAdPopup } from '$lib/adPopupStore';
     import { onMount } from 'svelte';
+    import { page } from '$app/state';
 
     onMount(() => problemsStore.refresh());
+
+    // ?cat=law פותח את הלוח כשהסינון לפי התחום כבר דלוק (קישור מדף "תחומים")
+    const catFromUrl = page.url.searchParams.get('cat');
 
     // בנייד: פרסומת ביניים קצרה בדרך לדף הבעיה (כמו באתר הקהילה).
     // triggerAdPopup מחזיר false בדסקטופ - ואז הקישור מנווט כרגיל.
@@ -14,7 +18,7 @@
     }
 
     let typeFilter = $state<'all' | ProblemType>('all');
-    let categoryFilter = $state<string>('all');
+    let categoryFilter = $state<string>(catFromUrl && teams.some((t) => t.slug === catFromUrl) ? catFromUrl : 'all');
     let sortBy = $state<'newest' | 'bounty'>('newest');
 
     let filtered = $derived(() => {

@@ -1,12 +1,18 @@
 <script lang="ts">
     import { RECS, THREADS, DEMO_DATA, catColor, catShort } from '$lib/homeData';
+
+    // preview = גרסת דף הבית (2 מפגשים ו-3 דיונים). הדף המלא מציג הכול.
+    let { preview = false }: { preview?: boolean } = $props();
+
+    const recs = $derived(preview ? RECS.slice(0, 2) : RECS);
+    const threads = $derived(preview ? THREADS.slice(0, 3) : THREADS);
 </script>
 
 <section class="section alt" id="archive">
     <div class="inner arch">
         <div class="col">
             <div class="sub-h"><h3>ארכיון מפגשים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</h3></div>
-            {#each RECS as r}
+            {#each recs as r}
                 <article class="rec">
                     <div class="thumb" style="--c:{catColor(r.c)}">
                         <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1l11 6-11 6z" /></svg></span>
@@ -24,7 +30,7 @@
 
         <div class="col">
             <div class="sub-h"><h3>דיונים פעילים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</h3></div>
-            {#each THREADS as t}
+            {#each threads as t}
                 <article class="thread">
                     <b>{t.t}</b>
                     <small>

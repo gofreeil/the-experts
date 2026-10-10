@@ -1,20 +1,43 @@
 <script lang="ts">
-    import { EXPERTS, DEMO_DATA, catColor, catShort, fmtShort } from '$lib/homeData';
+    import { page } from '$app/state';
+    import { EXPERTS, CATS, DEMO_DATA, catColor, catShort, fmtShort } from '$lib/homeData';
     import { teamBySlug } from '$lib/teamsData';
+
+    // preview = גרסת דף הבית (4 מומחים). הדף המלא מציג את כולם עם סינון לפי תחום (?cat=...).
+    let { preview = false }: { preview?: boolean } = $props();
+
+    const fromUrl = page.url.searchParams.get('cat');
+    let cat = $state(fromUrl && CATS.some((c) => c.slug === fromUrl) ? fromUrl : 'all');
+    const list = $derived(preview ? EXPERTS.slice(0, 4) : EXPERTS.filter((e) => cat === 'all' || e.c === cat));
 </script>
 
 <section class="section" id="experts">
     <div class="inner">
-        <div class="sec-head">
-            <div>
-                <div class="eyebrow">המומחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
-                <h2 class="title">מי מרים יד הכי הרבה, ומי באמת פותר</h2>
-                <p class="lede">הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה.</p>
+        {#if preview}
+            <div class="sec-head">
+                <div>
+                    <div class="eyebrow">המומחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
+                    <h2 class="title">מי מרים יד הכי הרבה, ומי באמת פותר</h2>
+                    <p class="lede">הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה.</p>
+                </div>
             </div>
-        </div>
+        {:else}
+            <div class="toolbar">
+                <div class="chips" role="group" aria-label="סינון לפי תחום">
+                    <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => (cat = 'all')}>הכל <span class="num cnt">{EXPERTS.length}</span></button>
+                    {#each CATS as c}
+                        <button class="chip" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => (cat = cat === c.slug ? 'all' : c.slug)}>
+                            <span class="dot" style="--c:{catColor(c.slug)}"></span>{c.short}
+                        </button>
+                    {/each}
+                </div>
+                {#if DEMO_DATA}<span class="demo-tag" style="margin:0">נתוני הדגמה</span>{/if}
+            </div>
+            <p class="rank-note">הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות.</p>
+        {/if}
 
         <div class="experts">
-            {#each EXPERTS as e}
+            {#each list as e}
                 <article class="ex">
                     <div class="ex-top">
                         <span class="mini-av big" style="--c2:{catColor(e.c)}">{e.ini}</span>
@@ -34,6 +57,8 @@
                         יד מורמת כרגע על {e.open} בעיות
                     </div>
                 </article>
+            {:else}
+                <div class="empty">אין עדיין מומחים בתחום הזה בדוגמה.</div>
             {/each}
         </div>
 
@@ -45,6 +70,11 @@
 </section>
 
 <style>
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+    .cnt { color: var(--fg-faint); }
+    .rank-note { color: var(--fg-mute); font-size: 14px; margin: 10px 0 18px; }
+    .empty { grid-column: 1 / -1; text-align: center; color: var(--fg-mute); padding: 32px 0; border: 1px dashed var(--line); border-radius: 6px; }
     .experts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
     .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
     .ex-top { display: flex; align-items: center; gap: 12px; }

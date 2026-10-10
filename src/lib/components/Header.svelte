@@ -32,6 +32,7 @@
     import { fade } from "svelte/transition";
     import { ads, type Ad } from "$lib/adsData";
     import FullAdModal from "$lib/components/FullAdModal.svelte";
+    import NavMenu from "$lib/components/NavMenu.svelte";
 
     let { currentUser, onLogout, onShowAuth }: Props = $props();
 
@@ -262,6 +263,9 @@
                     </a>
 
                     <div class="flex items-center gap-1.5">
+                        <!-- תפריט נפתח - מובייל -->
+                        <NavMenu variant="mobile" />
+
                         <!-- כפתור אודות - מובייל -->
                         <button
                             onclick={() => goto("/about/revenue")}
@@ -393,6 +397,9 @@
                 </a>
             </div>
 <div class="flex items-center gap-2">
+                <!-- תפריט נפתח עם כל דפי האתר -->
+                <NavMenu variant="desktop" />
+
                 <!-- כפתור אודות עם תצוגה מקדימה -->
                 <div class="relative" id="about-btn-wrapper">
                     <button
