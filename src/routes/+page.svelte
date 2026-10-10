@@ -1,10 +1,9 @@
 <script lang="ts">
-    import { onMount, tick } from 'svelte';
+    import { onMount } from 'svelte';
     import '$lib/components/home/home.css';
     import { problemsStore, seedProblems, type Problem, type ProblemType } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
     import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, DEMO_DATA, catColor, fmt, fmtCompact, handsOf } from '$lib/homeData';
-    import ProblemMap from '$lib/components/home/ProblemMap.svelte';
     import ProblemCard from '$lib/components/home/ProblemCard.svelte';
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
@@ -29,8 +28,6 @@
     // בדף הבית רק דוגמאות. את שאר הבעיות רואים בלוח המלא (/problems)
     const PREVIEW = 4;
     let shown = $state(PREVIEW);
-    let selectedId = $state<string | null>(null);
-    let flashId = $state<string | null>(null);
 
     const isVisible = (p: Problem) => (cat === 'all' || p.category === cat) && (scope === 'all' || p.type === scope);
     const visible = $derived(all.filter(isVisible));
@@ -50,22 +47,6 @@
     function gotoBoard() {
         document.getElementById('board')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
-    // "הראו בלוח": מוודא שהכרטיס מוצג (מאפס סינון אם צריך), גולל אליו ומדגיש אותו
-    async function showInBoard(id: string) {
-        const p = all.find((x) => x.id === id);
-        if (!p) return;
-        if (!isVisible(p)) {
-            cat = 'all';
-            scope = 'all';
-        }
-        const idx = sorted.findIndex((x) => x.id === id);
-        if (idx >= shown) shown = idx + 1;
-        await tick();
-        document.getElementById(`p-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        flashId = id;
-        setTimeout(() => (flashId = null), 1600);
-    }
 </script>
 
 <svelte:head>
@@ -82,7 +63,7 @@
                     <svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>מבוקש: פתרון
                 </div>
                 <h1>יש בעיה?<br /><em>שימו עליה פרס.</em></h1>
-                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר. ככל שהפרס גדול יותר, המשבצת שלה במפה גדולה יותר.</p>
+                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר.</p>
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
                     <a class="btn btn-ghost" href="#board">אני מומחה, להראות לי בעיות</a>
@@ -98,8 +79,6 @@
                 </div>
                 {#if DEMO_DATA}<p class="hero-demo"><span class="demo-tag" style="margin:0">נתוני הדגמה</span> הסכומים שחולקו ומספר הפתרונות הם דוגמה עד חיבור לשרת.</p>{/if}
             </div>
-
-            <ProblemMap problems={all} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
         </div>
     </section>
 
@@ -160,7 +139,7 @@
 
             <div class="cards">
                 {#each sorted.slice(0, shown) as p (p.id)}
-                    <ProblemCard {p} flash={flashId === p.id} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
+                    <ProblemCard {p} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
                 {:else}
                     <div class="empty">אין כרגע בעיות בסינון הזה. אפשר להיות הראשונים להעלות אחת.</div>
                 {/each}
@@ -221,8 +200,8 @@
         content: ""; position: absolute; inset: 0; z-index: -1;
         background: radial-gradient(ellipse 60% 70% at 18% 28%, rgba(255, 255, 255, 0.7), transparent 70%), radial-gradient(ellipse 50% 60% at 88% 85%, rgba(110, 185, 235, 0.32), transparent 70%);
     }
-    .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
-    .hero-text { min-width: 0; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+    .hero-text { min-width: 0; max-width: 680px; }
     .wanted { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--honey-deep); color: var(--honey-text); padding: 5px 14px; border-radius: 4px; font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: 0.04em; transform: rotate(-1.5deg); margin-bottom: 22px; }
     h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 6.6cqi, 68px); line-height: 1.04; letter-spacing: -0.01em; text-wrap: balance; }
     h1 em { font-style: normal; color: var(--honey-text); }
