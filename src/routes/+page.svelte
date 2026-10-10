@@ -43,6 +43,13 @@
     });
     const totalOpen = $derived(all.reduce((s, p) => s + p.bounty, 0));
 
+    // במפה: שלוש הבעיות עם הפרס הגבוה ביותר, ובנוסף הבעיה האחרונה שהועלתה (אם היא לא כבר בין השלוש)
+    const featured = $derived.by(() => {
+        const top3 = [...all].sort((a, b) => b.bounty - a.bounty).slice(0, 3);
+        const latest = [...all].sort((a, b) => b.createdAt - a.createdAt)[0];
+        return latest && !top3.includes(latest) ? [...top3, latest] : top3;
+    });
+
     function setCat(c: string) {
         cat = cat === c ? 'all' : c;
         shown = PREVIEW;
@@ -99,7 +106,7 @@
                 {#if DEMO_DATA}<p class="hero-demo"><span class="demo-tag" style="margin:0">נתוני הדגמה</span> הסכומים שחולקו ומספר הפתרונות הם דוגמה עד חיבור לשרת.</p>{/if}
             </div>
 
-            <ProblemMap problems={all} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
+            <ProblemMap problems={featured} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
         </div>
     </section>
 

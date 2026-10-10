@@ -49,7 +49,7 @@
 <div class="mapbox">
     <div class="map-top">
         <h2>מפת הבעיות הפתוחות</h2>
-        <small>גודל וכהות המשבצת = גובה הפרס. לחצו על משבצת.</small>
+        <small>שלוש עם הפרס הגבוה ביותר והאחרונה שהועלתה. גודל המשבצת = גובה הפרס.</small>
     </div>
 
     <div class="map-canvas" bind:clientWidth={W} bind:clientHeight={H} role="group" aria-label="מפת הבעיות הפתוחות, גודל כל משבצת לפי גובה הפרס" onmouseleave={() => (hoverId = null)}>
