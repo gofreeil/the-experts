@@ -20,8 +20,6 @@
     --ok: #0e8a5c;
     --warn: #c2570c;
     --bad: #c62d2d;
-    --hexbase: #ffffff;
-    --hive-end: #f4faff;
     --shadow: 0 10px 30px rgba(10, 45, 80, 0.22);
     --c-law: #2f6fe0;
     --c-economy: #0b8fb0;
@@ -65,7 +63,7 @@
 .home .sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: clamp(20px, 3cqi, 34px); }
 .home .sec-head > div { min-width: 0; max-width: 62ch; }
 .home .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--honey-text); margin-bottom: 8px; }
-.home .eyebrow::before { content: ""; width: 10px; height: 11px; background: var(--honey); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.home .eyebrow::before { content: ""; width: 18px; height: 4px; border-radius: 2px; background: var(--honey); }
 .home h2.title { font-family: var(--font-display); font-weight: 900; font-size: clamp(26px, 4.2cqi, 40px); line-height: 1.15; text-wrap: balance; }
 .home .lede { color: var(--fg-mute); margin-top: 10px; text-wrap: pretty; }
 .home .demo-tag { display: inline-block; margin-inline-start: 10px; padding: 1px 9px; border: 1px dashed var(--honey-deep); border-radius: 999px; color: var(--honey-text); font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em; vertical-align: middle; }
@@ -84,14 +82,10 @@
 .home .chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); background: transparent; font-size: 14px; font-weight: 500; color: var(--fg-mute); transition: all 0.15s; }
 .home .chip:hover { color: var(--fg); border-color: var(--fg-faint); }
 .home .chip[aria-pressed="true"] { color: var(--fg); background: var(--surface); border-color: var(--c, var(--honey-deep)); }
-.home .dot { width: 9px; height: 9px; background: var(--c, var(--honey)); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); flex: none; }
+.home .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--honey)); flex: none; }
 
-/* אווטאר משושה */
-.home .mini-av { width: 26px; height: 29px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #0a1d33; background: var(--c2, var(--honey)); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); flex: none; }
-
-/* צורת משושה לאייקונים */
-.home .hex-clip { clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
-
+/* אווטאר עגול */
+.home .mini-av { width: 28px; height: 28px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #0a1d33; background: var(--c2, var(--honey)); border-radius: 50%; box-shadow: 0 0 0 2px var(--surface); flex: none; }
 @media (prefers-reduced-motion: reduce) {
     .home * { transition: none !important; animation: none !important; }
 }

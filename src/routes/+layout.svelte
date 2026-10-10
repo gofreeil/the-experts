@@ -39,7 +39,7 @@
 <CoinAnimation />
 <MobileAdsDrawer />
 <MobileAdPopup />
-<div class="min-h-screen flex flex-col bg-[#0f172a]">
+<div class="site-bg min-h-screen flex flex-col">
 	<Header currentUser={data.user ? { username: data.user.name || data.user.email, avatar_url: data.user.image || null } : null} />
 
 	<div class="layout-container flex-grow">
@@ -80,6 +80,11 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.nav-progress { animation-duration: 0s; transform: scaleX(1); opacity: 1; }
+	}
+
+	/* רקע האתר: כחול בהיר יותר, לא כמעט שחור */
+	.site-bg {
+		background: linear-gradient(180deg, #2c4a78 0%, #3b5f93 100%);
 	}
 
 	.layout-container {

@@ -24,9 +24,12 @@
     const sameCat = $derived(problems.filter((p) => p.category === category));
     const avg = $derived(sameCat.length ? Math.round(sameCat.reduce((s, p) => s + p.bounty, 0) / sameCat.length / 50) * 50 : 0);
     const maxB = $derived(problems.reduce((m, p) => Math.max(m, p.bounty), 1));
-    const RMAX = 80;
-    const R = $derived(Math.max(16, RMAX * Math.sqrt(bounty / maxB)));
-    const hexPts = (r: number) => [-90, -30, 30, 90, 150, 210].map((a) => `${(r * Math.cos((a * Math.PI) / 180)).toFixed(1)},${(r * Math.sin((a * Math.PI) / 180)).toFixed(1)}`).join(' ');
+    // המשבצת הגדולה בלוח (מסגרת מקווקווה) מול המשבצת של הבעיה החדשה, בשטח יחסי לפרס
+    const GW = 180;
+    const GH = 124;
+    const scale = $derived(Math.max(0.2, Math.min(1, Math.sqrt(bounty / maxB))));
+    const mw = $derived(GW * scale);
+    const mh = $derived(GH * scale);
 
     function submit(e: SubmitEvent) {
         e.preventDefault();
@@ -46,7 +49,7 @@
         <div class="sec-head">
             <div>
                 <div class="eyebrow">העלו בעיה</div>
-                <h2 class="title">שתי דקות, והתא שלכם בכוורת</h2>
+                <h2 class="title">שתי דקות, והמשבצת שלכם במפה</h2>
                 <p class="lede">הזיזו את הפרס וראו איך הבעיה שלכם מדורגת מול כל הבעיות הפתוחות.</p>
             </div>
         </div>
@@ -90,14 +93,14 @@
             </form>
 
             <aside class="preview" aria-label="תצוגה מקדימה">
-                <h3>ככה תיראה הבעיה בכוורת</h3>
-                <div class="pv-hex">
+                <h3>ככה תיראה הבעיה במפה</h3>
+                <div class="pv-tile">
                     <svg viewBox="0 0 300 210" aria-hidden="true">
-                        <g transform="translate(150,105)">
-                            <polygon points={hexPts(RMAX)} class="ghost" />
-                            <text y={RMAX + 14} class="cap">הגדולה בלוח {fmtShort(maxB)}</text>
-                            <polygon points={hexPts(R)} class="mine" style="fill:{catColor(category)}; stroke:{catColor(category)}" />
-                            <text y={R > 28 ? 7 : -R - 8} class="amt" font-size={R > 28 ? Math.min(24, 11 + R / 5) : 14}>{fmtShort(bounty)}</text>
+                        <g transform="translate(150,90)">
+                            <rect x={-GW / 2} y={-GH / 2} width={GW} height={GH} rx="16" class="ghost" />
+                            <text y={GH / 2 + 22} class="cap">הגדולה בלוח {fmtShort(maxB)}</text>
+                            <rect x={-mw / 2} y={-mh / 2} width={mw} height={mh} rx={Math.min(14, mh / 3)} class="mine" style="fill:{catColor(category)}; stroke:{catColor(category)}" />
+                            <text y={mh > 34 ? 7 : -mh / 2 - 8} class="amt" font-size={mh > 34 ? Math.min(26, 11 + mh / 6) : 14}>{fmtShort(bounty)}</text>
                         </g>
                     </svg>
                 </div>
@@ -136,9 +139,9 @@
 
     .preview { background: var(--surface-2); border-inline-start: 1px solid var(--line); padding: clamp(18px, 3.4cqi, 36px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
     .preview h3 { font-size: 15px; font-weight: 800; }
-    .pv-hex { height: 210px; display: grid; place-items: center; background: radial-gradient(circle, rgba(245, 165, 36, 0.12), transparent 65%), var(--surface); border: 1px solid var(--line-soft); border-radius: 6px; }
-    .pv-hex svg { width: 100%; height: 100%; display: block; }
-    .pv-hex text { text-anchor: middle; }
+    .pv-tile { height: 210px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 12px; }
+    .pv-tile svg { width: 100%; height: 100%; display: block; }
+    .pv-tile text { text-anchor: middle; }
     .ghost { fill: none; stroke: var(--fg-faint); stroke-opacity: 0.55; stroke-width: 1.2; stroke-dasharray: 4 5; }
     .mine { fill-opacity: 0.28; stroke-width: 2; transition: all 0.25s; }
     .cap { font-size: 11px; font-weight: 500; fill: var(--fg-faint); }

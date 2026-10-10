@@ -115,7 +115,7 @@
     .stub-l { font-size: 12px; letter-spacing: 0.1em; color: var(--honey-text); font-weight: 700; }
     .stub-amt { font-family: var(--font-display); font-weight: 900; color: var(--honey-text); font-size: 32px; line-height: 1.05; }
     .pips { display: inline-flex; gap: 3px; margin-top: 4px; }
-    .pips i { width: 11px; height: 12px; background: var(--line); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+    .pips i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
     .pips i.on { background: var(--honey); }
     .stub-s { font-size: 12.5px; color: var(--fg-faint); line-height: 1.35; }
 

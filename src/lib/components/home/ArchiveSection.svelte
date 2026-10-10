@@ -9,7 +9,7 @@
             {#each RECS as r}
                 <article class="rec">
                     <div class="thumb" style="--c:{catColor(r.c)}">
-                        <span class="play hex-clip"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1l11 6-11 6z" /></svg></span>
+                        <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1l11 6-11 6z" /></svg></span>
                         <span class="dur">{r.dur}</span>
                     </div>
                     <div class="rec-body">
@@ -48,7 +48,7 @@
     .rec:first-of-type { border-top: 0; padding-top: 0; }
     .thumb { position: relative; aspect-ratio: 16 / 10; max-width: 100%; border-radius: 4px; overflow: hidden; background: linear-gradient(135deg, color-mix(in srgb, var(--c) 45%, #0a1d33), #0a1d33); border: 1px solid var(--line); display: grid; place-items: center; }
     .thumb::before { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 56 97'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 0v31M0 82l28 15 28-15' fill='none' stroke='%23ffffff' stroke-opacity='.1' stroke-width='2'/%3E%3C/svg%3E"); }
-    .play { position: relative; width: 38px; height: 42px; background: rgba(6, 22, 40, 0.75); display: grid; place-items: center; }
+    .play { position: relative; width: 42px; height: 42px; border-radius: 50%; background: rgba(6, 22, 40, 0.75); display: grid; place-items: center; }
     .play svg { width: 14px; height: 14px; fill: #ffc65c; transform: scaleX(-1); }
     .dur { position: absolute; bottom: 6px; inset-inline-start: 6px; color: #fff; background: rgba(6, 22, 40, 0.85); font-size: 12px; padding: 1px 6px; border-radius: 3px; font-variant-numeric: tabular-nums; direction: ltr; }
     .rec-body { min-width: 0; }

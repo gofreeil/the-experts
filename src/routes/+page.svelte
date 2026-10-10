@@ -4,7 +4,7 @@
     import { problemsStore, seedProblems, type Problem, type ProblemType } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
     import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, DEMO_DATA, catColor, fmt, fmtCompact, handsOf } from '$lib/homeData';
-    import HiveMap from '$lib/components/home/HiveMap.svelte';
+    import ProblemMap from '$lib/components/home/ProblemMap.svelte';
     import ProblemCard from '$lib/components/home/ProblemCard.svelte';
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
@@ -76,10 +76,10 @@
         <div class="inner hero-grid">
             <div class="hero-text">
                 <div class="wanted">
-                    <svg width="14" height="15" viewBox="0 0 14 15" aria-hidden="true"><path d="M7 .5 13 4v7L7 14.5 1 11V4z" fill="currentColor" /></svg>מבוקש: פתרון
+                    <svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>מבוקש: פתרון
                 </div>
                 <h1>יש בעיה?<br /><em>שימו עליה פרס.</em></h1>
-                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר. ככל שהפרס גדול יותר, התא שלה בכוורת גדול יותר.</p>
+                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר. ככל שהפרס גדול יותר, המשבצת שלה במפה גדולה יותר.</p>
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
                     <a class="btn btn-ghost" href="#board">אני מומחה, להראות לי בעיות</a>
@@ -96,7 +96,7 @@
                 {#if DEMO_DATA}<p class="hero-demo"><span class="demo-tag" style="margin:0">נתוני הדגמה</span> הסכומים שחולקו ומספר הפתרונות הם דוגמה עד חיבור לשרת.</p>{/if}
             </div>
 
-            <HiveMap problems={all} {isVisible} bind:selectedId onshow={showInBoard} />
+            <ProblemMap problems={all} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
         </div>
     </section>
 
@@ -106,7 +106,7 @@
             <div class="steps">
                 {#each STEPS as s, i}
                     <div class="step">
-                        <div class="step-n hex-clip">{i + 1}</div>
+                        <div class="step-n">{i + 1}</div>
                         <h3>{s.t}</h3>
                         <p>{s.d}</p>
                     </div>
@@ -185,8 +185,8 @@
                     {@const ps = all.filter((p) => p.category === c.slug)}
                     {@const sum = ps.reduce((s, p) => s + p.bounty, 0)}
                     <button class="cat" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => { setCat(c.slug); gotoBoard(); }}>
-                        <span class="cat-hex hex-clip" aria-hidden="true">
-                            {#if team?.image}<img src={team.image} alt="" width="52" height="58" loading="lazy" decoding="async" />{:else}{team?.emoji ?? ''}{/if}
+                        <span class="cat-ico" aria-hidden="true">
+                            {#if team?.image}<img src={team.image} alt="" width="56" height="56" loading="lazy" decoding="async" />{:else}{team?.emoji ?? ''}{/if}
                         </span>
                         <b>{team?.name ?? c.short}</b>
                         <small>{ps.length} בעיות פתוחות · <span class="num">{fmt(sum)}</span><br />{c.experts} מומחים בצוות</small>
@@ -207,8 +207,7 @@
     .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
     .hero::before {
         content: ""; position: absolute; inset: 0; z-index: -1;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 0v31M0 82l28 15 28-15M28 0v-1' fill='none' stroke='%230a6aa8' stroke-opacity='.16' stroke-width='1'/%3E%3C/svg%3E");
-        mask-image: radial-gradient(ellipse 70% 80% at 30% 40%, #000 0%, transparent 72%); -webkit-mask-image: radial-gradient(ellipse 70% 80% at 30% 40%, #000 0%, transparent 72%);
+        background: radial-gradient(ellipse 60% 70% at 18% 28%, rgba(255, 255, 255, 0.7), transparent 70%), radial-gradient(ellipse 50% 60% at 88% 85%, rgba(110, 185, 235, 0.32), transparent 70%);
     }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
     .hero-text { min-width: 0; }
@@ -234,7 +233,7 @@
     .step { padding-inline: 22px 0; padding-inline-end: 22px; }
     .step:first-child { padding-inline-start: 0; }
     .step + .step { padding-inline-start: 22px; }
-    .step-n { width: 40px; height: 44px; display: grid; place-items: center; background: var(--surface); color: var(--honey-text); font-family: var(--font-display); font-weight: 900; font-size: 20px; margin-bottom: 14px; box-shadow: 0 0 0 1px var(--line); }
+    .step-n { width: 42px; height: 42px; display: grid; place-items: center; background: var(--surface); color: var(--honey-text); border-radius: 50%; font-family: var(--font-display); font-weight: 900; font-size: 20px; margin-bottom: 14px; box-shadow: 0 0 0 1px var(--line); }
     .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
     .step p { color: var(--fg-mute); font-size: 14.5px; text-wrap: pretty; }
 
@@ -258,8 +257,8 @@
     .cat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; align-items: center; text-align: right; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 16px 14px; transition: border-color 0.2s, transform 0.2s; width: 100%; }
     .cat:hover { border-color: var(--c); transform: translateY(-2px); }
     .cat[aria-pressed='true'] { border-color: var(--c); background: color-mix(in srgb, var(--c) 9%, var(--surface)); }
-    .cat-hex { grid-row: 1 / span 2; width: 52px; height: 58px; display: grid; place-items: center; font-size: 24px; background: color-mix(in srgb, var(--c) 38%, var(--surface)); overflow: hidden; }
-    .cat-hex img { width: 100%; height: 100%; object-fit: cover; }
+    .cat-ico { grid-row: 1 / span 2; width: 56px; height: 56px; display: grid; place-items: center; font-size: 24px; background: color-mix(in srgb, var(--c) 38%, var(--surface)); border-radius: 16px; overflow: hidden; }
+    .cat-ico img { width: 100%; height: 100%; object-fit: cover; }
     .cat b { font-size: 16px; font-weight: 800; line-height: 1.25; }
     .cat small { color: var(--fg-faint); font-size: 13px; line-height: 1.35; }
     .cat-bar { grid-column: 1 / -1; height: 4px; background: var(--line-soft); border-radius: 2px; margin-top: 10px; overflow: hidden; }
