@@ -6,6 +6,7 @@
 	import RightAdBanner from "$lib/components/RightAdBanner.svelte";
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
 	import Footer from "$lib/components/Footer.svelte";
+	import BuildNotice from "$lib/components/BuildNotice.svelte";
 	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
@@ -40,6 +41,7 @@
 <MobileAdsDrawer />
 <MobileAdPopup />
 <div class="site-bg min-h-screen flex flex-col">
+	<BuildNotice />
 	<Header currentUser={data.user ? { username: data.user.name || data.user.email, avatar_url: data.user.image || null } : null} />
 
 	<div class="layout-container flex-grow">
