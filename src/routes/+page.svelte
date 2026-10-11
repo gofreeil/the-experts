@@ -48,7 +48,7 @@
     <!-- ═════ גיבור ═════ -->
     <section class="hero">
         <div class="inner hero-title">
-            <h1>יש בעיה? <em>שימו עליה פרס.</em></h1>
+            <h1>הציבו אתגר למומחים של העם, <em>ותנו לחכמת ההמונים לפתור אותו!</em></h1>
             <img class="hero-logo" src="/images/experts-logo.webp" alt="לוגו המומחים של העם" width="108" height="108" fetchpriority="high" decoding="async" />
         </div>
         <div class="inner hero-grid">
@@ -145,7 +145,7 @@
     .hero-logo { box-sizing: border-box; width: clamp(80px, 11cqi, 108px); height: auto; aspect-ratio: 1; margin-top: 10px; padding: 10%; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--line); object-fit: contain; }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
     .hero-text { min-width: 0; }
-    h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 6.6cqi, 68px); line-height: 1.04; letter-spacing: -0.01em; text-wrap: balance; }
+    h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 4.6cqi, 48px); line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; }
     h1 em { font-style: normal; color: var(--honey-text); }
     .hero-lede { color: var(--fg-mute); font-size: clamp(16px, 2cqi, 18.5px); max-width: 46ch; text-wrap: pretty; }
     .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
