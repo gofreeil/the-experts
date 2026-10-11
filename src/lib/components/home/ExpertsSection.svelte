@@ -2,6 +2,7 @@
     import { page } from '$app/state';
     import { EXPERTS, CATS, DEMO_DATA, catColor, catShort, fmtShort } from '$lib/homeData';
     import { teamBySlug } from '$lib/teamsData';
+    import SectionHead from './SectionHead.svelte';
 
     // preview = גרסת דף הבית (4 מומחים). הדף המלא מציג את כולם עם סינון לפי תחום (?cat=...).
     let { preview = false }: { preview?: boolean } = $props();
@@ -14,13 +15,7 @@
 <section class="section" id="experts">
     <div class="inner">
         {#if preview}
-            <div class="sec-head">
-                <div>
-                    <div class="eyebrow">המומחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
-                    <h2 class="title">מי מרים יד הכי הרבה, ומי באמת פותר</h2>
-                    <p class="lede">הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה.</p>
-                </div>
-            </div>
+            <SectionHead title="מי מרים יד הכי הרבה, ומי באמת פותר" lede="הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה." demo />
         {:else}
             <div class="toolbar">
                 <div class="chips" role="group" aria-label="סינון לפי תחום">

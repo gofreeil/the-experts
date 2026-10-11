@@ -1,15 +1,19 @@
 <script lang="ts">
     import { RECS, THREADS, DEMO_DATA, catColor, catShort } from '$lib/homeData';
+    import SectionHead from './SectionHead.svelte';
 
     // preview = גרסת דף הבית (2 מפגשים ו-3 דיונים). הדף המלא מציג הכול.
-    let { preview = false }: { preview?: boolean } = $props();
+    // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה).
+    let { preview = false, headTitle = '' }: { preview?: boolean; headTitle?: string } = $props();
 
     const recs = $derived(preview ? RECS.slice(0, 2) : RECS);
     const threads = $derived(preview ? THREADS.slice(0, 3) : THREADS);
 </script>
 
 <section class="section alt" id="archive">
-    <div class="inner arch">
+    <div class="inner">
+        {#if headTitle}<SectionHead title={headTitle} />{/if}
+        <div class="arch">
         <div class="col">
             <div class="sub-h"><h3>ארכיון מפגשים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</h3></div>
             {#each recs as r}
@@ -41,6 +45,7 @@
                     <div class="replies"><b class="num">{t.r}</b><span>תגובות</span></div>
                 </article>
             {/each}
+        </div>
         </div>
     </div>
 </section>

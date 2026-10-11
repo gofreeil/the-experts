@@ -14,6 +14,7 @@
     import ComposerSection from '$lib/components/home/ComposerSection.svelte';
     import FloorLink from '$lib/components/home/FloorLink.svelte';
     import FancyHeading from '$lib/components/home/FancyHeading.svelte';
+    import SectionHead from '$lib/components/home/SectionHead.svelte';
 
     // הרינדור הראשון משתמש בבעיות ההתחלתיות (זהה בשרת ובלקוח). אחרי הטעינה עוברים לנתוני הדפדפן.
     let mounted = $state(false);
@@ -129,20 +130,15 @@
     </section>
     <FloorLink href="/problems" label="לוח הבעיות" note="שלוש עם הפרס הגבוה ביותר ושלוש האחרונות שהועלו" />
 
-    <PaidSection />
+    <PaidSection headTitle="כסף שחולק" />
     <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
 
     <!-- ═════ לוח הבעיות ═════ -->
     <section class="section alt" id="board">
         <div class="inner">
-            <div class="sec-head">
-                <div>
-                    <div class="eyebrow">לוח הבעיות</div>
-                    <h2 class="title">בעיות שמחכות ליד מורמת</h2>
-                    <p class="lede">הסכום אינו רק מחיר. כשהרבה אנשים מוסיפים לפרס, זה סימן שהבעיה כואבת, והמומחים רואים אותה ראשונה.</p>
-                </div>
-                <a class="btn btn-primary" href="#compose">העלו בעיה</a>
-            </div>
+            <SectionHead title="בעיות שמחכות ליד מורמת" lede="הסכום אינו רק מחיר. כשהרבה אנשים מוסיפים לפרס, זה סימן שהבעיה כואבת, והמומחים רואים אותה ראשונה.">
+                <a class="btn btn-primary btn-sm" href="#compose">העלו בעיה</a>
+            </SectionHead>
 
             <div class="controls">
                 <div class="chips" role="group" aria-label="סינון לפי תחום">
@@ -179,7 +175,7 @@
     </section>
     <FloorLink href="/problems" label="לוח הבעיות" note="מוצגות {Math.min(shown, sorted.length)} מתוך {sorted.length} בעיות פתוחות" />
 
-    <MeetupSection />
+    <MeetupSection headTitle="מפגש מומחים" />
     <FloorLink href="/meetup" label="מפגש מומחים" note="מועד, סדר יום ומה קורה במפגש" />
 
     <SolvedSection preview />
@@ -188,13 +184,7 @@
     <!-- ═════ תחומים ═════ -->
     <section class="section" id="cats">
         <div class="inner">
-            <div class="sec-head">
-                <div>
-                    <div class="eyebrow">תחומים</div>
-                    <h2 class="title">שמונה צוותי מומחים, שמונה סוגי בעיות</h2>
-                    <p class="lede">בחרו תחום כדי לסנן את לוח הבעיות. הפס מראה כמה מכלל הפרסים הפתוחים יושבים בתחום.</p>
-                </div>
-            </div>
+            <SectionHead title="שמונה צוותי מומחים, שמונה סוגי בעיות" lede="בחרו תחום כדי לסנן את לוח הבעיות. הפס מראה כמה מכלל הפרסים הפתוחים יושבים בתחום." />
             <div class="cats">
                 {#each CATS as c}
                     {@const team = teamBySlug(c.slug)}
@@ -214,7 +204,7 @@
     </section>
     <FloorLink href="/categories" label="תחומים" note="תיאור כל צוות, בעיות פתוחות ומומחים" />
 
-    <ArchiveSection preview />
+    <ArchiveSection preview headTitle="ארכיון ודיונים" />
     <FloorLink href="/archive" label="ארכיון ודיונים" note="כל המפגשים הקודמים והדיונים הפעילים" />
 
     <ExpertsSection preview />
@@ -260,6 +250,10 @@
     .how-more { margin-top: 14px; text-align: left; }
     .how-more a { color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
     .examples-sec { padding-block: clamp(26px, 4cqi, 48px); }
+
+    /* הנושאים מופרדים במחיצות ❦ (בסוף כל נושא), לכן בלי פסי רקע מתחלפים, ובריווח קומפקטי */
+    .home :global(.section) { padding-block: clamp(16px, 2.6cqi, 30px); }
+    .home :global(.section.alt) { background: transparent; border-block: 0; }
 
     /* ───── לוח הבעיות ───── */
     .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; justify-content: space-between; padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid var(--line-soft); }

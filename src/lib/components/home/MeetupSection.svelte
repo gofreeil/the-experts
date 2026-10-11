@@ -1,6 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { MEETUP, DEMO_DATA, catColor } from '$lib/homeData';
+    import SectionHead from './SectionHead.svelte';
+
+    // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה). בדף המלא אין כותרת כזו, כי יש כותרת עמוד.
+    let { headTitle = '' }: { headTitle?: string } = $props();
 
     // מרחק בין עכשיו ליעד, בחודשי לוח + ימים + שעות + דקות + שניות
     function diffParts(now: Date, target: Date) {
@@ -64,6 +68,7 @@
 
 <section class="section" id="meet">
     <div class="inner">
+        {#if headTitle}<SectionHead title={headTitle} />{/if}
         <div class="meet">
             <div class="meet-main">
                 <span class="live-pill"><i></i>המפגש הוירטואלי הבא · מפגש {MEETUP.number}{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</span>

@@ -3,6 +3,7 @@
     import type { Problem, ProblemType } from '$lib/problemsStore.svelte';
     import { CATS, catColor, catMeta, fmt, fmtShort } from '$lib/homeData';
     import { teamBySlug } from '$lib/teamsData';
+    import SectionHead from './SectionHead.svelte';
 
     let { problems }: { problems: Problem[] } = $props();
 
@@ -46,13 +47,7 @@
 
 <section class="section alt" id="compose">
     <div class="inner">
-        <div class="sec-head">
-            <div>
-                <div class="eyebrow">העלו בעיה</div>
-                <h2 class="title">שתי דקות, והמשבצת שלכם במפה</h2>
-                <p class="lede">הזיזו את הפרס וראו איך הבעיה שלכם מדורגת מול כל הבעיות הפתוחות.</p>
-            </div>
-        </div>
+        <SectionHead title="שתי דקות, והמשבצת שלכם במפה" lede="הזיזו את הפרס וראו איך הבעיה שלכם מדורגת מול כל הבעיות הפתוחות." />
 
         <div class="composer">
             <form class="form" onsubmit={submit} novalidate>

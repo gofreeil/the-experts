@@ -1,5 +1,9 @@
 <script lang="ts">
     import { MONTHS, PAID, PAID_TOTAL, SPLIT, SOLVED_COUNT, PAID_EXPERTS, MEDIAN_DAYS, DEMO_DATA, catColor, catShort, fmt } from '$lib/homeData';
+    import SectionHead from './SectionHead.svelte';
+
+    // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה). בדף המלא אין כותרת כזו, כי יש כותרת עמוד.
+    let { headTitle = '' }: { headTitle?: string } = $props();
 
     // תרשים עמודות. ציר הזמן מימין לשמאל (החודש הראשון בימין), כמו כיוון הקריאה.
     const W = 640, H = 250, PT = 24, PB = 30, PL = 8, PR = 52;
@@ -17,7 +21,9 @@
 </script>
 
 <section class="section" id="paid">
-    <div class="inner paid">
+    <div class="inner">
+        {#if headTitle}<SectionHead title={headTitle} />{/if}
+        <div class="paid">
         <div class="left">
             <div class="eyebrow">הספרים פתוחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
             <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
@@ -59,6 +65,7 @@
                     {/each}
                 </ul>
             </div>
+        </div>
         </div>
     </div>
 </section>

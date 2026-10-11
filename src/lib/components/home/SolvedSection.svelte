@@ -1,6 +1,7 @@
 <script lang="ts">
     import { FEATURED, LEDGER, CATS, DEMO_DATA, catColor, fmt } from '$lib/homeData';
     import LedgerTable from './LedgerTable.svelte';
+    import SectionHead from './SectionHead.svelte';
 
     // preview = גרסת דף הבית (כרטיס מרכזי + 4 שורות). בדף המלא יש את כל השורות וסינון לפי תחום.
     let { preview = false }: { preview?: boolean } = $props();
@@ -12,13 +13,7 @@
 <section class="section alt" id="solved">
     <div class="inner">
         {#if preview}
-            <div class="sec-head">
-                <div>
-                    <div class="eyebrow">פתרונות שהתקבלו{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
-                    <h2 class="title">בעיות שנסגרו, ומי קיבל על זה כסף</h2>
-                    <p class="lede">כל שורה כאן היא בעיה שנפתרה, אושרה על ידי מי שהעלה אותה, ושולמה. אפשר ללמוד מהן לפני שמעלים בעיה חדשה.</p>
-                </div>
-            </div>
+            <SectionHead title="בעיות שנסגרו, ומי קיבל על זה כסף" lede="כל שורה כאן היא בעיה שנפתרה, אושרה על ידי מי שהעלה אותה, ושולמה. אפשר ללמוד מהן לפני שמעלים בעיה חדשה." demo />
         {:else if DEMO_DATA}
             <p class="demo-line"><span class="demo-tag" style="margin:0">נתוני הדגמה</span></p>
         {/if}
