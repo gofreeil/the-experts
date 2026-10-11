@@ -73,8 +73,10 @@
         <div class="meet" class:solo={preview}>
             <div class="meet-main">
                 <span class="live-pill"><i></i>המפגש הוירטואלי הבא · מפגש {MEETUP.number}{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</span>
-                <h2>מפגש המומחים הקרוב</h2>
-                <p class="tagline">הצטרפו כקהל בשידור חי</p>
+                <div class="titleline">
+                    <h2>מפגש המומחים הקרוב</h2>
+                    <p class="tagline">הצטרפו כקהל בשידור חי</p>
+                </div>
                 <p class="when">{whenLabel}</p>
 
                 <div class="count" role="timer" aria-label="הזמן שנותר למפגש">
@@ -86,20 +88,22 @@
                     {/each}
                 </div>
 
-                <div class="meet-cta">
-                    <button class="btn btn-primary" type="button" aria-pressed={registered} onclick={() => (registered = !registered)}>
-                        {registered ? 'נרשמתם, נשלח תזכורת' : 'שריינו לי מקום'}
-                    </button>
-                    <span class="reg-note"><b class="num">{MEETUP.registered + (registered ? 1 : 0)}</b> נרשמו, ויש מקום ל-{MEETUP.capacity}</span>
-                </div>
+                <div class="meet-foot">
+                    <div class="meet-cta">
+                        <button class="btn btn-primary" type="button" aria-pressed={registered} onclick={() => (registered = !registered)}>
+                            {registered ? 'נרשמתם, נשלח תזכורת' : 'שריינו לי מקום'}
+                        </button>
+                        <span class="reg-note"><b class="num">{MEETUP.registered + (registered ? 1 : 0)}</b> נרשמו, ויש מקום ל-{MEETUP.capacity}</span>
+                    </div>
 
-                <div class="speakers">
-                    {#each MEETUP.speakers as s}
-                        <div class="spk">
-                            <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
-                            <div><b>{s.name}</b><small>מרצה במפגש</small></div>
-                        </div>
-                    {/each}
+                    <div class="speakers">
+                        {#each MEETUP.speakers as s}
+                            <div class="spk">
+                                <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
+                                <div><b>{s.name}</b><small>מרצה במפגש</small></div>
+                            </div>
+                        {/each}
+                    </div>
                 </div>
             </div>
 
@@ -146,6 +150,24 @@
     .mini-av.big { width: 40px; height: 44px; font-size: 14px; }
     .spk b { display: block; font-size: 15px; font-weight: 700; line-height: 1.25; }
     .spk small { display: block; color: var(--fg-faint); font-size: 12.5px; }
+    /* גרסת דף הבית: ממורכזת וקומפקטית, עם אלמנטים זה לצד זה */
+    .solo .meet-main { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .solo .titleline { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 2px 14px; margin-top: 10px; }
+    .solo h2 { margin-top: 0; font-size: clamp(22px, 3.4cqi, 32px); }
+    .solo .tagline { margin-top: 0; font-size: clamp(16px, 2cqi, 19px); }
+    .solo .when { margin-top: 4px; font-size: 15px; }
+    .solo .count { width: 100%; max-width: 420px; gap: 6px; margin-top: 14px; }
+    .solo .count > div { padding: 8px 4px 6px; }
+    .solo .count b { font-size: clamp(22px, 3.6cqi, 32px); }
+    .solo .count span { font-size: 12px; margin-top: 4px; }
+    .solo .meet-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 32px; margin-top: 16px; }
+    .solo .meet-cta { margin-top: 0; justify-content: center; gap: 8px 12px; }
+    .solo .reg-note { font-size: 13px; }
+    .solo .speakers { margin-top: 0; justify-content: center; gap: 8px 18px; }
+    .solo .mini-av.big { width: 32px; height: 36px; font-size: 12px; }
+    .solo .spk { text-align: start; }
+    .solo .spk b { font-size: 14px; }
+    .solo .spk small { font-size: 12px; }
     .agenda { align-self: start; min-width: 0; }
     .agenda h3 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
     .agenda .sub { color: var(--fg-faint); font-size: 13px; }
