@@ -73,7 +73,8 @@
         <div class="meet" class:solo={preview}>
             <div class="meet-main">
                 <span class="live-pill"><i></i>המפגש הוירטואלי הבא · מפגש {MEETUP.number}{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</span>
-                <h2>שלוש הבעיות הכי גדולות, בשידור חי מול מומחים</h2>
+                <h2>מפגש המומחים הקרוב</h2>
+                <p class="tagline">הצטרפו כקהל בשידור חי</p>
                 <p class="when">{whenLabel}</p>
 
                 <div class="count" role="timer" aria-label="הזמן שנותר למפגש">
@@ -132,6 +133,7 @@
     .live-pill .demo-tag { margin-inline-start: 4px; }
     @keyframes beat { 70% { box-shadow: 0 0 0 9px rgba(185, 119, 14, 0); } 100% { box-shadow: 0 0 0 0 rgba(185, 119, 14, 0); } }
     h2 { font-family: var(--font-display); font-weight: 900; font-size: clamp(26px, 4.4cqi, 44px); line-height: 1.12; margin-top: 16px; text-wrap: balance; }
+    .tagline { margin-top: 6px; font-size: clamp(18px, 2.4cqi, 22px); font-weight: 700; color: var(--honey-text); }
     .when { color: var(--fg-mute); margin-top: 10px; font-size: 16px; }
     .count { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 26px; max-width: 560px; }
     .count > div { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 6px 9px; text-align: center; min-width: 0; }
