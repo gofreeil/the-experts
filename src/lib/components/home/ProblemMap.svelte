@@ -4,6 +4,7 @@
     import { NEED_PREFIX, catColor, catShort, fmt, handsOf, backersOf, PLEDGE_AMOUNTS } from '$lib/homeData';
     import { adThenGo } from './nav';
     import FancyHeading from './FancyHeading.svelte';
+    import Stamp from './Stamp.svelte';
     import OrnamentDivider from './OrnamentDivider.svelte';
 
     let {
@@ -93,6 +94,7 @@
 {/snippet}
 
 <div class="mapbox">
+    <Stamp text="מבוקש: פתרון" />
     <FancyHeading title="המבוקשים ביותר" />
     {@render group(wanted, 'המבוקשים ביותר')}
 

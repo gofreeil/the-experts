@@ -4,6 +4,7 @@
     import { EXPERTS } from '$lib/expertsData';
     import { adThenGo } from './nav';
     import SectionHead from './SectionHead.svelte';
+    import Stamp from './Stamp.svelte';
 
     // הצעות הפתרון האחרונות שהועלו לבעיות פתוחות, מהחדשה לישנה. הבחירה והתשלום מגיעים אחר כך.
     let { problems, limit = 4 }: { problems: Problem[]; limit?: number } = $props();
@@ -19,6 +20,7 @@
 
 <section class="section" id="recent-solutions">
     <div class="inner">
+        <Stamp text="נמצא פתרון" tone="ok" />
         <SectionHead title="פתרונות אחרונים שהועלו" lede="הצעות שמומחים הגישו לבעיות פתוחות בימים האחרונים. בעלי הבעיה והשותפים בה בוחרים ביניהן." demo />
 
         <div class="rs-grid">
