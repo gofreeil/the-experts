@@ -353,15 +353,15 @@
 
         <!-- Desktop Header - Full Layout -->
         <div
-            class="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-4 pt-0 pb-0.5"
+            class="hidden md:flex flex-col items-center pt-0 pb-0.5 md:flex-row md:items-center md:justify-between"
         >
-            <div class="order-2 flex flex-col-reverse items-center text-center">
+            <div class="flex items-center space-x-4">
                 <div class="relative group">
                     <a
                         href="/"
-                        class="flex h-14 w-14 items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-28 w-28 items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
-                        <div class="h-12 w-12 flex items-center justify-center">
+                        <div class="h-20 w-20 flex items-center justify-center">
                             <img
                                 src="/images/experts-logo.webp"
                                 alt="לוגו המומחים של העם – לדף הבית"
@@ -396,7 +396,7 @@
                     <p class="text-lg text-gray-100 font-extrabold group-hover:opacity-80 transition-opacity">{tFn("app_description")}</p>
                 </a>
             </div>
-<div class="order-1 flex items-center gap-2 justify-self-start">
+<div class="flex items-center gap-2">
                 <!-- תפריט נפתח עם כל דפי האתר -->
                 <NavMenu variant="desktop" />
 
@@ -495,7 +495,7 @@
                 </div>
             </div>
             {#if true}
-                <div class="order-3 flex items-center gap-4 justify-self-end">
+                <div class="flex items-center gap-4">
                     <!-- מספר גולשים -->
                     <div
                         class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter"
