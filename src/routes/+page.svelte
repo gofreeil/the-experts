@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <div class="howbox">
+            <a class="howbox" href="/about" aria-label="אודות">
                 <ol class="how">
                     {#each STEPS as s, i}
                         <li>
@@ -77,13 +77,7 @@
                         </li>
                     {/each}
                 </ol>
-                <div class="how-more">
-                    <a class="btn btn-ghost btn-sm" href="/how-it-works">
-                        איך זה עובד, בפירוט
-                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10H4M9 5l-5 5 5 5" /></svg>
-                    </a>
-                </div>
-            </div>
+            </a>
         </div>
     </section>
 
@@ -164,7 +158,10 @@
     .step-n { flex: none; width: 38px; height: 38px; display: grid; place-items: center; background: var(--honey); color: var(--honey-ink); border-radius: 50%; font-family: var(--font-display); font-weight: 900; font-size: 19px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--honey) 22%, transparent); }
     .how h3 { font-size: 16.5px; font-weight: 800; line-height: 1.3; margin-bottom: 2px; }
     .how p { color: var(--fg-mute); font-size: 14.5px; line-height: 1.45; text-wrap: pretty; }
-    .how-more { margin-top: auto; padding-top: 16px; text-align: center; }
+    /* כל הכרטיס הוא כפתור שמוביל לדף אודות */
+    .howbox { color: inherit; text-decoration: none; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+    .howbox:hover { border-color: var(--honey); box-shadow: 0 10px 28px rgba(185, 119, 14, 0.22); transform: translateY(-2px); }
+    .howbox:focus-visible { outline: 3px solid var(--honey); outline-offset: 2px; }
     .examples-sec { padding-block: clamp(26px, 4cqi, 48px); }
 
     /* הנושאים מופרדים במחיצות ❦ (בסוף כל נושא), לכן בלי פסי רקע מתחלפים, ובריווח קומפקטי */
