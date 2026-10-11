@@ -83,12 +83,15 @@
 <div class="home" dir="rtl">
     <!-- ═════ גיבור ═════ -->
     <section class="hero">
+        <div class="inner hero-title">
+            <div class="wanted">
+                <svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>מבוקש: פתרון
+            </div>
+            <h1>יש בעיה? <em>שימו עליה פרס.</em></h1>
+            <img class="hero-logo" src="/images/experts-logo.webp" alt="לוגו המומחים של העם" width="400" height="344" fetchpriority="high" decoding="async" />
+        </div>
         <div class="inner hero-grid">
             <div class="hero-text">
-                <div class="wanted">
-                    <svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>מבוקש: פתרון
-                </div>
-                <h1>יש בעיה?<br /><em>שימו עליה פרס.</em></h1>
                 <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר.</p>
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
@@ -221,12 +224,14 @@
 <style>
     /* ───── גיבור ───── */
     .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
+    .hero-title { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: clamp(18px, 3cqi, 32px); }
+    .hero-logo { height: clamp(64px, 9cqi, 92px); width: auto; margin-top: 10px; object-fit: contain; }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
     .hero-text { min-width: 0; }
-    .wanted { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--honey-deep); color: var(--honey-text); padding: 5px 14px; border-radius: 4px; font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: 0.04em; transform: rotate(-1.5deg); margin-bottom: 22px; }
+    .wanted { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--honey-deep); color: var(--honey-text); padding: 5px 14px; border-radius: 4px; font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: 0.04em; transform: rotate(-1.5deg); margin-bottom: 14px; }
     h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 6.6cqi, 68px); line-height: 1.04; letter-spacing: -0.01em; text-wrap: balance; }
     h1 em { font-style: normal; color: var(--honey-text); }
-    .hero-lede { color: var(--fg-mute); font-size: clamp(16px, 2cqi, 18.5px); margin-top: 20px; max-width: 46ch; text-wrap: pretty; }
+    .hero-lede { color: var(--fg-mute); font-size: clamp(16px, 2cqi, 18.5px); max-width: 46ch; text-wrap: pretty; }
     .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
     .hero-cta .btn { padding: 14px 24px; font-size: 16px; }
     .trust { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; color: var(--fg-faint); font-size: 14px; max-width: 46ch; }
