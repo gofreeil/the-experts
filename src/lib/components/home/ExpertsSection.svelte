@@ -16,7 +16,7 @@
 <section class="section" id="experts">
     <div class="inner">
         {#if preview}
-            <SectionHead title="מי מרים יד הכי הרבה, ומי באמת פותר" lede="הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה." demo />
+            <SectionHead title="המומחים המדורגים ביותר" lede="הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה." demo />
         {:else}
             <div class="toolbar">
                 <div class="chips" role="group" aria-label="סינון לפי תחום">
