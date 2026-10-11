@@ -9,7 +9,6 @@
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
     import RecentSolutions from '$lib/components/home/RecentSolutions.svelte';
-    import ArchiveSection from '$lib/components/home/ArchiveSection.svelte';
     import ExpertsSection from '$lib/components/home/ExpertsSection.svelte';
     import ComposerSection from '$lib/components/home/ComposerSection.svelte';
     import FloorLink from '$lib/components/home/FloorLink.svelte';
@@ -123,9 +122,6 @@
         </div>
     </section>
     <FloorLink href="/categories" label="תחומים" note="תיאור כל צוות, בעיות פתוחות ומומחים" />
-
-    <ArchiveSection preview headTitle="ארכיון ודיונים" />
-    <FloorLink href="/archive" label="ארכיון ודיונים" note="כל המפגשים הקודמים והדיונים הפעילים" />
 
     <ExpertsSection preview />
     <FloorLink href="/experts" label="המומחים" note="הדירוג המלא וההיסטוריה של כל מומחה" />

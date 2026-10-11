@@ -2,6 +2,8 @@
     import '$lib/components/home/home.css';
     import PageHero from '$lib/components/home/PageHero.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
+    import ArchiveSection from '$lib/components/home/ArchiveSection.svelte';
+    import FloorLink from '$lib/components/home/FloorLink.svelte';
     import { MEETUP } from '$lib/homeData';
 
     const ABOUT = [
@@ -31,6 +33,9 @@
             </ul>
         </div>
     </section>
+
+    <ArchiveSection preview headTitle="ארכיון ודיונים" />
+    <FloorLink href="/archive" label="ארכיון ודיונים" note="כל המפגשים הקודמים והדיונים הפעילים" />
 </div>
 
 <style>
