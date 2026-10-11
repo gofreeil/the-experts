@@ -6,6 +6,7 @@
     import { teamBySlug } from '$lib/teamsData';
     import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, catColor, fmt, fmtCompact } from '$lib/homeData';
     import ProblemMap from '$lib/components/home/ProblemMap.svelte';
+    import SmartSearch from '$lib/components/home/SmartSearch.svelte';
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
     import RecentSolutions from '$lib/components/home/RecentSolutions.svelte';
@@ -87,6 +88,9 @@
             </div>
         </div>
     </section>
+
+    <!-- ═════ חיפוש חכם ═════ -->
+    <SmartSearch problems={all} />
 
     <!-- ═════ דוגמאות: המבוקשים ביותר והאחרונות ═════ -->
     <section class="section alt examples-sec">
