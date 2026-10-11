@@ -129,7 +129,7 @@
 
 <style>
     /* ───── גיבור ───── */
-    .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
+    .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(4px, 0.8cqi, 10px); overflow: hidden; isolation: isolate; }
     .hero-title { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: clamp(18px, 3cqi, 32px); }
     /* padding באחוזים נמדד מרוחב ההורה ולא מהתמונה — בגלל זה הלוגו נעלם; לכן מחושב מגודל הלוגו עצמו */
     .hero-logo { --logo: clamp(80px, 11cqi, 108px); box-sizing: border-box; width: var(--logo); height: auto; aspect-ratio: 1; margin-top: 10px; padding: calc(var(--logo) * 0.1); border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--line); object-fit: contain; }
