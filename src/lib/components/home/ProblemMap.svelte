@@ -10,18 +10,12 @@
     let {
         wanted,
         recent,
-        isVisible,
         selectedId = $bindable(null),
-        onshow,
-        onmore,
         onpledge
     }: {
         wanted: Problem[];
         recent: Problem[];
-        isVisible: (p: Problem) => boolean;
         selectedId?: string | null;
-        onshow?: (id: string) => void;
-        onmore?: () => void;
         onpledge?: (id: string, amount: number) => void;
     } = $props();
 
@@ -52,7 +46,7 @@
 {#snippet group(list: Problem[], label: string)}
     <div class="grid" role="group" aria-label={label} onmouseleave={() => (hoverId = null)}>
         {#each list as p (p.id)}
-            <div class="cell" class:dim={!isVisible(p)} style="--c:{catColor(p.category)}">
+            <div class="cell" style="--c:{catColor(p.category)}">
                 <button
                     class="card"
                     class:sel={p.id === pickedId}
@@ -103,7 +97,7 @@
     <FancyHeading title="האחרונות שהועלו" />
     {@render group(recent, 'האחרונות שהועלו')}
 
-    <div class="all-row"><button class="all-link" type="button" onclick={() => onmore?.()}>לכל הבעיות</button></div>
+    <div class="all-row"><a class="all-link" href="/problems">לכל הבעיות</a></div>
 
     {#if shown}
         <div class="map-sel" aria-live="polite">
@@ -128,7 +122,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8" /><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></svg>
                     אני יכול לפתור
                 </a>
-                <button class="btn btn-sm btn-ghost" type="button" onclick={() => onshow?.(shown.id)}>הראו בלוח</button>
+                <a class="btn btn-sm btn-ghost" href="/problems">הראו בלוח</a>
             </div>
         </div>
     {/if}
@@ -137,12 +131,11 @@
 <style>
     .mapbox { min-width: 0; max-width: 1000px; margin-inline: auto; }
     .all-row { margin-top: 14px; text-align: left; }
-    .all-link { background: none; border: 0; padding: 0; color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .all-link { color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
     /* כל הבעיות באותו גודל ובאותה צורה: שלוש בשורה */
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; margin-top: 14px; }
     .cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; transition: opacity 0.25s; }
-    .cell.dim { opacity: 0.25; filter: grayscale(0.7); }
     .card {
         display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; flex: 1;
         padding: 8px 8px 12px; text-align: right; color: var(--fg); cursor: pointer;

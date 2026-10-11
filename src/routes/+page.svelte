@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { onMount, tick } from 'svelte';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
     import '$lib/components/home/home.css';
-    import { problemsStore, seedProblems, type Problem, type ProblemType } from '$lib/problemsStore.svelte';
+    import { problemsStore, seedProblems } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
-    import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, catColor, fmt, fmtCompact, handsOf } from '$lib/homeData';
+    import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, catColor, fmt, fmtCompact } from '$lib/homeData';
     import ProblemMap from '$lib/components/home/ProblemMap.svelte';
-    import ProblemCard from '$lib/components/home/ProblemCard.svelte';
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
     import RecentSolutions from '$lib/components/home/RecentSolutions.svelte';
@@ -26,53 +26,17 @@
 
     const all = $derived((mounted ? problemsStore.items : seedProblems).filter((p) => p.status === 'open'));
 
-    let cat = $state<string>('all');
-    let scope = $state<'all' | ProblemType>('all');
-    let sort = $state<'bounty' | 'hands' | 'new'>('bounty');
     // בדף הבית רק דוגמאות. את שאר הבעיות רואים בלוח המלא (/problems)
-    const PREVIEW = 4;
-    let shown = $state(PREVIEW);
     let selectedId = $state<string | null>(null);
-    let flashId = $state<string | null>(null);
 
-    const isVisible = (p: Problem) => (cat === 'all' || p.category === cat) && (scope === 'all' || p.type === scope);
-    const visible = $derived(all.filter(isVisible));
-    const sorted = $derived.by(() => {
-        const list = [...visible];
-        if (sort === 'bounty') list.sort((a, b) => b.bounty - a.bounty);
-        else if (sort === 'hands') list.sort((a, b) => handsOf(b) - handsOf(a) || b.bounty - a.bounty);
-        else list.sort((a, b) => b.createdAt - a.createdAt);
-        return list;
-    });
     const totalOpen = $derived(all.reduce((s, p) => s + p.bounty, 0));
 
     // בהדר: שלוש הבעיות עם הפרס הגבוה ביותר, ומתחתן שלוש האחרונות שהועלו (בלי כפילויות)
     const wanted = $derived([...all].sort((a, b) => b.bounty - a.bounty).slice(0, 3));
     const recent = $derived([...all].filter((p) => !wanted.includes(p)).sort((a, b) => b.createdAt - a.createdAt).slice(0, 3));
 
-    function setCat(c: string) {
-        cat = cat === c ? 'all' : c;
-        shown = PREVIEW;
-    }
-    function gotoBoard() {
-        document.getElementById('board')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // "הראו בלוח": מוודא שהכרטיס מוצג (מאפס סינון אם צריך), גולל אליו ומדגיש אותו
-    async function showInBoard(id: string) {
-        const p = all.find((x) => x.id === id);
-        if (!p) return;
-        if (!isVisible(p)) {
-            cat = 'all';
-            scope = 'all';
-        }
-        const idx = sorted.findIndex((x) => x.id === id);
-        if (idx >= shown) shown = idx + 1;
-        await tick();
-        document.getElementById(`p-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        flashId = id;
-        setTimeout(() => (flashId = null), 1600);
-    }
+    // כרטיס תחום: פותח את לוח הבעיות המלא כשהסינון לפי התחום כבר דלוק
+    const openCat = (slug: string) => goto(`/problems?cat=${slug}`);
 </script>
 
 <svelte:head>
@@ -125,55 +89,13 @@
     <!-- ═════ דוגמאות: המבוקשים ביותר והאחרונות ═════ -->
     <section class="section alt examples-sec">
         <div class="inner">
-            <ProblemMap {wanted} {recent} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
+            <ProblemMap {wanted} {recent} bind:selectedId onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
         </div>
     </section>
     <FloorLink href="/problems" label="לוח הבעיות" note="שלוש עם הפרס הגבוה ביותר ושלוש האחרונות שהועלו" />
 
     <PaidSection headTitle="כסף שחולק" />
     <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
-
-    <!-- ═════ לוח הבעיות ═════ -->
-    <section class="section alt" id="board">
-        <div class="inner">
-            <SectionHead title="בעיות שמחכות ליד מורמת" lede="הסכום אינו רק מחיר. כשהרבה אנשים מוסיפים לפרס, זה סימן שהבעיה כואבת, והמומחים רואים אותה ראשונה.">
-                <a class="btn btn-primary btn-sm" href="#compose">העלו בעיה</a>
-            </SectionHead>
-
-            <div class="controls">
-                <div class="chips" role="group" aria-label="סינון לפי תחום">
-                    <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => { cat = 'all'; shown = PREVIEW; }}>הכל <span class="num cnt">{all.length}</span></button>
-                    {#each CATS as c}
-                        <button class="chip" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => setCat(c.slug)}>
-                            <span class="dot" style="--c:{catColor(c.slug)}"></span>{c.short} <span class="num cnt">{all.filter((p) => p.category === c.slug).length}</span>
-                        </button>
-                    {/each}
-                </div>
-                <div class="ctrl-right">
-                    <div class="seg" role="group" aria-label="סוג בעיה">
-                        <button type="button" aria-pressed={scope === 'all'} onclick={() => { scope = 'all'; shown = PREVIEW; }}>הכל</button>
-                        <button type="button" aria-pressed={scope === 'community'} onclick={() => { scope = 'community'; shown = PREVIEW; }}>ציבוריות</button>
-                        <button type="button" aria-pressed={scope === 'individual'} onclick={() => { scope = 'individual'; shown = PREVIEW; }}>פרטיות</button>
-                    </div>
-                    <label class="sr" for="sortSel">מיון</label>
-                    <select class="sel" id="sortSel" bind:value={sort} onchange={() => (shown = PREVIEW)}>
-                        <option value="bounty">מיון: פרס גבוה</option>
-                        <option value="hands">מיון: הכי הרבה ידיים</option>
-                        <option value="new">מיון: חדשות</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="cards">
-                {#each sorted.slice(0, shown) as p (p.id)}
-                    <ProblemCard {p} flash={flashId === p.id} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
-                {:else}
-                    <div class="empty">אין כרגע בעיות בסינון הזה. אפשר להיות הראשונים להעלות אחת.</div>
-                {/each}
-            </div>
-        </div>
-    </section>
-    <FloorLink href="/problems" label="לוח הבעיות" note="מוצגות {Math.min(shown, sorted.length)} מתוך {sorted.length} בעיות פתוחות" />
 
     <MeetupSection headTitle="מפגש מומחים" />
     <FloorLink href="/meetup" label="מפגש מומחים" note="מועד, סדר יום ומה קורה במפגש" />
@@ -193,7 +115,7 @@
                     {@const team = teamBySlug(c.slug)}
                     {@const ps = all.filter((p) => p.category === c.slug)}
                     {@const sum = ps.reduce((s, p) => s + p.bounty, 0)}
-                    <button class="cat" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => { setCat(c.slug); gotoBoard(); }}>
+                    <button class="cat" type="button" style="--c:{catColor(c.slug)}" onclick={() => openCat(c.slug)}>
                         <span class="cat-ico" aria-hidden="true">
                             {#if team?.image}<img src={team.image} alt="" width="56" height="56" loading="lazy" decoding="async" />{:else}{team?.emoji ?? ''}{/if}
                         </span>
@@ -253,25 +175,10 @@
     /* הנושאים מופרדים במחיצות ❦ (בסוף כל נושא), לכן בלי פסי רקע מתחלפים, ובריווח קומפקטי */
     .home :global(.section) { padding-block: clamp(16px, 2.6cqi, 30px); }
 
-    /* ───── לוח הבעיות ───── */
-    .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; justify-content: space-between; padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid var(--line-soft); }
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
-    .cnt { color: var(--fg-faint); }
-    .ctrl-right { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
-    .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
-    .seg button { background: transparent; border: 0; padding: 7px 14px; color: var(--fg-mute); font-size: 14px; font-weight: 500; }
-    .seg button + button { border-inline-start: 1px solid var(--line); }
-    .seg button[aria-pressed='true'] { background: var(--surface-2); color: var(--fg); font-weight: 700; box-shadow: inset 0 -2px 0 var(--honey); }
-    .sel { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; font: inherit; font-size: 14px; }
-    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .empty { grid-column: 1 / -1; text-align: center; color: var(--fg-mute); padding: 40px 0; border: 1px dashed var(--line); border-radius: 6px; }
-
     /* ───── תחומים ───── */
     .cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
     .cat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; align-items: center; text-align: right; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 16px 14px; transition: border-color 0.2s, transform 0.2s; width: 100%; }
     .cat:hover { border-color: var(--c); transform: translateY(-2px); }
-    .cat[aria-pressed='true'] { border-color: var(--c); background: color-mix(in srgb, var(--c) 9%, var(--surface)); }
     .cat-ico { grid-row: 1 / span 2; width: 56px; height: 56px; display: grid; place-items: center; font-size: 24px; background: color-mix(in srgb, var(--c) 38%, var(--surface)); border-radius: 16px; overflow: hidden; }
     .cat-ico img { width: 100%; height: 100%; object-fit: cover; }
     .cat b { font-size: 16px; font-weight: 800; line-height: 1.25; }
@@ -284,7 +191,6 @@
     }
     @container home (max-width: 900px) {
         .hero-grid { grid-template-columns: minmax(0, 1fr); }
-        .cards { grid-template-columns: minmax(0, 1fr); }
     }
     @container home (max-width: 520px) {
         .cats { grid-template-columns: minmax(0, 1fr); }
