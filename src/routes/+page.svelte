@@ -128,7 +128,7 @@
     /* שני כרטיסים שווי גובה: מבוא ופעולה מימין, "איך זה עובד" משמאל */
     .hero-text, .howbox { min-width: 0; display: flex; flex-direction: column; padding: clamp(18px, 2.8cqi, 28px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 24px rgba(10, 45, 80, 0.1); }
     h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 4.6cqi, 48px); line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; }
-    h1 em { font-style: normal; color: var(--honey-text); }
+    h1 em { display: block; font-style: normal; color: var(--honey-text); }
     .hero-lede { color: var(--fg); font-size: clamp(16px, 1.9cqi, 18px); line-height: 1.55; text-wrap: pretty; }
     .hero-cta { display: flex; margin-top: 16px; }
     .hero-cta .btn { width: 100%; padding: 13px 24px; font-size: 16px; box-shadow: 0 6px 16px rgba(185, 119, 14, 0.35); }
