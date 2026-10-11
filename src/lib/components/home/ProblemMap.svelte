@@ -61,6 +61,7 @@
                     <span class="c-media">
                         <img class="c-img" src="/images/problems/{artOf(p.category)}.svg" alt="" width="400" height="260" loading="lazy" decoding="async" />
                         <span class="c-price"><span class="num">{fmt(p.bounty)}</span></span>
+                        <span class="c-stamp"><Stamp text="מבוקש: פתרון" compact /></span>
                     </span>
                     <span class="c-body">
                         <span class="c-cat">
@@ -88,7 +89,6 @@
 {/snippet}
 
 <div class="mapbox">
-    <Stamp text="מבוקש: פתרון" />
     <FancyHeading title="המבוקשים ביותר" />
     {@render group(wanted, 'המבוקשים ביותר')}
 
@@ -145,6 +145,7 @@
     .card.sel { background: #fff; border-color: var(--honey-deep); box-shadow: inset 0 0 0 2px var(--honey-deep); }
     .c-media { position: relative; display: block; flex: none; }
     .c-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 9px; }
+    .c-stamp { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; }
     .c-price { position: absolute; inset-block-end: 6px; inset-inline-start: 6px; padding: 2px 10px; border-radius: 999px; background: var(--honey); color: var(--honey-ink); font-family: var(--font-display); font-weight: 900; font-size: 16px; line-height: 1.4; box-shadow: 0 2px 6px rgba(10, 45, 80, 0.25); }
     .c-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .c-cat { display: flex; align-items: center; gap: 6px; padding-inline: 4px; font-size: 12px; font-weight: 700; color: var(--fg-mute); }
@@ -181,5 +182,6 @@
         .c-media { width: 42%; }
         .c-body { flex: 1; }
         .c-title { font-size: 14px; }
+        .c-stamp { inset-block-start: 4px; inset-inline-end: 4px; transform: scale(0.88); transform-origin: top right; }
     }
 </style>

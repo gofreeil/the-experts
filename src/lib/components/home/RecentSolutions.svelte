@@ -7,7 +7,7 @@
     import Stamp from './Stamp.svelte';
 
     // הצעות הפתרון האחרונות שהועלו לבעיות פתוחות, מהחדשה לישנה. הבחירה והתשלום מגיעים אחר כך.
-    let { problems, limit = 4 }: { problems: Problem[]; limit?: number } = $props();
+    let { problems, limit = 3 }: { problems: Problem[]; limit?: number } = $props();
 
     const recent = $derived(
         problems
@@ -20,7 +20,6 @@
 
 <section class="section" id="recent-solutions">
     <div class="inner">
-        <Stamp text="נמצא פתרון" tone="ok" />
         <SectionHead title="פתרונות אחרונים שהועלו" lede="הצעות שמומחים הגישו לבעיות פתוחות בימים האחרונים. בעלי הבעיה והשותפים בה בוחרים ביניהן." demo />
 
         <div class="rs-grid">
@@ -29,14 +28,14 @@
                 <article class="rs" style="--c:{catColor(p.category)}">
                     <div class="rs-top">
                         <span class="tag-c"><span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category)}</span>
-                        <span class="rs-age">{formatTimeAgo(s.createdAt)}</span>
+                        <Stamp text="נמצא פתרון" tone="ok" compact />
                     </div>
                     <small class="rs-lbl">הבעיה</small>
                     <h3><a href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>{p.title}</a></h3>
                     <small class="rs-lbl">ההצעה</small>
                     <p>{s.proposal}</p>
                     <div class="rs-foot">
-                        <span class="rs-who">{#if ex}<a href="/experts/{ex.slug}">{s.solverName}</a>{:else}{s.solverName}{/if}</span>
+                        <span class="rs-who">{#if ex}<a href="/experts/{ex.slug}">{s.solverName}</a>{:else}{s.solverName}{/if}<span class="rs-age">{formatTimeAgo(s.createdAt)}</span></span>
                         <span class="rs-ask"><span class="num">{fmt(s.askingPrice)}</span></span>
                     </div>
                 </article>
@@ -48,12 +47,12 @@
 </section>
 
 <style>
-    .rs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .rs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
     .rs { display: flex; flex-direction: column; gap: 4px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px 12px; transition: border-color 0.2s; }
     .rs:hover { border-color: color-mix(in srgb, var(--c) 60%, var(--line)); }
-    .rs-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
+    .rs-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
     .tag-c { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; color: var(--fg); }
-    .rs-age { color: var(--fg-faint); }
+    .rs-age { display: block; margin-top: 1px; font-size: 12.5px; font-weight: 400; color: var(--fg-faint); }
     .rs-lbl { display: block; color: var(--fg-faint); font-size: 12px; font-weight: 700; letter-spacing: 0.05em; margin-top: 6px; }
     h3 { font-size: 16.5px; font-weight: 800; line-height: 1.35; text-wrap: balance; }
     h3 a:hover { color: var(--honey-text); }

@@ -1,17 +1,24 @@
 <script lang="ts">
-    // חותמת מעוטרת וממורכזת מעל כותרת קומה: ענבר ("מבוקש: פתרון") או ירוק ("נמצא פתרון").
-    let { text, tone = 'honey' }: { text: string; tone?: 'honey' | 'ok' } = $props();
+    // חותמת מעוטרת: ענבר ("מבוקש: פתרון") או ירוק ("נמצא פתרון").
+    // כברירת מחדל ממורכזת מעל כותרת קומה. compact = מדבקה קטנה שמוצבת בתוך כרטיס (המיקום אצל ההורה).
+    let { text, tone = 'honey', compact = false }: { text: string; tone?: 'honey' | 'ok'; compact?: boolean } = $props();
 </script>
 
-<div class="stamp-row">
-    <div class="stamp" class:ok={tone === 'ok'}>
+{#snippet stamp()}
+    <span class="stamp" class:ok={tone === 'ok'} class:compact>
         {#if tone === 'ok'}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9" /></svg>
         {:else}
             <svg viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>
         {/if}{text}
-    </div>
-</div>
+    </span>
+{/snippet}
+
+{#if compact}
+    {@render stamp()}
+{:else}
+    <div class="stamp-row">{@render stamp()}</div>
+{/if}
 
 <style>
     .stamp-row { text-align: center; margin-bottom: 8px; }
@@ -19,4 +26,7 @@
     .stamp.ok { --tone: var(--ok); --edge: var(--ok); }
     .stamp svg { width: 11px; height: 11px; flex: none; }
     .stamp.ok svg { width: 15px; height: 15px; }
+    .stamp.compact { gap: 6px; padding: 2px 9px; font-size: 12.5px; letter-spacing: 0.02em; white-space: nowrap; background: rgba(255, 255, 255, 0.94); box-shadow: 0 1px 4px rgba(10, 45, 80, 0.22); transform: rotate(-3deg); }
+    .stamp.compact svg { width: 8px; height: 8px; }
+    .stamp.compact.ok svg { width: 11px; height: 11px; }
 </style>
