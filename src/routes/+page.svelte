@@ -30,9 +30,8 @@
 
     const totalOpen = $derived(all.reduce((s, p) => s + p.bounty, 0));
 
-    // בהדר: שלוש הבעיות עם הפרס הגבוה ביותר, ומתחתן שלוש האחרונות שהועלו (בלי כפילויות)
+    // בדוגמאות: שלוש הבעיות עם הפרס הגבוה ביותר. האחרונות שהועלו רק בלוח המלא
     const wanted = $derived([...all].sort((a, b) => b.bounty - a.bounty).slice(0, 3));
-    const recent = $derived([...all].filter((p) => !wanted.includes(p)).sort((a, b) => b.createdAt - a.createdAt).slice(0, 3));
 
     // כרטיס תחום: פותח את לוח הבעיות המלא כשהסינון לפי התחום כבר דלוק
     const openCat = (slug: string) => goto(`/problems?cat=${slug}`);
@@ -88,16 +87,16 @@
     <!-- ═════ דוגמאות: המבוקשים ביותר והאחרונות ═════ -->
     <section class="section alt examples-sec">
         <div class="inner">
-            <ProblemMap {wanted} {recent} bind:selectedId onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
+            <ProblemMap {wanted} bind:selectedId onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
         </div>
     </section>
-    <FloorLink href="/problems" label="לוח הבעיות" note="שלוש עם הפרס הגבוה ביותר ושלוש האחרונות שהועלו" />
+    <FloorLink href="/problems" label="לוח הבעיות" note="שלוש הבעיות עם הפרס הגבוה ביותר, וכל השאר בלוח" />
 
-    <PaidSection headTitle="כסף שחולק" />
+    <PaidSection headTitle="כסף שחולק" preview />
     <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
 
-    <MeetupSection headTitle="מפגשי מומחים" />
-    <FloorLink href="/meetup" label="מפגשי מומחים" note="מועד, סדר יום ומה קורה במפגש" />
+    <MeetupSection headTitle="מפגשי המומחים" />
+    <FloorLink href="/meetup" label="מפגשי המומחים" note="מועד, סדר יום ומה קורה במפגש" />
 
     <RecentSolutions problems={all} />
     <FloorLink href="/problems" label="לוח הבעיות" note="כל הצעת פתרון מופיעה בדף הבעיה שלה" />

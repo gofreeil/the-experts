@@ -3,27 +3,33 @@
     import SectionHead from './SectionHead.svelte';
 
     // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה). בדף המלא אין כותרת כזו, כי יש כותרת עמוד.
-    let { headTitle = '' }: { headTitle?: string } = $props();
+    // preview = גרסת דף הבית: סיכום חזותי קצר (סכום, שלושה מספרים ותרשים עמודות בלי צירים). החלוקה לתחומים רק בדף המלא.
+    let { headTitle = '', preview = false }: { headTitle?: string; preview?: boolean } = $props();
 
     // תרשים עמודות. ציר הזמן מימין לשמאל (החודש הראשון בימין), כמו כיוון הקריאה.
-    const W = 640, H = 250, PT = 24, PB = 30, PL = 8, PR = 52;
+    const W = 640, PT = 24, PL = 8;
+    const H = $derived(preview ? 150 : 250);
+    const PB = $derived(preview ? 22 : 30);
+    const PR = $derived(preview ? 8 : 52);
     const MAX = 200000;
-    const bw = (W - PL - PR) / PAID.length;
-    const innerW = bw * 0.62;
-    const GRID = [0, 50000, 100000, 150000, 200000];
+    const bw = $derived((W - PL - PR) / PAID.length);
+    const innerW = $derived(bw * 0.62);
+    const GRID = $derived(preview ? [0] : [0, 50000, 100000, 150000, 200000]);
     const yOf = (v: number) => PT + (H - PT - PB) * (1 - v / MAX);
 
-    const bars = PAID.map((v, i) => {
-        const h = (H - PT - PB) * (v / MAX);
-        const x = W - PR - (i + 1) * bw + (bw - innerW) / 2;
-        return { v, x, y: H - PB - h, h, label: MONTHS[i], last: i === PAID.length - 1 };
-    });
+    const bars = $derived(
+        PAID.map((v, i) => {
+            const h = (H - PT - PB) * (v / MAX);
+            const x = W - PR - (i + 1) * bw + (bw - innerW) / 2;
+            return { v, x, y: H - PB - h, h, label: MONTHS[i], last: i === PAID.length - 1 };
+        })
+    );
 </script>
 
 <section class="section" id="paid">
     <div class="inner">
         {#if headTitle}<SectionHead title={headTitle} />{/if}
-        <div class="paid">
+        <div class="paid" class:pv={preview}>
         <div class="left">
             <div class="eyebrow">הספרים פתוחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
             <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
@@ -42,7 +48,7 @@
                 <svg viewBox="0 0 {W} {H}" role="img" aria-label="תרשים עמודות של סכומים שחולקו בכל חודש, בעלייה מתמדת">
                     {#each GRID as v}
                         <line x1={PL} x2={W - PR} y1={yOf(v)} y2={yOf(v)} class="grid" stroke-dasharray={v ? '3 4' : undefined} />
-                        <text x={W - PR + 8} y={yOf(v) + 4}>{v ? '₪' + v / 1000 + 'K' : '0'}</text>
+                        {#if !preview}<text x={W - PR + 8} y={yOf(v) + 4}>{v ? '₪' + v / 1000 + 'K' : '0'}</text>{/if}
                     {/each}
                     {#each bars as b}
                         <rect x={b.x} y={b.y} width={innerW} height={b.h} rx="2" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
@@ -54,6 +60,7 @@
                 </svg>
             </div>
 
+            {#if !preview}
             <div class="split">
                 <h3>לאן הלך הכסף</h3>
                 <div class="split-bar" aria-hidden="true">
@@ -65,6 +72,7 @@
                     {/each}
                 </ul>
             </div>
+            {/if}
         </div>
         </div>
     </div>
@@ -72,6 +80,9 @@
 
 <style>
     .paid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(22px, 4cqi, 56px); align-items: start; }
+    .paid.pv { align-items: center; }
+    .paid.pv .paid-total { font-size: clamp(30px, 4.6cqi, 48px); }
+    .paid.pv .mini-grid { margin-top: 18px; }
     .left { min-width: 0; }
     .paid-total { font-family: var(--font-display); font-weight: 900; font-size: clamp(34px, 5.2cqi, 56px); line-height: 1; color: var(--honey-text); letter-spacing: -0.02em; }
     .paid-cap { color: var(--fg-mute); margin-top: 12px; max-width: 34ch; }

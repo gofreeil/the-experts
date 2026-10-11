@@ -5,16 +5,13 @@
     import { adThenGo } from './nav';
     import FancyHeading from './FancyHeading.svelte';
     import Stamp from './Stamp.svelte';
-    import OrnamentDivider from './OrnamentDivider.svelte';
 
     let {
         wanted,
-        recent,
         selectedId = $bindable(null),
         onpledge
     }: {
         wanted: Problem[];
-        recent: Problem[];
         selectedId?: string | null;
         onpledge?: (id: string, amount: number) => void;
     } = $props();
@@ -33,8 +30,8 @@
         thanksTimer = setTimeout(() => (thanks = null), 2200);
     }
 
-    const byId = $derived(new Map([...wanted, ...recent].map((p) => [p.id, p])));
-    const top = $derived(wanted[0] ?? recent[0] ?? null);
+    const byId = $derived(new Map(wanted.map((p) => [p.id, p])));
+    const top = $derived(wanted[0] ?? null);
     const pickedId = $derived(selectedId ?? top?.id ?? null);
     const shown = $derived(byId.get(hoverId ?? pickedId ?? '') ?? top);
 
@@ -91,11 +88,6 @@
 <div class="mapbox">
     <FancyHeading title="המבוקשים ביותר" />
     {@render group(wanted, 'המבוקשים ביותר')}
-
-    <OrnamentDivider />
-
-    <FancyHeading title="האחרונות שהועלו" />
-    {@render group(recent, 'האחרונות שהועלו')}
 
     <div class="all-row"><a class="all-link" href="/problems">לכל הבעיות</a></div>
 
