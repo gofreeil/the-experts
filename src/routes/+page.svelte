@@ -135,8 +135,7 @@
     <ExpertsSection preview />
     <FloorLink href="/experts" label="המומחים" note="הדירוג המלא וההיסטוריה של כל מומחה" />
 
-    <ComposerSection problems={all} />
-    <FloorLink href="/problems/new" label="העלאת בעיה" note="הטופס המלא, עם כל השדות" />
+    <ComposerSection />
 </div>
 
 <style>
