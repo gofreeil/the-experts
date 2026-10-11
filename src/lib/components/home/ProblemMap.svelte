@@ -101,7 +101,7 @@
 </div>
 
 <style>
-    .mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(12px, 2cqi, 18px); min-width: 0; max-width: 1000px; margin-inline: auto; box-shadow: 0 8px 28px rgba(10, 45, 80, 0.1); }
+    .mapbox { min-width: 0; max-width: 1000px; margin-inline: auto; }
     .all-row { margin-top: 14px; text-align: left; }
     .all-link { background: none; border: 0; padding: 0; color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 

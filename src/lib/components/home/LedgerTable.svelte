@@ -24,10 +24,10 @@
 </div>
 
 <style>
-    .ledger { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; min-width: 0; }
+    .ledger { min-width: 0; }
     .lg-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px 76px 88px; gap: 14px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--line-soft); }
     .lg-row:first-child { border-top: 0; }
-    .lg-head { font-size: 12.5px; color: var(--fg-faint); font-weight: 700; letter-spacing: 0.05em; padding-block: 11px; background: var(--surface-2); }
+    .lg-head { font-size: 12.5px; color: var(--fg-faint); font-weight: 700; letter-spacing: 0.05em; padding-block: 11px; }
     .lg-head .end { text-align: left; }
     .lg-t { min-width: 0; }
     .lg-t b { display: block; font-weight: 700; font-size: 15px; line-height: 1.35; }

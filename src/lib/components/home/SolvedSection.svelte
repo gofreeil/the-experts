@@ -58,7 +58,7 @@
     .solved-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(18px, 3cqi, 36px); align-items: start; }
     .right { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .feature { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: clamp(18px, 3cqi, 30px); min-width: 0; }
+    .feature { min-width: 0; }
     .stamp { display: inline-flex; align-items: center; gap: 8px; color: var(--ok); border: 2px solid var(--ok); border-radius: 4px; padding: 3px 12px; font-family: var(--font-display); font-weight: 900; font-size: 18px; transform: rotate(-2deg); letter-spacing: 0.06em; }
     .stamp svg { width: 18px; height: 18px; }
     .feature h3 { font-family: var(--font-display); font-weight: 900; font-size: 26px; line-height: 1.2; margin-top: 18px; text-wrap: balance; }

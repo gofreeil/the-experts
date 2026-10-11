@@ -217,10 +217,6 @@
 <style>
     /* ───── גיבור ───── */
     .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
-    .hero::before {
-        content: ""; position: absolute; inset: 0; z-index: -1;
-        background: radial-gradient(ellipse 60% 70% at 18% 28%, rgba(255, 255, 255, 0.7), transparent 70%), radial-gradient(ellipse 50% 60% at 88% 85%, rgba(110, 185, 235, 0.32), transparent 70%);
-    }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
     .hero-text { min-width: 0; }
     .wanted { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--honey-deep); color: var(--honey-text); padding: 5px 14px; border-radius: 4px; font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: 0.04em; transform: rotate(-1.5deg); margin-bottom: 22px; }
@@ -240,7 +236,7 @@
     .hero-demo { margin-top: 14px; color: var(--fg-faint); font-size: 12.5px; }
 
     /* ───── איך זה עובד (בכרטיס בגיבור) ───── */
-    .howbox { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(14px, 2.4cqi, 22px); min-width: 0; box-shadow: 0 8px 28px rgba(10, 45, 80, 0.1); }
+    .howbox { min-width: 0; }
     .how { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
     .how li { display: flex; align-items: flex-start; gap: 14px; }
     .how li + li { border-top: 1px solid var(--line-soft); padding-top: 14px; }
@@ -253,7 +249,6 @@
 
     /* הנושאים מופרדים במחיצות ❦ (בסוף כל נושא), לכן בלי פסי רקע מתחלפים, ובריווח קומפקטי */
     .home :global(.section) { padding-block: clamp(16px, 2.6cqi, 30px); }
-    .home :global(.section.alt) { background: transparent; border-block: 0; }
 
     /* ───── לוח הבעיות ───── */
     .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; justify-content: space-between; padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid var(--line-soft); }

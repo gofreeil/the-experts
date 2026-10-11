@@ -112,7 +112,7 @@
 </section>
 
 <style>
-    .composer { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+    .composer { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
     .form { padding: clamp(18px, 3.4cqi, 36px); display: flex; flex-direction: column; gap: 18px; min-width: 0; }
     .fld label, .fld .lab { display: block; font-size: 14px; font-weight: 700; margin-bottom: 7px; }
     .fld input[type='text'], .fld select { width: 100%; background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; font: inherit; font-size: 16px; }
@@ -132,7 +132,7 @@
     .formfoot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
     .note { color: var(--fg-faint); font-size: 14px; }
 
-    .preview { background: var(--surface-2); border-inline-start: 1px solid var(--line); padding: clamp(18px, 3.4cqi, 36px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+    .preview { border-inline-start: 1px solid var(--line); padding: clamp(18px, 3.4cqi, 36px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
     .preview h3 { font-size: 15px; font-weight: 800; }
     .pv-tile { height: 210px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 12px; }
     .pv-tile svg { width: 100%; height: 100%; display: block; }

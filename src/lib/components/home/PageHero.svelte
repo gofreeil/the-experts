@@ -27,7 +27,7 @@
 </header>
 
 <style>
-    .phead { padding-block: clamp(14px, 2.6cqi, 24px); border-bottom: 1px solid var(--line-soft); background: radial-gradient(ellipse 60% 120% at 12% 0%, rgba(255, 255, 255, 0.65), transparent 70%); }
+    .phead { padding-block: clamp(14px, 2.6cqi, 24px); border-bottom: 1px solid var(--line-soft); }
     .row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
     h1 { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 900; font-size: clamp(24px, 3.8cqi, 36px); line-height: 1.15; }
     .ico { font-size: 0.8em; }

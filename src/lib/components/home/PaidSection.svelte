@@ -82,7 +82,7 @@
     .stat-n .unit { font-size: 0.55em; font-weight: 700; }
     .stat-l { color: var(--fg-faint); font-size: 13px; margin-top: 4px; line-height: 1.35; }
 
-    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: clamp(16px, 2.6cqi, 24px); min-width: 0; }
+    .panel { min-width: 0; }
     .panel h3 { font-size: 15px; font-weight: 800; }
     .sub { color: var(--fg-faint); font-size: 13px; }
     .chart { margin-top: 12px; direction: ltr; }

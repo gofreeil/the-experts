@@ -4,7 +4,7 @@
 
 .home {
     --bg: #e2f2fc;
-    --bg-2: #cfe8f8;
+    --bg-2: #e2f2fc;
     --surface: #ffffff;
     --surface-2: #eef7fd;
     --line: #b4d4e9;
@@ -57,7 +57,7 @@
 .home .num { direction: ltr; unicode-bidi: isolate; display: inline-block; font-variant-numeric: tabular-nums; }
 .home .inner { padding-inline: clamp(16px, 3.4cqi, 36px); }
 .home .section { padding-block: clamp(36px, 6cqi, 76px); }
-.home .section.alt { background: var(--bg-2); border-block: 1px solid var(--line-soft); }
+.home .section.alt { background: transparent; border-block: 0; }
 
 /* כותרות מקטעים */
 .home .sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: clamp(20px, 3cqi, 34px); }
