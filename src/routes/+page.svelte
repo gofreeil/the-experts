@@ -9,7 +9,6 @@
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
     import RecentSolutions from '$lib/components/home/RecentSolutions.svelte';
-    import SolvedSection from '$lib/components/home/SolvedSection.svelte';
     import ArchiveSection from '$lib/components/home/ArchiveSection.svelte';
     import ExpertsSection from '$lib/components/home/ExpertsSection.svelte';
     import ComposerSection from '$lib/components/home/ComposerSection.svelte';
@@ -102,9 +101,6 @@
 
     <RecentSolutions problems={all} />
     <FloorLink href="/problems" label="לוח הבעיות" note="כל הצעת פתרון מופיעה בדף הבעיה שלה" />
-
-    <SolvedSection preview />
-    <FloorLink href="/solved" label="פתרונות שהתקבלו" note="מוצגים 4 מתוך {SOLVED_COUNT} פתרונות" />
 
     <!-- ═════ תחומים ═════ -->
     <section class="section" id="cats">
