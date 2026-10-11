@@ -110,7 +110,6 @@
                     <span>·</span>
                     <span>{formatTimeAgo(shown.createdAt)}</span>
                 </div>
-                <h3><span class="need">{NEED_PREFIX}</span> {shown.title}</h3>
                 <p>{shown.type === 'individual' ? 'בעיה פרטית. פרטי המבקש גלויים רק למומחים מאומתים.' : shown.description}</p>
             </div>
             <div class="amt">
@@ -163,7 +162,6 @@
     .sel-text { min-width: 0; }
     .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-mute); }
     .meta b { color: var(--fg); }
-    .map-sel h3 { font-size: 17px; font-weight: 800; line-height: 1.35; margin-top: 4px; text-wrap: balance; }
     .map-sel p { color: var(--fg-mute); font-size: 14px; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .amt { text-align: left; }
     .big-amt { font-family: var(--font-display); font-weight: 900; color: var(--honey-text); font-size: 34px; line-height: 1; }
