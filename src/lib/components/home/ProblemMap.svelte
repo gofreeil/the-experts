@@ -3,15 +3,19 @@
     import { formatTimeAgo } from '$lib/problemsStore.svelte';
     import { catColor, catShort, fmt, handsOf, backersOf } from '$lib/homeData';
     import { adThenGo } from './nav';
+    import FancyHeading from './FancyHeading.svelte';
+    import OrnamentDivider from './OrnamentDivider.svelte';
 
     let {
-        problems,
+        wanted,
+        recent,
         isVisible,
         selectedId = $bindable(null),
         onshow,
         onmore
     }: {
-        problems: Problem[];
+        wanted: Problem[];
+        recent: Problem[];
         isVisible: (p: Problem) => boolean;
         selectedId?: string | null;
         onshow?: (id: string) => void;
@@ -20,8 +24,8 @@
 
     let hoverId = $state<string | null>(null);
 
-    const byId = $derived(new Map(problems.map((p) => [p.id, p])));
-    const top = $derived([...problems].sort((a, b) => b.bounty - a.bounty)[0] ?? null);
+    const byId = $derived(new Map([...wanted, ...recent].map((p) => [p.id, p])));
+    const top = $derived(wanted[0] ?? recent[0] ?? null);
     const pickedId = $derived(selectedId ?? top?.id ?? null);
     const shown = $derived(byId.get(hoverId ?? pickedId ?? '') ?? top);
 
@@ -30,15 +34,9 @@
     const artOf = (category: string) => (ART.includes(category) ? category : 'ethics');
 </script>
 
-<div class="mapbox">
-    <div class="map-top">
-        <h2>הבעיות המובילות</h2>
-        <small>שלוש עם הפרס הגבוה ביותר, והאחרונה שהועלתה.</small>
-        <button class="all-link" type="button" onclick={() => onmore?.()}>לכל הבעיות</button>
-    </div>
-
-    <div class="grid" role="group" aria-label="הבעיות המובילות" onmouseleave={() => (hoverId = null)}>
-        {#each problems as p (p.id)}
+{#snippet group(list: Problem[], label: string)}
+    <div class="grid" role="group" aria-label={label} onmouseleave={() => (hoverId = null)}>
+        {#each list as p (p.id)}
             <button
                 class="card"
                 class:dim={!isVisible(p)}
@@ -53,11 +51,25 @@
                 onclick={() => (selectedId = p.id)}
             >
                 <img class="c-img" src="/images/problems/{artOf(p.category)}.svg" alt="" width="400" height="260" loading="lazy" decoding="async" />
-                <span class="c-cat"><span class="dot"></span>{catShort(p.category)}</span>
-                <span class="c-title">{p.title}</span>
+                <span class="c-body">
+                    <span class="c-cat"><span class="dot"></span>{catShort(p.category)}</span>
+                    <span class="c-title">{p.title}</span>
+                </span>
             </button>
         {/each}
     </div>
+{/snippet}
+
+<div class="mapbox">
+    <FancyHeading title="המבוקשים ביותר" />
+    {@render group(wanted, 'המבוקשים ביותר')}
+
+    <OrnamentDivider />
+
+    <FancyHeading title="האחרונות שהועלו" />
+    {@render group(recent, 'האחרונות שהועלו')}
+
+    <div class="all-row"><button class="all-link" type="button" onclick={() => onmore?.()}>לכל הבעיות</button></div>
 
     {#if shown}
         <div class="map-sel" aria-live="polite">
@@ -90,13 +102,11 @@
 
 <style>
     .mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(12px, 2cqi, 18px); min-width: 0; box-shadow: 0 8px 28px rgba(10, 45, 80, 0.1); }
-    .map-top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 2px 4px 12px; }
-    .map-top h2 { font-size: 16px; font-weight: 800; }
-    .map-top small { color: var(--fg-faint); font-size: 13px; flex: 1; min-width: 0; }
-    .all-link { background: none; border: 0; padding: 0; color: var(--honey-text); font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .all-row { margin-top: 14px; text-align: left; }
+    .all-link { background: none; border: 0; padding: 0; color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
-    /* כל הבעיות באותו גודל ובאותה צורה */
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; }
+    /* כל הבעיות באותו גודל ובאותה צורה: שלוש בשורה */
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; margin-top: 14px; }
     .card {
         display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0;
         padding: 8px 8px 12px; text-align: right; color: var(--fg); cursor: pointer;
@@ -106,10 +116,11 @@
     .card:hover, .card:focus-visible { border-color: var(--honey-deep); background: #fff; outline: none; }
     .card.sel { background: #fff; border-color: var(--honey-deep); box-shadow: inset 0 0 0 2px var(--honey-deep); }
     .card.dim { opacity: 0.25; filter: grayscale(0.7); }
-    .c-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 9px; }
+    .c-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 9px; flex: none; }
+    .c-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .c-cat { display: inline-flex; align-items: center; gap: 6px; padding-inline: 4px; font-size: 12px; font-weight: 700; color: var(--fg-mute); }
     .c-cat .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
-    .c-title { padding-inline: 4px; font-size: 14.5px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; text-wrap: balance; }
+    .c-title { padding-inline: 4px; font-size: 13.5px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: balance; }
 
     .map-sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; padding: 14px 4px 4px; }
     .sel-text { min-width: 0; }
@@ -125,5 +136,11 @@
     @container home (max-width: 560px) {
         .map-sel { grid-template-columns: minmax(0, 1fr); }
         .amt { text-align: right; }
+        /* בנייד: כרטיס בשורה, תמונה בצד */
+        .grid { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; }
+        .card { flex-direction: row; align-items: center; gap: 10px; padding: 8px; }
+        .c-img { width: 42%; }
+        .c-body { flex: 1; }
+        .c-title { font-size: 14px; }
     }
 </style>
