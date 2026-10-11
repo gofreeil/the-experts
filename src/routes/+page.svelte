@@ -54,10 +54,6 @@
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
                 </div>
-                <p class="trust">
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2l6.5 2.5v5c0 4-2.7 6.8-6.5 8.5-3.8-1.7-6.5-4.5-6.5-8.5v-5z" /><path d="M7 10l2.2 2.2L13.2 8" /></svg>
-                    <span>הפרס נשמר בנאמנות. הוא עובר למומחה רק אחרי שאישרתם שהבעיה נפתרה.</span>
-                </p>
             </div>
 
             <a class="howbox" href="/about" aria-label="אודות">
@@ -136,8 +132,6 @@
     .hero-lede { color: var(--fg); font-size: clamp(16px, 1.9cqi, 18px); line-height: 1.55; text-wrap: pretty; }
     .hero-cta { display: flex; margin-top: 16px; }
     .hero-cta .btn { width: 100%; padding: 13px 24px; font-size: 16px; box-shadow: 0 6px 16px rgba(185, 119, 14, 0.35); }
-    .trust { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 10px 12px; color: var(--fg-mute); font-size: 13.5px; line-height: 1.45; background: color-mix(in srgb, var(--ok) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--ok) 26%, transparent); border-radius: 10px; }
-    .trust svg { width: 18px; height: 18px; flex: none; margin-top: 1px; color: var(--ok); }
 
     /* ───── איך זה עובד (בכרטיס בגיבור): ציר זמן עם קו מחבר בין השלבים ───── */
     .how-frame { margin-top: 12px; max-width: 100%; }
