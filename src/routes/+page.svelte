@@ -3,7 +3,7 @@
     import '$lib/components/home/home.css';
     import { problemsStore, seedProblems, type Problem, type ProblemType } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
-    import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, DEMO_DATA, catColor, fmt, fmtCompact, handsOf } from '$lib/homeData';
+    import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, catColor, fmt, fmtCompact, handsOf } from '$lib/homeData';
     import ProblemMap from '$lib/components/home/ProblemMap.svelte';
     import ProblemCard from '$lib/components/home/ProblemCard.svelte';
     import PaidSection from '$lib/components/home/PaidSection.svelte';
@@ -102,7 +102,6 @@
                     <div><div class="stat-n gold"><span class="num">{fmtCompact(PAID_TOTAL)}</span></div><div class="stat-l">חולקו עד היום לפותרים</div></div>
                     <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות שנפתרו</div></div>
                 </div>
-                {#if DEMO_DATA}<p class="hero-demo"><span class="demo-tag" style="margin:0">נתוני הדגמה</span> הסכומים שחולקו ומספר הפתרונות הם דוגמה עד חיבור לשרת.</p>{/if}
             </div>
 
             <div class="howbox">
@@ -238,7 +237,6 @@
     .stat-n { font-family: var(--font-display); font-weight: 900; font-size: clamp(20px, 3cqi, 28px); line-height: 1.1; color: var(--fg); }
     .stat-n.gold { color: var(--honey-text); }
     .stat-l { color: var(--fg-faint); font-size: 13px; margin-top: 4px; line-height: 1.35; }
-    .hero-demo { margin-top: 14px; color: var(--fg-faint); font-size: 12.5px; }
 
     /* ───── איך זה עובד (בכרטיס בגיבור) ───── */
     .howbox { min-width: 0; }
