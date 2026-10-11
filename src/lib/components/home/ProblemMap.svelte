@@ -107,5 +107,8 @@
         .c-body { flex: 1; }
         .c-title { font-size: 14px; }
         .c-stamp { inset-block-start: 4px; inset-inline-end: 4px; transform: scale(0.88); transform-origin: top right; }
+        /* כפתורי הוספה לפרס: יעד לחיצה נוח לאגודל */
+        .pledge { gap: 8px; }
+        .pl-b { min-height: 38px; padding-inline: 14px; font-size: 14px; }
     }
 </style>

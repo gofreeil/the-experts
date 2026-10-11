@@ -46,7 +46,7 @@
         type="button"
         class={variant === 'desktop'
             ? 'flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-white/20'
-            : 'flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-white/20 active:bg-white/30'}
+            : 'flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20 active:bg-white/30'}
         aria-expanded={open}
         aria-controls="nav-menu-{variant}"
         aria-label={tFn('menu')}
@@ -75,7 +75,7 @@
                 <a
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
-                    class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white transition-colors hover:bg-white/10 {active
+                    class="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm text-white transition-colors hover:bg-white/10 {active
                         ? 'bg-white/15 font-bold ring-1 ring-purple-400/50'
                         : ''}"
                 >

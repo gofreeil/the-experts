@@ -745,7 +745,7 @@
 		-webkit-backdrop-filter: blur(3px);
 		border: none;
 		border-radius: 0 9px 9px 0;
-		padding: 0.6rem 0.3rem;
+		padding: 0.7rem 0.35rem;
 		cursor: grab;
 		box-shadow: 2px 0 6px rgba(79,70,229,0.25);
 		transition: padding 0.2s ease, box-shadow 0.2s, border-radius 0.2s;
@@ -796,9 +796,9 @@
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 		transform: rotate(180deg);
-		font-size: 0.6rem;
+		font-size: 0.72rem;
 		font-weight: 700;
 		color: #fff;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.04em;
 	}
 </style>

@@ -220,22 +220,21 @@
 </script>
 
 <header use:headerHeight
-    class="sticky top-0 z-50 border-b-2 md:border-b-4 border-blue-600 shadow-lg backdrop-blur-lg"
-    style="background: linear-gradient(to bottom, rgba(30, 52, 94, 0.92) 0%, rgba(30, 52, 94, 0.92) 66%, rgba(30, 52, 94, 0.1) 100%);"
+    class="site-header sticky top-0 z-50 border-b-2 md:border-b-4 border-blue-600 shadow-lg backdrop-blur-lg"
 >
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
-        <!-- Mobile Header Area -->
-        <div class="md:hidden h-[80px] relative">
+        <!-- Mobile Header Area: שורה אחת קומפקטית — לוגו, שם האתר, ארבע פעולות -->
+        <div class="md:hidden h-[58px] relative">
                 <!-- Mobile Header -->
                 <div
-                    class="flex items-center justify-between h-full px-1 absolute inset-0"
+                    class="flex items-center justify-between gap-2 h-full px-1 absolute inset-0"
                 >
                     <a
                         href="/"
-                        class="flex items-center gap-2.5 flex-1 min-w-0"
+                        class="flex items-center gap-2 flex-1 min-w-0"
                     >
                         <div class="relative">
-                            <div class="h-12 w-12 flex-shrink-0">
+                            <div class="h-[38px] w-[38px] flex-shrink-0">
                                 <img
                                     src="/images/experts-logo.webp"
                                     alt="לוגו המומחים של העם – לדף הבית"
@@ -252,24 +251,21 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <h1
-                                class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-xl font-black text-transparent leading-tight"
+                                class="mobile-title bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text font-black text-transparent leading-tight truncate"
                             >
                                 {tFn("welcome")}
                             </h1>
-                            <p class="text-xs text-gray-400 leading-tight">
-                                {tFn("app_description")}
-                            </p>
                         </div>
                     </a>
 
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex flex-none items-center gap-1">
                         <!-- תפריט נפתח - מובייל -->
                         <NavMenu variant="mobile" />
 
                         <!-- כפתור אודות - מובייל -->
                         <button
                             onclick={() => goto("/about/revenue")}
-                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                            class="flex items-center justify-center w-[38px] h-[38px] rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                             aria-label="אודות קהילה"
                         >
                             <span class="text-xl font-bold text-white leading-none">ℹ</span>
@@ -280,7 +276,7 @@
                             <button
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
                                 onkeydown={handleLangKeydown}
-                                class="flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                                class="flex items-center justify-center w-[38px] h-[38px] rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                                 aria-label="בחר שפה"
                                 aria-haspopup="listbox"
                                 aria-expanded={showLangDropdown}
@@ -321,10 +317,10 @@
                                         referrerpolicy="no-referrer"
                                         onerror={() => (avatarBroken = true)}
                                         alt=""
-                                        class="h-9 w-9 rounded-full object-cover border-2 border-purple-500/40 shadow-lg"
+                                        class="h-[38px] w-[38px] rounded-full object-cover border-2 border-purple-500/40 shadow-lg"
                                     />
                                 {:else}
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10" aria-hidden="true">
+                                    <div class="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10" aria-hidden="true">
                                         <span class="font-bold text-white text-xs">{currentUser.username?.charAt(0) || "U"}</span>
                                     </div>
                                 {/if}
@@ -335,7 +331,7 @@
                                 class="relative group flex-shrink-0"
                                 aria-label="התחברות"
                             >
-                                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
+                                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[38px] w-[38px] rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                     <circle cx="20" cy="20" r="20" fill="#374151"/>
                                     <circle cx="20" cy="16" r="7" fill="#6b7280"/>
                                     <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
@@ -580,6 +576,21 @@
 {/if}
 
 <style>
+    /* נייד: רקע אטום, כדי שתוכן הדף לא ייראה דרך ההדר ולא ייווצר טשטוש מעל הטקסט.
+       דסקטופ: הרקע נמוג בתחתית, כמו שהיה. */
+    .site-header {
+        background: rgba(30, 52, 94, 0.97);
+    }
+    @media (min-width: 768px) {
+        .site-header {
+            background: linear-gradient(to bottom, rgba(30, 52, 94, 0.92) 0%, rgba(30, 52, 94, 0.92) 66%, rgba(30, 52, 94, 0.1) 100%);
+        }
+    }
+    /* שם האתר בשורה אחת; גודל הגופן קטן עם הרוחב כדי שלא ייחתך במסכים צרים */
+    .mobile-title {
+        font-size: clamp(13px, 4.1vw, 19px);
+    }
+
     @keyframes pulse-slow {
         0%,
         100% {

@@ -149,7 +149,7 @@
         margin-bottom: 0.4rem;
     }
 
-    .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 1.4rem; }
+    .subtitle { color: #dbe7f5; font-size: 1rem; margin-bottom: 1.4rem; }
 
     .cta-row {
         display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
@@ -192,7 +192,7 @@
         font-weight: 800;
         color: #fbbf24;
     }
-    .stat-label { color: #94a3b8; font-size: 0.85rem; }
+    .stat-label { color: #d3e0f0; font-size: 0.85rem; }
 
     .filters {
         display: flex; gap: 1.5rem; flex-wrap: wrap;
@@ -202,7 +202,7 @@
         border-radius: 0.75rem; padding: 1rem;
     }
     .filter-group { display: flex; flex-direction: column; gap: 0.4rem; }
-    .filter-group label, .filter-label { color: #94a3b8; font-size: 0.8rem; font-weight: 600; }
+    .filter-group label, .filter-label { color: #d3e0f0; font-size: 0.8rem; font-weight: 600; }
 
     .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
     .chips button {
@@ -228,7 +228,7 @@
 
     .cards {
         display: grid; gap: 1rem;
-        grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr));
     }
 
     .card {
@@ -293,8 +293,24 @@
     .empty-emoji { font-size: 3rem; margin-bottom: 0.6rem; }
     .empty p { color: #94a3b8; margin-bottom: 1rem; }
 
+    /* נייד: הכל קומפקטי — כותרת וכפתורים בראש, שלושה נתונים בשורה אחת, ורשימת הבעיות כבר במסך הראשון */
     @media (max-width: 640px) {
-        .stats { grid-template-columns: 1fr; }
-        .filters { flex-direction: column; gap: 0.75rem; }
+        .page { padding: 1rem 0.85rem 3rem; }
+        .hero { margin-bottom: 1rem; }
+        .title { font-size: 1.7rem; margin-bottom: 0.2rem; }
+        .subtitle { font-size: 0.9rem; margin-bottom: 0.8rem; }
+        .cta-row { gap: 0.5rem; flex-wrap: nowrap; }
+        .btn { flex: 1 1 0; justify-content: center; min-height: 46px; padding: 0.5rem 0.6rem; font-size: 0.92rem; white-space: nowrap; }
+
+        .stats { gap: 0.5rem; margin-bottom: 1rem; }
+        .stat { padding: 0.6rem 0.25rem; border-radius: 0.65rem; }
+        .stat-num { font-size: 1.15rem; }
+        .stat-label { font-size: 0.7rem; line-height: 1.25; margin-top: 0.15rem; }
+
+        .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 0.6rem; padding: 0.75rem; margin-bottom: 1rem; }
+        .filter-group:first-child { grid-column: 1 / -1; }
+        .chips button { min-height: 40px; padding: 0.4rem 0.9rem; }
+        .select { min-height: 44px; width: 100%; }
+        .cards { gap: 0.75rem; }
     }
 </style>

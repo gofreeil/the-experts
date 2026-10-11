@@ -137,6 +137,30 @@ select option:checked {
     }
 }
 
+/* ===== נוחות מגע =====
+   - touch-action: manipulation מבטל את ההמתנה של הדפדפן לזיהוי הקשה כפולה (הקשה מגיבה מיד)
+   - text-size-adjust מונע מהדפדפן להגדיל טקסט מעצמו בהטיית המסך
+   - בשדות קלט: 16px לפחות. מתחת לזה iOS מגדיל את הדף בכל מעבר לשדה, וצריך לצמצם ידנית */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+a,
+button,
+summary,
+select,
+label,
+[role='button'] {
+    touch-action: manipulation;
+}
+@media (max-width: 768px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
 /* ===== נגישות: Skip Navigation Link ===== */
 .skip-link {
     position: absolute;

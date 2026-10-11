@@ -76,7 +76,7 @@
     .tag-c { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; color: var(--fg-mute); }
     .replies { grid-column: 2; grid-row: 1 / span 2; text-align: center; min-width: 46px; }
     .replies b { display: block; font-family: var(--font-display); font-weight: 900; font-size: 22px; color: var(--fg); line-height: 1.1; }
-    .replies span { font-size: 11.5px; color: var(--fg-faint); }
+    .replies span { font-size: 12px; color: var(--fg-faint); }
     .hot { color: var(--warn); font-weight: 700; }
 
     @container home (max-width: 860px) {

@@ -113,7 +113,7 @@
     .strip .stat-n { font-size: 22px; }
     .strip .stat-l { font-size: 12.5px; }
     .spark { width: 100%; height: auto; display: block; direction: ltr; overflow: visible; }
-    .spark text { font-family: inherit; fill: var(--fg-faint); font-size: 10px; }
+    .spark text { font-family: inherit; fill: var(--fg-faint); font-size: 11px; }
     .spark .strong { fill: var(--fg); font-weight: 700; }
     .spark .val { fill: var(--honey-text); font-weight: 800; font-size: 11px; }
     .left { min-width: 0; }

@@ -188,5 +188,7 @@
     }
     @container home (max-width: 520px) {
         .cats { grid-template-columns: minmax(0, 1fr); }
+        /* בנייד ההדר כבר מציג את הלוגו, אז כאן הוא קטן יותר ולא תופס חלק גדול מהמסך */
+        .hero-logo { --logo: 68px; margin-top: 4px; }
     }
 </style>

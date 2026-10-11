@@ -160,6 +160,6 @@
     @container home (max-width: 440px) {
         .count { gap: 5px; }
         .count > div { padding-inline: 2px; }
-        .count span { font-size: 11.5px; }
+        .count span { font-size: 12px; }
     }
 </style>

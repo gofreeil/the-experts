@@ -10,6 +10,7 @@
 	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
+	import ScrollTopButton from "$lib/components/ScrollTopButton.svelte";
 	import WelcomeScreen from "$lib/components/WelcomeScreen.svelte";
 	import AdInterstitial from "$lib/components/AdInterstitial.svelte";
 	import { beforeNavigate } from "$app/navigation";
@@ -21,6 +22,11 @@
 	beforeNavigate(() => {
 		closeAdPopup();
 	});
+
+	// המשתמש המחובר, כפי שההדר והמגירה בנייד מציגים אותו (null = אנונימי)
+	const currentUser = $derived(
+		data.user ? { username: data.user.name || data.user.email, avatar_url: data.user.image || null } : null
+	);
 </script>
 
 <svelte:head>
@@ -38,11 +44,11 @@
 <WelcomeScreen />
 
 <CoinAnimation />
-<MobileAdsDrawer />
+<MobileAdsDrawer currentUser={currentUser ?? undefined} />
 <MobileAdPopup />
 <div class="site-bg min-h-screen flex flex-col">
 	<BuildNotice />
-	<Header currentUser={data.user ? { username: data.user.name || data.user.email, avatar_url: data.user.image || null } : null} />
+	<Header {currentUser} />
 
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
@@ -57,6 +63,8 @@
 
 <!-- פרסומת-הביניים (נייד) — שכבה גלובלית; נפתחת רק דרך adGate -->
 <AdInterstitial />
+
+<ScrollTopButton />
 
 <style>
 	/* פס ההתקדמות של הניווט */

@@ -66,7 +66,7 @@
 .home .eyebrow::before { content: ""; width: 18px; height: 4px; border-radius: 2px; background: var(--honey); }
 .home h2.title { font-family: var(--font-display); font-weight: 900; font-size: clamp(26px, 4.2cqi, 40px); line-height: 1.15; text-wrap: balance; }
 .home .lede { color: var(--fg-mute); margin-top: 10px; text-wrap: pretty; }
-.home .demo-tag { display: inline-block; margin-inline-start: 10px; padding: 1px 9px; border: 1px dashed var(--honey-deep); border-radius: 999px; color: var(--honey-text); font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em; vertical-align: middle; }
+.home .demo-tag { display: inline-block; margin-inline-start: 10px; padding: 1px 9px; border: 1px dashed var(--honey-deep); border-radius: 999px; color: var(--honey-text); font-size: 12px; font-weight: 700; letter-spacing: 0.02em; vertical-align: middle; }
 
 /* כפתורים וצ'יפים */
 .home .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; border-radius: 6px; border: 1px solid transparent; font-weight: 700; font-size: 15px; line-height: 1.2; transition: background 0.18s, border-color 0.18s, transform 0.18s; white-space: nowrap; }
@@ -83,6 +83,12 @@
 .home .chip:hover { color: var(--fg); border-color: var(--fg-faint); }
 .home .chip[aria-pressed="true"] { color: var(--fg); background: var(--surface); border-color: var(--c, var(--honey-deep)); }
 .home .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--honey)); flex: none; }
+
+/* במגע: יעדי לחיצה בגובה נוח (לפחות 40px), בלי להגדיל את המראה בדסקטופ */
+@media (pointer: coarse), (max-width: 768px) {
+    .home .btn-sm, .home .chip { min-height: 40px; }
+    .home .btn { min-height: 44px; }
+}
 
 /* אווטאר עגול */
 .home .mini-av { width: 28px; height: 28px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #0a1d33; background: var(--c2, var(--honey)); border-radius: 50%; box-shadow: 0 0 0 2px var(--surface); flex: none; }
