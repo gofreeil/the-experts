@@ -138,7 +138,8 @@
     /* ───── גיבור ───── */
     .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
     .hero-title { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: clamp(18px, 3cqi, 32px); }
-    .hero-logo { box-sizing: border-box; width: clamp(80px, 11cqi, 108px); height: auto; aspect-ratio: 1; margin-top: 10px; padding: 10%; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--line); object-fit: contain; }
+    /* padding באחוזים נמדד מרוחב ההורה ולא מהתמונה — בגלל זה הלוגו נעלם; לכן מחושב מגודל הלוגו עצמו */
+    .hero-logo { --logo: clamp(80px, 11cqi, 108px); box-sizing: border-box; width: var(--logo); height: auto; aspect-ratio: 1; margin-top: 10px; padding: calc(var(--logo) * 0.1); border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--line); object-fit: contain; }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(16px, 2.6cqi, 28px); align-items: stretch; }
     /* שני כרטיסים שווי גובה: מבוא ופעולה מימין, "איך זה עובד" משמאל */
     .hero-text, .howbox { min-width: 0; display: flex; flex-direction: column; padding: clamp(18px, 2.8cqi, 28px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 24px rgba(10, 45, 80, 0.1); }
