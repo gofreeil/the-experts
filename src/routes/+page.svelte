@@ -88,7 +88,7 @@
                 <svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>מבוקש: פתרון
             </div>
             <h1>יש בעיה? <em>שימו עליה פרס.</em></h1>
-            <img class="hero-logo" src="/images/experts-logo.webp" alt="לוגו המומחים של העם" width="400" height="344" fetchpriority="high" decoding="async" />
+            <img class="hero-logo" src="/images/experts-logo.webp" alt="לוגו המומחים של העם" width="108" height="108" fetchpriority="high" decoding="async" />
         </div>
         <div class="inner hero-grid">
             <div class="hero-text">
@@ -225,7 +225,7 @@
     /* ───── גיבור ───── */
     .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
     .hero-title { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: clamp(18px, 3cqi, 32px); }
-    .hero-logo { height: clamp(64px, 9cqi, 92px); width: auto; margin-top: 10px; object-fit: contain; }
+    .hero-logo { box-sizing: border-box; width: clamp(80px, 11cqi, 108px); height: auto; aspect-ratio: 1; margin-top: 10px; padding: 10%; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--line); object-fit: contain; }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
     .hero-text { min-width: 0; }
     .wanted { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--honey-deep); color: var(--honey-text); padding: 5px 14px; border-radius: 4px; font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: 0.04em; transform: rotate(-1.5deg); margin-bottom: 14px; }
