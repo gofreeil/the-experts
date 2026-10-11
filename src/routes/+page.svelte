@@ -97,8 +97,8 @@
     <PaidSection headTitle="כסף שחולק" />
     <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
 
-    <MeetupSection headTitle="מפגש מומחים" />
-    <FloorLink href="/meetup" label="מפגש מומחים" note="מועד, סדר יום ומה קורה במפגש" />
+    <MeetupSection headTitle="מפגשי מומחים" />
+    <FloorLink href="/meetup" label="מפגשי מומחים" note="מועד, סדר יום ומה קורה במפגש" />
 
     <RecentSolutions problems={all} />
     <FloorLink href="/problems" label="לוח הבעיות" note="כל הצעת פתרון מופיעה בדף הבעיה שלה" />

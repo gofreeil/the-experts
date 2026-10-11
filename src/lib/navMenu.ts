@@ -10,12 +10,12 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-    { href: '/', key: 'nav_home', icon: '🏠', title: 'דף הבית', lede: 'הכוורת במבט אחד: בעיות, פרסים, מפגש מומחים ופתרונות.' },
+    { href: '/', key: 'nav_home', icon: '🏠', title: 'דף הבית', lede: 'הכוורת במבט אחד: בעיות, פרסים, מפגשי מומחים ופתרונות.' },
     { href: '/how-it-works', key: 'nav_how', icon: '💡', title: 'איך זה עובד', lede: 'ארבעה צעדים מהבעיה ועד התשלום למי שפתר אותה.' },
     { href: '/problems', key: 'nav_problems', icon: '🧩', title: 'לוח הבעיות', lede: 'כל הבעיות הפתוחות, עם פרס. מרימים יד ומציעים פתרון.' },
     { href: '/problems/new', key: 'nav_new_problem', icon: '➕', title: 'העלאת בעיה', lede: 'מתארים בעיה, קובעים פרס, והמומחים כבר יראו אותה.' },
     { href: '/paid', key: 'nav_paid', icon: '💰', title: 'כסף שחולק', lede: 'כמה כסף עבר לפותרי בעיות, ולאן הוא הלך. הספרים פתוחים.' },
-    { href: '/meetup', key: 'nav_meetup', icon: '🎥', title: 'מפגש מומחים', lede: 'פעם בחודש, בשידור חי: הבעיות הגדולות מול המומחים.' },
+    { href: '/meetup', key: 'nav_meetup', icon: '🎥', title: 'מפגשי מומחים', lede: 'פעם בחודש, בשידור חי: הבעיות הגדולות מול המומחים.' },
     { href: '/solved', key: 'nav_solved', icon: '✅', title: 'פתרונות שהתקבלו', lede: 'בעיות שנסגרו, מי פתר אותן ובכמה.' },
     { href: '/categories', key: 'nav_categories', icon: '🗂️', title: 'תחומים', lede: 'שמונה צוותי מומחים, ובעיות פתוחות בכל תחום.' },
     { href: '/archive', key: 'nav_archive', icon: '📚', title: 'ארכיון ודיונים', lede: 'מפגשים קודמים והדיונים שמתנהלים עכשיו.' },

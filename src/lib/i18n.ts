@@ -18,7 +18,7 @@ register('he', () => Promise.resolve({
     nav_problems: "לוח הבעיות",
     nav_new_problem: "העלאת בעיה",
     nav_paid: "כסף שחולק",
-    nav_meetup: "מפגש מומחים",
+    nav_meetup: "מפגשי מומחים",
     nav_solved: "פתרונות שהתקבלו",
     nav_categories: "תחומים",
     nav_archive: "ארכיון ודיונים",
