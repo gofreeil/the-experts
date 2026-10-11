@@ -2,7 +2,7 @@
     import { headerHeight } from '$lib/actions/headerHeight';
     import { t, locale } from 'svelte-i18n';
 	import { get } from 'svelte/store';
-    import { goto, beforeNavigate } from "$app/navigation";
+    import { goto } from "$app/navigation";
     import { onMount } from "svelte";
     import { page } from '$app/state';
 
@@ -122,27 +122,6 @@
         pingServer();
         const usersInterval = setInterval(pingServer, 30000);
 
-        // hover על כפתור אודות - תמונה ב-fixed position
-        const preview = document.getElementById('about-preview') as HTMLElement | null;
-        const btnWrapper = document.getElementById('about-btn-wrapper');
-        if (preview && btnWrapper) {
-            btnWrapper.addEventListener('mouseenter', () => {
-                const rect = btnWrapper.getBoundingClientRect();
-                const imgW = 700;
-                let left = rect.left + rect.width / 2 - imgW / 2;
-                if (left < 8) left = 8;
-                if (left + imgW > window.innerWidth - 8) left = window.innerWidth - imgW - 8;
-                preview.style.left = left + 'px';
-                preview.style.top = (rect.bottom + 10) + 'px';
-                preview.style.opacity = '1';
-                preview.style.transform = 'scale(1)';
-            });
-            btnWrapper.addEventListener('mouseleave', () => {
-                preview.style.opacity = '0';
-                preview.style.transform = 'scale(0.05)';
-            });
-        }
-
         document.addEventListener("click", handleClickOutside);
         return () => {
             clearInterval(usersInterval);
@@ -204,18 +183,6 @@
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string) => { void _loc; return get(t)(k); };
-
-	// סגור תמונת preview של אודות בזמן ניווט
-	beforeNavigate(() => {
-		const preview = document.getElementById('about-preview') as HTMLElement | null;
-		if (preview) {
-			// עיכוב של שנייה אחת כדי שהתמונה תישאר עוד רגע
-			// שקיפות הולכת וגוברת ללא הקטנה
-			setTimeout(() => {
-				preview.style.opacity = '0';
-			}, 1000);
-		}
-	});
 
 </script>
 
@@ -396,8 +363,8 @@
                 <!-- תפריט נפתח עם כל דפי האתר -->
                 <NavMenu variant="desktop" />
 
-                <!-- כפתור אודות עם תצוגה מקדימה -->
-                <div class="relative" id="about-btn-wrapper">
+                <!-- כפתור אודות -->
+                <div class="relative">
                     <button
                         class="relative flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
                         style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
@@ -407,25 +374,6 @@
                     >
                         {tFn("about")}
                     </button>
-                </div>
-                <!-- תמונת preview - position:fixed כדי לחמוק מ-overflow של ההדר -->
-                <div id="about-preview"
-                     style="position:fixed; z-index:9999; pointer-events:none;
-                            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-                            opacity:0; transform:scale(0.05);
-                            transform-origin: top center;">
-                    <img
-                        src="/images/community-neighborhood.webp"
-                        alt="תצוגה מקדימה של אתר קהילה בשכונה"
-                        width="1200"
-                        height="801"
-                        loading="lazy"
-                        decoding="async"
-                        style="width:580px; height:auto; border-radius:24px;
-                               -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
-                               mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
-                               filter: drop-shadow(0 0 40px rgba(0,0,0,0.95)) drop-shadow(0 0 80px rgba(0,0,0,0.7));"
-                    />
                 </div>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
