@@ -46,6 +46,7 @@
         <div class="inner hero-title">
             <h1>הציבו אתגר למומחים של העם, <em>ותנו לחכמת ההמונים לחשוב על פתרון!</em></h1>
             <img class="hero-logo" src="/images/experts-logo.webp" alt="לוגו המומחים של העם" width="108" height="108" fetchpriority="high" decoding="async" />
+            <div class="how-frame"><FancyHeading title="איך זה עובד" as="h2" /></div>
         </div>
         <div class="inner hero-grid">
             <div class="hero-text">
@@ -65,7 +66,6 @@
             </div>
 
             <div class="howbox">
-                <FancyHeading title="איך זה עובד" />
                 <ol class="how">
                     {#each STEPS as s, i}
                         <li>
@@ -156,7 +156,8 @@
     .stat-l { color: var(--fg-faint); font-size: 12.5px; margin-top: 4px; line-height: 1.3; }
 
     /* ───── איך זה עובד (בכרטיס בגיבור): ציר זמן עם קו מחבר בין השלבים ───── */
-    .how { list-style: none; margin: 16px 0 0; padding: 0; display: grid; }
+    .how-frame { margin-top: 12px; padding: 6px clamp(14px, 3cqi, 28px) 8px; max-width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 4px 14px rgba(10, 45, 80, 0.08); }
+    .how { list-style: none; margin: 0; padding: 0; display: grid; }
     .how li { position: relative; display: flex; align-items: flex-start; gap: 14px; padding-bottom: 16px; }
     .how li:last-child { padding-bottom: 0; }
     .how li:not(:last-child)::before { content: ""; position: absolute; inset-inline-start: 18px; top: 42px; bottom: 4px; width: 2px; border-radius: 2px; background: linear-gradient(var(--honey), var(--line)); }
