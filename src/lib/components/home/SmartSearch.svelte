@@ -11,8 +11,6 @@
     // מתקן טעויות הקלדה ופריסת מקלדת, ומכיר מילים נרדפות לכל תחום (ראו smartSearch.ts).
     let { problems }: { problems: Problem[] } = $props();
 
-    const EXAMPLES = ['עורך דין מעל 5000', 'אפליקציה לחוגים', 'בעיות פרטיות מהשבוע', 'מומחה לסוכרת'];
-
     let q = $state('');
     // /?q=... פותח את הדף עם חיפוש מוכן (קישורים, בדיקות)
     onMount(() => {
@@ -108,14 +106,7 @@
             {#if q}<button class="clear" type="button" aria-label="נקו חיפוש" onclick={() => (q = '')}>×</button>{/if}
         </form>
 
-        {#if !res}
-            <div class="ex">
-                <span>נסו:</span>
-                {#each EXAMPLES as ex}
-                    <button class="chip" type="button" onclick={() => (q = ex)}>{ex}</button>
-                {/each}
-            </div>
-        {:else}
+        {#if res}
             <div class="panel" aria-live="polite">
                 {#if res.parsed.chips.length || res.concepts.length}
                     <div class="understood">
@@ -175,7 +166,6 @@
     .clear:hover { color: var(--fg); }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
-    .ex { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 8px; margin-top: 10px; color: var(--fg-faint); font-size: 13.5px; }
     .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; color: var(--fg-mute); font-size: 13.5px; transition: border-color 0.15s, color 0.15s; }
     .chip:hover { border-color: var(--honey-deep); color: var(--honey-text); }
 
