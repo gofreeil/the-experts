@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Problem } from '$lib/problemsStore.svelte';
     import { formatTimeAgo } from '$lib/problemsStore.svelte';
-    import { catColor, catShort, fmt, handsOf, backersOf, tierOf } from '$lib/homeData';
+    import { catColor, catShort, fmt, handsOf, backersOf, tierOf, PLEDGE_AMOUNTS } from '$lib/homeData';
     import { adThenGo } from './nav';
 
     let { p, flash = false, onpledge }: { p: Problem; flash?: boolean; onpledge?: (id: string, amount: number) => void } = $props();
@@ -63,7 +63,7 @@
                             הוסיפו לפרס
                         </button>
                         <span class="pledge-menu" role="group" aria-label="סכום להוספה">
-                            {#each [50, 100, 500] as amt}
+                            {#each PLEDGE_AMOUNTS as amt}
                                 <button type="button" onclick={() => pledge(amt)}>+{amt}</button>
                             {/each}
                         </span>

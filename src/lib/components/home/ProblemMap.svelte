@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Problem } from '$lib/problemsStore.svelte';
     import { formatTimeAgo } from '$lib/problemsStore.svelte';
-    import { catColor, catShort, fmt, handsOf, backersOf } from '$lib/homeData';
+    import { catColor, catShort, fmt, handsOf, backersOf, PLEDGE_AMOUNTS } from '$lib/homeData';
     import { adThenGo } from './nav';
     import FancyHeading from './FancyHeading.svelte';
     import OrnamentDivider from './OrnamentDivider.svelte';
@@ -12,7 +12,8 @@
         isVisible,
         selectedId = $bindable(null),
         onshow,
-        onmore
+        onmore,
+        onpledge
     }: {
         wanted: Problem[];
         recent: Problem[];
@@ -20,9 +21,22 @@
         selectedId?: string | null;
         onshow?: (id: string) => void;
         onmore?: () => void;
+        onpledge?: (id: string, amount: number) => void;
     } = $props();
 
     let hoverId = $state<string | null>(null);
+
+    // אישור קצר אחרי הוספה לפרס, במקום הכפתורים של אותו כרטיס
+    let thanks = $state<{ id: string; amt: number } | null>(null);
+    let thanksTimer: ReturnType<typeof setTimeout> | undefined;
+    $effect(() => () => clearTimeout(thanksTimer));
+
+    function pledge(p: Problem, amt: number) {
+        onpledge?.(p.id, amt);
+        thanks = { id: p.id, amt };
+        clearTimeout(thanksTimer);
+        thanksTimer = setTimeout(() => (thanks = null), 2200);
+    }
 
     const byId = $derived(new Map([...wanted, ...recent].map((p) => [p.id, p])));
     const top = $derived(wanted[0] ?? recent[0] ?? null);
@@ -37,25 +51,43 @@
 {#snippet group(list: Problem[], label: string)}
     <div class="grid" role="group" aria-label={label} onmouseleave={() => (hoverId = null)}>
         {#each list as p (p.id)}
-            <button
-                class="card"
-                class:dim={!isVisible(p)}
-                class:sel={p.id === pickedId}
-                type="button"
-                style="--c:{catColor(p.category)}"
-                aria-label="{p.title}, פרס {p.bounty} שקלים"
-                aria-pressed={p.id === pickedId}
-                onmouseenter={() => (hoverId = p.id)}
-                onfocus={() => (hoverId = p.id)}
-                onblur={() => (hoverId = null)}
-                onclick={() => (selectedId = p.id)}
-            >
-                <img class="c-img" src="/images/problems/{artOf(p.category)}.svg" alt="" width="400" height="260" loading="lazy" decoding="async" />
-                <span class="c-body">
-                    <span class="c-cat"><span class="dot"></span>{catShort(p.category)}</span>
-                    <span class="c-title">{p.title}</span>
-                </span>
-            </button>
+            <div class="cell" class:dim={!isVisible(p)} style="--c:{catColor(p.category)}">
+                <button
+                    class="card"
+                    class:sel={p.id === pickedId}
+                    type="button"
+                    aria-label="{p.title}, פרס {p.bounty} שקלים"
+                    aria-pressed={p.id === pickedId}
+                    onmouseenter={() => (hoverId = p.id)}
+                    onfocus={() => (hoverId = p.id)}
+                    onblur={() => (hoverId = null)}
+                    onclick={() => (selectedId = p.id)}
+                >
+                    <span class="c-media">
+                        <img class="c-img" src="/images/problems/{artOf(p.category)}.svg" alt="" width="400" height="260" loading="lazy" decoding="async" />
+                        <span class="c-price"><span class="num">{fmt(p.bounty)}</span></span>
+                    </span>
+                    <span class="c-body">
+                        <span class="c-cat">
+                            <span class="dot"></span>{catShort(p.category)}
+                            <span class="c-sub">{p.type === 'community' ? `${backersOf(p)} תורמים` : 'פרטית'}</span>
+                        </span>
+                        <span class="c-title">{p.title}</span>
+                    </span>
+                </button>
+                <div class="pledge">
+                    {#if p.type !== 'community'}
+                        <span class="pl-l">בעיה פרטית, הפרס ממבקש יחיד</span>
+                    {:else if thanks?.id === p.id}
+                        <span class="thanks" role="status">✓ נוספו <span class="num">{fmt(thanks.amt)}</span> לפרס, תודה!</span>
+                    {:else}
+                        <span class="pl-l">הוסיפו לפרס</span>
+                        {#each PLEDGE_AMOUNTS as amt}
+                            <button class="pl-b" type="button" aria-label="הוסיפו {amt} שקלים לפרס: {p.title}" onclick={() => pledge(p, amt)}>+{amt}</button>
+                        {/each}
+                    {/if}
+                </div>
+            </div>
         {/each}
     </div>
 {/snippet}
@@ -107,20 +139,30 @@
 
     /* כל הבעיות באותו גודל ובאותה צורה: שלוש בשורה */
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 10px; margin-top: 14px; }
+    .cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; transition: opacity 0.25s; }
+    .cell.dim { opacity: 0.25; filter: grayscale(0.7); }
     .card {
-        display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0;
+        display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; flex: 1;
         padding: 8px 8px 12px; text-align: right; color: var(--fg); cursor: pointer;
         background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px;
-        transition: border-color 0.15s, background 0.15s, opacity 0.25s;
+        transition: border-color 0.15s, background 0.15s;
     }
     .card:hover, .card:focus-visible { border-color: var(--honey-deep); background: #fff; outline: none; }
     .card.sel { background: #fff; border-color: var(--honey-deep); box-shadow: inset 0 0 0 2px var(--honey-deep); }
-    .card.dim { opacity: 0.25; filter: grayscale(0.7); }
-    .c-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 9px; flex: none; }
+    .c-media { position: relative; display: block; flex: none; }
+    .c-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 9px; }
+    .c-price { position: absolute; inset-block-end: 6px; inset-inline-start: 6px; padding: 2px 10px; border-radius: 999px; background: var(--honey); color: var(--honey-ink); font-family: var(--font-display); font-weight: 900; font-size: 16px; line-height: 1.4; box-shadow: 0 2px 6px rgba(10, 45, 80, 0.25); }
     .c-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-    .c-cat { display: inline-flex; align-items: center; gap: 6px; padding-inline: 4px; font-size: 12px; font-weight: 700; color: var(--fg-mute); }
+    .c-cat { display: flex; align-items: center; gap: 6px; padding-inline: 4px; font-size: 12px; font-weight: 700; color: var(--fg-mute); }
     .c-cat .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+    .c-sub { margin-inline-start: auto; font-weight: 500; color: var(--fg-faint); }
     .c-title { padding-inline: 4px; font-size: 13.5px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: balance; }
+
+    .pledge { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 32px; padding-inline: 4px; }
+    .pl-l { margin-inline-end: auto; font-size: 12.5px; color: var(--fg-mute); }
+    .pl-b { padding: 4px 11px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); font-size: 13px; font-weight: 700; line-height: 1.4; transition: border-color 0.15s, color 0.15s; }
+    .pl-b:hover { border-color: var(--honey-deep); color: var(--honey-text); }
+    .thanks { font-size: 13px; font-weight: 700; color: var(--ok); }
 
     .map-sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; padding: 14px 4px 4px; }
     .sel-text { min-width: 0; }
@@ -143,7 +185,7 @@
         /* בנייד: כרטיס בשורה, תמונה בצד */
         .grid { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; }
         .card { flex-direction: row; align-items: center; gap: 10px; padding: 8px; }
-        .c-img { width: 42%; }
+        .c-media { width: 42%; }
         .c-body { flex: 1; }
         .c-title { font-size: 14px; }
     }

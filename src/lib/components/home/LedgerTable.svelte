@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { LEDGER, SOLVED_COUNT, catColor, catShort, fmt } from '$lib/homeData';
+    import { SOLVED_COUNT, catColor, catShort, fmt, type Solved } from '$lib/homeData';
+    import { expertBySlug } from '$lib/expertsData';
 
-    let { rows, label = 'פתרונות אחרונים ששולמו' }: { rows: typeof LEDGER; label?: string } = $props();
+    let { rows, label = 'פתרונות אחרונים ששולמו' }: { rows: Solved[]; label?: string } = $props();
 
     const sum = $derived(rows.reduce((s, r) => s + r.amt, 0));
 </script>
@@ -11,9 +12,10 @@
         <span role="columnheader">הבעיה</span><span role="columnheader">הפותר</span><span role="columnheader">נפתר תוך</span><span role="columnheader" class="end">שולם</span>
     </div>
     {#each rows as r}
+        {@const ex = expertBySlug(r.ex)}
         <div class="lg-row" role="row">
             <div class="lg-t" role="cell"><b>{r.t}</b><small><span class="dot" style="--c:{catColor(r.c)}"></span>{catShort(r.c)}</small></div>
-            <div class="lg-who" role="cell">{r.who}</div>
+            <div class="lg-who" role="cell">{#if ex}<a href="/experts/{ex.slug}">{ex.n}</a>{/if}</div>
             <div class="lg-days" role="cell">{r.days} ימים</div>
             <div class="lg-amt" role="cell"><span class="num">{fmt(r.amt)}</span></div>
         </div>
@@ -33,6 +35,7 @@
     .lg-t b { display: block; font-weight: 700; font-size: 15px; line-height: 1.35; }
     .lg-t small { display: flex; align-items: center; gap: 7px; margin-top: 2px; color: var(--fg-faint); font-size: 12.5px; }
     .lg-who { font-size: 14px; color: var(--fg-mute); line-height: 1.35; }
+    .lg-who a:hover { color: var(--honey-text); text-decoration: underline; text-underline-offset: 3px; }
     .lg-days { font-size: 14px; color: var(--fg-mute); }
     .lg-amt { font-family: var(--font-display); font-weight: 900; color: var(--honey-text); font-size: 19px; text-align: left; }
     .lg-empty { padding: 28px 20px; text-align: center; color: var(--fg-mute); border-top: 1px solid var(--line-soft); }

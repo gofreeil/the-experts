@@ -32,7 +32,7 @@
                             <span class="ico" aria-hidden="true">
                                 {#if team?.image}<img src={team.image} alt="" width="56" height="56" loading="lazy" decoding="async" />{:else}{team?.emoji ?? ''}{/if}
                             </span>
-                            <h2>{team?.name ?? c.short}</h2>
+                            <h2><a class="name" href="/categories/{c.slug}">{team?.name ?? c.short}</a></h2>
                         </div>
                         {#if team?.desc}<p class="desc">{team.desc}</p>{/if}
                         <dl class="stats">
@@ -43,7 +43,7 @@
                         </dl>
                         <div class="acts">
                             <a class="btn btn-primary btn-sm" href="/problems?cat={c.slug}">בעיות בתחום</a>
-                            <a class="btn btn-ghost btn-sm" href="/experts?cat={c.slug}">מומחי התחום</a>
+                            <a class="btn btn-ghost btn-sm" href="/categories/{c.slug}">דף הצוות</a>
                         </div>
                     </article>
                 {/each}
@@ -60,6 +60,7 @@
     .ico { width: 52px; height: 52px; flex: none; display: grid; place-items: center; font-size: 24px; background: color-mix(in srgb, var(--c) 38%, var(--surface)); border-radius: 14px; overflow: hidden; }
     .ico img { width: 100%; height: 100%; object-fit: cover; }
     h2 { font-size: 19px; font-weight: 800; line-height: 1.25; }
+    .name:hover { color: var(--honey-text); text-decoration: underline; text-underline-offset: 3px; }
     .desc { color: var(--fg-mute); font-size: 14.5px; white-space: pre-line; text-wrap: pretty; }
     .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding-top: 10px; border-top: 1px solid var(--line-soft); }
     .stats dt { color: var(--fg-faint); font-size: 12px; line-height: 1.3; }

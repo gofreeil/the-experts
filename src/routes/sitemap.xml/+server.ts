@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { listApproved } from '$lib/server/adsStore';
+import { teams } from '$lib/teamsData';
 
 /** הדומיין הקנוני של האתר (ב-seo.ts אין SITE_URL - הקבוע חי כאן) */
 const SITE_URL = 'https://experts.gofreeil.com';
@@ -37,6 +38,9 @@ function urlEntry(path: string, opts: { lastmod?: string; priority?: number; cha
 
 export const GET: RequestHandler = async ({ setHeaders }) => {
     const urls: string[] = STATIC_PAGES.map((p) => urlEntry(p.path, { priority: p.priority, changefreq: p.changefreq }));
+
+    // דף לכל צוות (/categories/[slug]). דפי המומחים לא נכללים: הם נתוני הדגמה עד שיהיה שרת.
+    for (const t of teams) urls.push(urlEntry(`/categories/${t.slug}`, { priority: 0.5, changefreq: 'weekly' }));
 
     // דפי נחיתה של פרסומות מאושרות ופעילות (/ads/[id]) - אם Strapi נופל, ממשיכים בלעדיהן
     try {

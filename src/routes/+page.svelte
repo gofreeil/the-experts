@@ -125,7 +125,7 @@
     <!-- ═════ דוגמאות: המבוקשים ביותר והאחרונות ═════ -->
     <section class="section alt examples-sec">
         <div class="inner">
-            <ProblemMap {wanted} {recent} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
+            <ProblemMap {wanted} {recent} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
         </div>
     </section>
     <FloorLink href="/problems" label="לוח הבעיות" note="שלוש עם הפרס הגבוה ביותר ושלוש האחרונות שהועלו" />
