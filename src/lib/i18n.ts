@@ -2,7 +2,7 @@ import { register, init } from 'svelte-i18n';
 
 register('he', () => Promise.resolve({
     welcome: "המומחים של העם",
-    app_description: "כל יתרונות השכונה תחת קורת גג אחת",
+    app_description: "פותרים את הבעיות הציבוריות!",
     beta_notice: "האתר בבנייה ומשמש למטרות תצוגה בלבד בשלב זה",
     hello: "שלום",
     greeting: "שלום,",
@@ -242,7 +242,7 @@ register('he', () => Promise.resolve({
 
 register('en', () => Promise.resolve({
     welcome: "The Nation's Experts",
-    app_description: "All your neighborhood's benefits under one roof",
+    app_description: "Solving public problems!",
     beta_notice: "The site is under construction and is for demonstration purposes only at this stage",
     hello: "Hello",
     greeting: "Hello,",
@@ -469,7 +469,7 @@ register('en', () => Promise.resolve({
 
 register('ru', () => Promise.resolve({
     welcome: "Эксперты народа",
-    app_description: "Все преимущества района под одной крышей",
+    app_description: "Решаем общественные проблемы!",
     beta_notice: "Сайт находится в разработке и на данном этапе используется только в демонстрационных целях",
     hello: "Привет",
     greeting: "Привет,",
