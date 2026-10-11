@@ -101,7 +101,7 @@
 </div>
 
 <style>
-    .mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(12px, 2cqi, 18px); min-width: 0; box-shadow: 0 8px 28px rgba(10, 45, 80, 0.1); }
+    .mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(12px, 2cqi, 18px); min-width: 0; max-width: 1000px; margin-inline: auto; box-shadow: 0 8px 28px rgba(10, 45, 80, 0.1); }
     .all-row { margin-top: 14px; text-align: left; }
     .all-link { background: none; border: 0; padding: 0; color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
@@ -133,6 +133,10 @@
     .amt .sub { font-size: 12.5px; color: var(--fg-faint); margin-top: 4px; }
     .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 
+    @container home (min-width: 800px) {
+        .c-img { aspect-ratio: 16 / 8; }
+        .c-title { font-size: 15.5px; }
+    }
     @container home (max-width: 560px) {
         .map-sel { grid-template-columns: minmax(0, 1fr); }
         .amt { text-align: right; }

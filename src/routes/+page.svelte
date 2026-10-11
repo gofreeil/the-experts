@@ -13,6 +13,7 @@
     import ExpertsSection from '$lib/components/home/ExpertsSection.svelte';
     import ComposerSection from '$lib/components/home/ComposerSection.svelte';
     import FloorLink from '$lib/components/home/FloorLink.svelte';
+    import FancyHeading from '$lib/components/home/FancyHeading.svelte';
 
     // הרינדור הראשון משתמש בבעיות ההתחלתיות (זהה בשרת ובלקוח). אחרי הטעינה עוברים לנתוני הדפדפן.
     let mounted = $state(false);
@@ -89,7 +90,6 @@
                 <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר.</p>
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
-                    <a class="btn btn-ghost" href="#board">אני מומחה, להראות לי בעיות</a>
                 </div>
                 <p class="trust">
                     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2l6.5 2.5v5c0 4-2.7 6.8-6.5 8.5-3.8-1.7-6.5-4.5-6.5-8.5v-5z" /><path d="M7 10l2.2 2.2L13.2 8" /></svg>
@@ -103,25 +103,31 @@
                 {#if DEMO_DATA}<p class="hero-demo"><span class="demo-tag" style="margin:0">נתוני הדגמה</span> הסכומים שחולקו ומספר הפתרונות הם דוגמה עד חיבור לשרת.</p>{/if}
             </div>
 
-            <ProblemMap {wanted} {recent} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
-        </div>
-    </section>
-
-    <!-- ═════ איך זה עובד ═════ -->
-    <section class="section alt steps-sec">
-        <div class="inner">
-            <div class="steps">
-                {#each STEPS as s, i}
-                    <div class="step">
-                        <div class="step-n">{i + 1}</div>
-                        <h3>{s.t}</h3>
-                        <p>{s.d}</p>
-                    </div>
-                {/each}
+            <div class="howbox">
+                <FancyHeading title="איך זה עובד" />
+                <ol class="how">
+                    {#each STEPS as s, i}
+                        <li>
+                            <span class="step-n">{i + 1}</span>
+                            <div>
+                                <h3>{s.t}</h3>
+                                <p>{s.d}</p>
+                            </div>
+                        </li>
+                    {/each}
+                </ol>
+                <div class="how-more"><a href="/how-it-works">איך זה עובד, בפירוט</a></div>
             </div>
         </div>
     </section>
-    <FloorLink href="/how-it-works" label="איך זה עובד" note="ארבעה צעדים מהבעיה ועד התשלום" />
+
+    <!-- ═════ דוגמאות: המבוקשים ביותר והאחרונות ═════ -->
+    <section class="section alt examples-sec">
+        <div class="inner">
+            <ProblemMap {wanted} {recent} {isVisible} bind:selectedId onshow={showInBoard} onmore={gotoBoard} />
+        </div>
+    </section>
+    <FloorLink href="/problems" label="לוח הבעיות" note="שלוש עם הפרס הגבוה ביותר ושלוש האחרונות שהועלו" />
 
     <PaidSection />
     <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
@@ -243,15 +249,17 @@
     .stat-l { color: var(--fg-faint); font-size: 13px; margin-top: 4px; line-height: 1.35; }
     .hero-demo { margin-top: 14px; color: var(--fg-faint); font-size: 12.5px; }
 
-    /* ───── איך זה עובד ───── */
-    .steps-sec { padding-block: clamp(26px, 4cqi, 48px); }
-    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .step { padding-inline: 22px 0; padding-inline-end: 22px; }
-    .step:first-child { padding-inline-start: 0; }
-    .step + .step { padding-inline-start: 22px; }
-    .step-n { width: 42px; height: 42px; display: grid; place-items: center; background: var(--surface); color: var(--honey-text); border-radius: 50%; font-family: var(--font-display); font-weight: 900; font-size: 20px; margin-bottom: 14px; box-shadow: 0 0 0 1px var(--line); }
-    .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
-    .step p { color: var(--fg-mute); font-size: 14.5px; text-wrap: pretty; }
+    /* ───── איך זה עובד (בכרטיס בגיבור) ───── */
+    .howbox { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(14px, 2.4cqi, 22px); min-width: 0; box-shadow: 0 8px 28px rgba(10, 45, 80, 0.1); }
+    .how { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
+    .how li { display: flex; align-items: flex-start; gap: 14px; }
+    .how li + li { border-top: 1px solid var(--line-soft); padding-top: 14px; }
+    .step-n { flex: none; width: 38px; height: 38px; display: grid; place-items: center; background: var(--surface-2); color: var(--honey-text); border-radius: 50%; font-family: var(--font-display); font-weight: 900; font-size: 19px; box-shadow: 0 0 0 1px var(--line); }
+    .how h3 { font-size: 16.5px; font-weight: 800; margin-bottom: 2px; }
+    .how p { color: var(--fg-mute); font-size: 14.5px; text-wrap: pretty; }
+    .how-more { margin-top: 14px; text-align: left; }
+    .how-more a { color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+    .examples-sec { padding-block: clamp(26px, 4cqi, 48px); }
 
     /* ───── לוח הבעיות ───── */
     .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; justify-content: space-between; padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid var(--line-soft); }
@@ -285,13 +293,8 @@
     @container home (max-width: 900px) {
         .hero-grid { grid-template-columns: minmax(0, 1fr); }
         .cards { grid-template-columns: minmax(0, 1fr); }
-        .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 0; }
-        .step:nth-child(odd) { padding-inline-start: 0; }
-        .step:nth-child(even) { padding-inline-start: 22px; }
     }
     @container home (max-width: 520px) {
-        .steps { grid-template-columns: minmax(0, 1fr); }
-        .step, .step + .step, .step:nth-child(even) { padding-inline: 0; }
         .cats { grid-template-columns: minmax(0, 1fr); }
     }
 </style>
