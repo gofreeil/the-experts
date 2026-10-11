@@ -89,3 +89,6 @@
 @media (prefers-reduced-motion: reduce) {
     .home * { transition: none !important; animation: none !important; }
 }
+
+/* "דרוש פתרון עבור:" בתחילת כותרת בעיה בכרטיסים */
+.home .need { color: var(--honey-text); }

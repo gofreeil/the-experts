@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Problem } from '$lib/problemsStore.svelte';
     import { formatTimeAgo } from '$lib/problemsStore.svelte';
-    import { catColor, catShort, fmt, handsOf, backersOf, PLEDGE_AMOUNTS } from '$lib/homeData';
+    import { NEED_PREFIX, catColor, catShort, fmt, handsOf, backersOf, PLEDGE_AMOUNTS } from '$lib/homeData';
     import { adThenGo } from './nav';
     import FancyHeading from './FancyHeading.svelte';
     import OrnamentDivider from './OrnamentDivider.svelte';
@@ -72,7 +72,7 @@
                             <span class="dot"></span>{catShort(p.category)}
                             <span class="c-sub">{p.type === 'community' ? `${backersOf(p)} תורמים` : 'פרטית'}</span>
                         </span>
-                        <span class="c-title">{p.title}</span>
+                        <span class="c-title"><span class="need">{NEED_PREFIX}</span> {p.title}</span>
                     </span>
                 </button>
                 <div class="pledge">
@@ -114,7 +114,7 @@
                     <span>·</span>
                     <span>{formatTimeAgo(shown.createdAt)}</span>
                 </div>
-                <h3>{shown.title}</h3>
+                <h3><span class="need">{NEED_PREFIX}</span> {shown.title}</h3>
                 <p>{shown.type === 'individual' ? 'בעיה פרטית. פרטי המבקש גלויים רק למומחים מאומתים.' : shown.description}</p>
             </div>
             <div class="amt">
@@ -156,7 +156,7 @@
     .c-cat { display: flex; align-items: center; gap: 6px; padding-inline: 4px; font-size: 12px; font-weight: 700; color: var(--fg-mute); }
     .c-cat .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
     .c-sub { margin-inline-start: auto; font-weight: 500; color: var(--fg-faint); }
-    .c-title { padding-inline: 4px; font-size: 13.5px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: balance; }
+    .c-title { padding-inline: 4px; font-size: 13.5px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; text-wrap: balance; }
 
     .pledge { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 32px; padding-inline: 4px; }
     .pl-l { margin-inline-end: auto; font-size: 12.5px; color: var(--fg-mute); }

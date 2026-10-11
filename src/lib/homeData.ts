@@ -32,6 +32,9 @@ export const fmtShort = (n: number): string =>
 export const fmtCompact = (n: number): string =>
     n >= 1e6 ? '₪' + (n / 1e6).toFixed(2).replace(/0$/, '') + 'M' : n >= 1000 ? '₪' + Math.round(n / 1000) + 'K' : '₪' + n;
 
+/** פותח את כותרת הבעיה בכרטיסים בדף הבית */
+export const NEED_PREFIX = 'דרוש פתרון עבור:';
+
 /** הסכומים שמשתמש יכול להוסיף בלחיצה לפרס של בעיה ציבורית */
 export const PLEDGE_AMOUNTS = [50, 100, 500];
 

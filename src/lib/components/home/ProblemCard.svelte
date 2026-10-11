@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Problem } from '$lib/problemsStore.svelte';
     import { formatTimeAgo } from '$lib/problemsStore.svelte';
-    import { catColor, catShort, fmt, handsOf, backersOf, tierOf, PLEDGE_AMOUNTS } from '$lib/homeData';
+    import { NEED_PREFIX, catColor, catShort, fmt, handsOf, backersOf, tierOf, PLEDGE_AMOUNTS } from '$lib/homeData';
     import { adThenGo } from './nav';
 
     let { p, flash = false, onpledge }: { p: Problem; flash?: boolean; onpledge?: (id: string, amount: number) => void } = $props();
@@ -38,7 +38,7 @@
                 <span class="tag-age">{formatTimeAgo(p.createdAt)}</span>
             </div>
 
-            <h3><a href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>{p.title}</a></h3>
+            <h3><a href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}><span class="need">{NEED_PREFIX}</span> {p.title}</a></h3>
             <p>{isPrivate ? `הפרטים גלויים רק למומחים מאומתים בתחום ${catShort(p.category)}.` : p.description}</p>
 
             <div class="p-foot">
