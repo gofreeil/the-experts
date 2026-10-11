@@ -81,16 +81,16 @@
             <ProblemMap {wanted} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
         </div>
     </section>
-    <FloorLink href="/problems" label="לוח הבעיות" note="שלוש הבעיות עם הפרס הגבוה ביותר, וכל השאר בלוח" />
+    <FloorLink href="/problems" label="לוח הבעיות" />
 
     <PaidSection headTitle="כסף שחולק" preview />
-    <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
+    <FloorLink href="/paid" label="כסף שחולק" />
 
     <MeetupSection headTitle="מפגשי המומחים" preview />
-    <FloorLink href="/meetup" label="מפגשי המומחים" note="מועד, סדר יום ומה קורה במפגש" />
+    <FloorLink href="/meetup" label="מפגשי המומחים" />
 
     <RecentSolutions problems={all} />
-    <FloorLink href="/problems" label="לוח הבעיות" note="כל הצעת פתרון מופיעה בדף הבעיה שלה" />
+    <FloorLink href="/problems" label="לוח הבעיות" />
 
     <!-- ═════ תחומים ═════ -->
     <section class="section" id="cats">
@@ -113,7 +113,7 @@
             </div>
         </div>
     </section>
-    <FloorLink href="/categories" label="תחומים" note="תיאור כל צוות, בעיות פתוחות ומומחים" />
+    <FloorLink href="/categories" label="תחומים" />
 
     <ComposerSection />
 </div>
