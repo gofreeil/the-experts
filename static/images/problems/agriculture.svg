@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="גינת מאכל">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8f4fb"/><stop offset="1" stop-color="#d4e8a8"/></linearGradient></defs>
+<rect width="400" height="260" fill="url(#g)"/>
+<circle cx="330" cy="58" r="44" fill="#f5a524"/><circle cx="330" cy="58" r="62" fill="#f5a524" opacity=".22"/>
+<ellipse cx="90" cy="60" rx="46" ry="14" fill="#fff" opacity=".8"/><ellipse cx="116" cy="50" rx="30" ry="12" fill="#fff" opacity=".8"/>
+<path d="M0 186 Q200 164 400 186 V260 H0Z" fill="#8a5a2b"/>
+<path d="M0 186 Q200 164 400 186" fill="none" stroke="#4f8a1c" stroke-width="8"/>
+<g stroke="#4f8a1c" stroke-width="6" stroke-linecap="round"><path d="M100 196 V128"/><path d="M200 196 V100"/><path d="M300 196 V132"/></g>
+<g fill="#6d9a12"><ellipse cx="80" cy="140" rx="24" ry="10" transform="rotate(-30 80 140)"/><ellipse cx="120" cy="150" rx="24" ry="10" transform="rotate(30 120 150)"/><ellipse cx="178" cy="116" rx="26" ry="11" transform="rotate(-30 178 116)"/><ellipse cx="222" cy="128" rx="26" ry="11" transform="rotate(30 222 128)"/><ellipse cx="278" cy="144" rx="24" ry="10" transform="rotate(-30 278 144)"/><ellipse cx="322" cy="152" rx="24" ry="10" transform="rotate(30 322 152)"/></g>
+<circle cx="100" cy="118" r="14" fill="#d94646"/><circle cx="200" cy="90" r="16" fill="#d94646"/><circle cx="300" cy="122" r="14" fill="#f5a524"/>
+<path d="M96 108 q4 -10 10 -4" fill="none" stroke="#4f8a1c" stroke-width="4" stroke-linecap="round"/>
+</svg>

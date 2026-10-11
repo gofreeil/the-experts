@@ -89,7 +89,7 @@
                     <svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" /></svg>מבוקש: פתרון
                 </div>
                 <h1>יש בעיה?<br /><em>שימו עליה פרס.</em></h1>
-                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר. ככל שהפרס גדול יותר, המשבצת שלה במפה גדולה יותר.</p>
+                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר.</p>
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
                     <a class="btn btn-ghost" href="#board">אני מומחה, להראות לי בעיות</a>

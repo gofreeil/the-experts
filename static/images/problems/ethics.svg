@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="שני אנשים ולב, אחווה ושלום">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaeff5"/><stop offset="1" stop-color="#c9d3e0"/></linearGradient></defs>
+<rect width="400" height="260" fill="url(#g)"/>
+<circle cx="52" cy="50" r="70" fill="#fff" opacity=".4"/>
+<circle cx="350" cy="226" r="88" fill="#fff" opacity=".3"/>
+<path d="M0 222 H400" stroke="#9aa9bd" stroke-width="4"/>
+<circle cx="132" cy="112" r="28" fill="#66758d"/>
+<path d="M82 224 Q82 152 132 152 Q182 152 182 224Z" fill="#66758d"/>
+<circle cx="268" cy="112" r="28" fill="#f5a524"/>
+<path d="M218 224 Q218 152 268 152 Q318 152 318 224Z" fill="#f5a524"/>
+<path d="M170 176 Q200 160 230 176" fill="none" stroke="#2f3b4d" stroke-width="9" stroke-linecap="round"/>
+<path d="M200 96 C170 74 176 44 198 44 C206 44 200 52 200 52 C200 52 194 44 202 44 C224 44 230 74 200 96Z" fill="#d94646" transform="translate(0 -4) scale(1 1)"/>
+</svg>

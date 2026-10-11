@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="עלה ולב לבריאות טבעית">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0f6f3"/><stop offset="1" stop-color="#b5e5de"/></linearGradient></defs>
+<rect width="400" height="260" fill="url(#g)"/>
+<circle cx="340" cy="44" r="72" fill="#fff" opacity=".35"/>
+<circle cx="50" cy="232" r="92" fill="#fff" opacity=".28"/>
+<path d="M170 38 C268 56 300 150 170 224 C40 150 72 56 170 38Z" fill="#0f9a8a" stroke="#0a6b5f" stroke-width="4" stroke-linejoin="round"/>
+<path d="M170 60 V212" stroke="#d9f3ef" stroke-width="5" stroke-linecap="round"/>
+<g stroke="#d9f3ef" stroke-width="4" stroke-linecap="round"><path d="M170 100 L128 80M170 100 L212 80M170 138 L120 114M170 138 L220 114M170 176 L134 156M170 176 L206 156"/></g>
+<circle cx="312" cy="130" r="42" fill="#fff" stroke="#0a6b5f" stroke-width="4"/>
+<path d="M312 152 C284 132 288 108 304 108 C310 108 312 114 312 114 C312 114 314 108 320 108 C336 108 340 132 312 152Z" fill="#d94646"/>
+<circle cx="340" cy="212" r="10" fill="#f5a524"/><circle cx="296" cy="214" r="6" fill="#f5a524" opacity=".7"/>
+</svg>
