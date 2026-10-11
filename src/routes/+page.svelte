@@ -50,7 +50,7 @@
         </div>
         <div class="inner hero-grid">
             <div class="hero-text">
-                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר.</p>
+                <p class="hero-lede">מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף נשמר במערכת ומחולק לנותני הפתרון.</p>
                 <div class="hero-cta">
                     <a class="btn btn-primary" href="#compose">העלו בעיה והציבו פרס</a>
                 </div>
