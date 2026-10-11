@@ -78,7 +78,12 @@
                         </li>
                     {/each}
                 </ol>
-                <div class="how-more"><a href="/how-it-works">איך זה עובד, בפירוט</a></div>
+                <div class="how-more">
+                    <a class="btn btn-ghost btn-sm" href="/how-it-works">
+                        איך זה עובד, בפירוט
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10H4M9 5l-5 5 5 5" /></svg>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -134,32 +139,31 @@
     .hero { position: relative; padding-block: clamp(30px, 6cqi, 64px) clamp(34px, 6cqi, 70px); overflow: hidden; isolation: isolate; }
     .hero-title { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: clamp(18px, 3cqi, 32px); }
     .hero-logo { box-sizing: border-box; width: clamp(80px, 11cqi, 108px); height: auto; aspect-ratio: 1; margin-top: 10px; padding: 10%; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--line); object-fit: contain; }
-    .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4cqi, 52px); align-items: center; }
-    .hero-text { min-width: 0; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(16px, 2.6cqi, 28px); align-items: stretch; }
+    /* שני כרטיסים שווי גובה: מבוא ופעולה מימין, "איך זה עובד" משמאל */
+    .hero-text, .howbox { min-width: 0; display: flex; flex-direction: column; padding: clamp(18px, 2.8cqi, 28px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 24px rgba(10, 45, 80, 0.1); }
     h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 4.6cqi, 48px); line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; }
     h1 em { font-style: normal; color: var(--honey-text); }
-    .hero-lede { color: var(--fg-mute); font-size: clamp(16px, 2cqi, 18.5px); max-width: 46ch; text-wrap: pretty; }
-    .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-    .hero-cta .btn { padding: 14px 24px; font-size: 16px; }
-    .trust { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; color: var(--fg-faint); font-size: 14px; max-width: 46ch; }
-    .trust svg { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--ok); }
-    .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 34px; border-top: 1px solid var(--line); }
-    .hero-stats > div { padding: 16px 0 0; padding-inline-end: 12px; }
-    .hero-stats > div + div { padding-inline-start: 16px; border-inline-start: 1px solid var(--line); }
-    .stat-n { font-family: var(--font-display); font-weight: 900; font-size: clamp(20px, 3cqi, 28px); line-height: 1.1; color: var(--fg); }
+    .hero-lede { color: var(--fg); font-size: clamp(16px, 1.9cqi, 18px); line-height: 1.55; text-wrap: pretty; }
+    .hero-cta { display: flex; margin-top: 16px; }
+    .hero-cta .btn { width: 100%; padding: 13px 24px; font-size: 16px; box-shadow: 0 6px 16px rgba(185, 119, 14, 0.35); }
+    .trust { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 10px 12px; color: var(--fg-mute); font-size: 13.5px; line-height: 1.45; background: color-mix(in srgb, var(--ok) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--ok) 26%, transparent); border-radius: 10px; }
+    .trust svg { width: 18px; height: 18px; flex: none; margin-top: 1px; color: var(--ok); }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: auto; padding-top: 18px; }
+    .hero-stats > div { padding: 10px 4px; text-align: center; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 10px; }
+    .stat-n { font-family: var(--font-display); font-weight: 900; font-size: clamp(18px, 2.3cqi, 25px); line-height: 1.1; color: var(--fg); white-space: nowrap; }
     .stat-n.gold { color: var(--honey-text); }
-    .stat-l { color: var(--fg-faint); font-size: 13px; margin-top: 4px; line-height: 1.35; }
+    .stat-l { color: var(--fg-faint); font-size: 12.5px; margin-top: 4px; line-height: 1.3; }
 
-    /* ───── איך זה עובד (בכרטיס בגיבור) ───── */
-    .howbox { min-width: 0; }
-    .how { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
-    .how li { display: flex; align-items: flex-start; gap: 14px; }
-    .how li + li { border-top: 1px solid var(--line-soft); padding-top: 14px; }
-    .step-n { flex: none; width: 38px; height: 38px; display: grid; place-items: center; background: var(--surface-2); color: var(--honey-text); border-radius: 50%; font-family: var(--font-display); font-weight: 900; font-size: 19px; box-shadow: 0 0 0 1px var(--line); }
-    .how h3 { font-size: 16.5px; font-weight: 800; margin-bottom: 2px; }
-    .how p { color: var(--fg-mute); font-size: 14.5px; text-wrap: pretty; }
-    .how-more { margin-top: 14px; text-align: left; }
-    .how-more a { color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+    /* ───── איך זה עובד (בכרטיס בגיבור): ציר זמן עם קו מחבר בין השלבים ───── */
+    .how { list-style: none; margin: 16px 0 0; padding: 0; display: grid; }
+    .how li { position: relative; display: flex; align-items: flex-start; gap: 14px; padding-bottom: 16px; }
+    .how li:last-child { padding-bottom: 0; }
+    .how li:not(:last-child)::before { content: ""; position: absolute; inset-inline-start: 18px; top: 42px; bottom: 4px; width: 2px; border-radius: 2px; background: linear-gradient(var(--honey), var(--line)); }
+    .step-n { flex: none; width: 38px; height: 38px; display: grid; place-items: center; background: var(--honey); color: var(--honey-ink); border-radius: 50%; font-family: var(--font-display); font-weight: 900; font-size: 19px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--honey) 22%, transparent); }
+    .how h3 { font-size: 16.5px; font-weight: 800; line-height: 1.3; margin-bottom: 2px; }
+    .how p { color: var(--fg-mute); font-size: 14.5px; line-height: 1.45; text-wrap: pretty; }
+    .how-more { margin-top: auto; padding-top: 16px; text-align: center; }
     .examples-sec { padding-block: clamp(26px, 4cqi, 48px); }
 
     /* הנושאים מופרדים במחיצות ❦ (בסוף כל נושא), לכן בלי פסי רקע מתחלפים, ובריווח קומפקטי */
