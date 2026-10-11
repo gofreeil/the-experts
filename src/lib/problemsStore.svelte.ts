@@ -31,6 +31,7 @@ export type Problem = {
     solutions: Solution[];
     backers?: number;   // כמה אנשים הוסיפו לפרס (בעיות ציבוריות)
     hands?: number;     // מומחים שהרימו יד, כולל כאלה שעוד לא הגישו הצעה מלאה
+    image?: string;     // תמונה לכרטיס בדף הבית; בלי זה מוצג האיור של התחום
 };
 
 const STORAGE_KEY = 'experts_problems_v1';

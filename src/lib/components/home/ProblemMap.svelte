@@ -19,9 +19,9 @@
         thanksTimer = setTimeout(() => (thanks = null), 2200);
     }
 
-    // איור לכל תחום: static/images/problems/<תחום>.svg
+    // תמונה של הבעיה עצמה אם יש, אחרת איור לכל תחום: static/images/problems/<תחום>.svg
     const ART = ['law', 'economy', 'education', 'agriculture', 'technology', 'health', 'ethics', 'rights'];
-    const artOf = (category: string) => (ART.includes(category) ? category : 'ethics');
+    const artOf = (p: Problem) => p.image ?? `/images/problems/${ART.includes(p.category) ? p.category : 'ethics'}.svg`;
 </script>
 
 {#snippet group(list: Problem[], label: string)}
@@ -30,7 +30,7 @@
             <div class="cell" style="--c:{catColor(p.category)}">
                 <a class="card" href="/problems/{p.id}" aria-label="{p.title}, פרס {p.bounty} שקלים" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>
                     <span class="c-media">
-                        <img class="c-img" src="/images/problems/{artOf(p.category)}.svg" alt="" width="400" height="260" loading="lazy" decoding="async" />
+                        <img class="c-img" src={artOf(p)} alt="" width="400" height="260" loading="lazy" decoding="async" />
                         <span class="c-price"><span class="num">{fmt(p.bounty)}</span></span>
                         <span class="c-stamp"><Stamp text="מבוקש: פתרון" compact /></span>
                     </span>
