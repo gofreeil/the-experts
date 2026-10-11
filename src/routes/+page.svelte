@@ -109,7 +109,7 @@
     <!-- ═════ תחומים ═════ -->
     <section class="section" id="cats">
         <div class="inner">
-            <SectionHead title="שמונה צוותי מומחים, שמונה סוגי בעיות" lede="בחרו תחום כדי לסנן את לוח הבעיות. הפס מראה כמה מכלל הפרסים הפתוחים יושבים בתחום." />
+            <SectionHead title="צוותי המומחים שלנו" lede="בחרו תחום כדי לסנן את לוח הבעיות. הפס מראה כמה מכלל הפרסים הפתוחים יושבים בתחום." />
             <div class="cats">
                 {#each CATS as c}
                     {@const team = teamBySlug(c.slug)}
