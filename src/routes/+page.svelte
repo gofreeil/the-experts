@@ -44,7 +44,7 @@
     <!-- ═════ גיבור ═════ -->
     <section class="hero">
         <div class="inner hero-title">
-            <h1>הציבו אתגר למומחים של העם, <em>ותנו לחכמת ההמונים לפתור אותו!</em></h1>
+            <h1>הציבו אתגר למומחים של העם, <em>ותנו לחכמת ההמונים לחשוב על פתרון!</em></h1>
             <img class="hero-logo" src="/images/experts-logo.webp" alt="לוגו המומחים של העם" width="108" height="108" fetchpriority="high" decoding="async" />
         </div>
         <div class="inner hero-grid">
