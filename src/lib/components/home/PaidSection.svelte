@@ -7,82 +7,115 @@
     let { headTitle = '', preview = false }: { headTitle?: string; preview?: boolean } = $props();
 
     // תרשים עמודות. ציר הזמן מימין לשמאל (החודש הראשון בימין), כמו כיוון הקריאה.
-    const W = 640, PT = 24, PL = 8;
-    const H = $derived(preview ? 150 : 250);
-    const PB = $derived(preview ? 22 : 30);
-    const PR = $derived(preview ? 8 : 52);
+    const W = 640, H = 250, PT = 24, PB = 30, PL = 8, PR = 52;
     const MAX = 200000;
-    const bw = $derived((W - PL - PR) / PAID.length);
-    const innerW = $derived(bw * 0.62);
-    const GRID = $derived(preview ? [0] : [0, 50000, 100000, 150000, 200000]);
+    const bw = (W - PL - PR) / PAID.length;
+    const innerW = bw * 0.62;
+    const GRID = [0, 50000, 100000, 150000, 200000];
     const yOf = (v: number) => PT + (H - PT - PB) * (1 - v / MAX);
 
-    const bars = $derived(
-        PAID.map((v, i) => {
-            const h = (H - PT - PB) * (v / MAX);
-            const x = W - PR - (i + 1) * bw + (bw - innerW) / 2;
-            return { v, x, y: H - PB - h, h, label: MONTHS[i], last: i === PAID.length - 1 };
-        })
-    );
+    const bars = PAID.map((v, i) => {
+        const h = (H - PT - PB) * (v / MAX);
+        const x = W - PR - (i + 1) * bw + (bw - innerW) / 2;
+        return { v, x, y: H - PB - h, h, label: MONTHS[i], last: i === PAID.length - 1 };
+    });
+
+    // גרסת הבית: תרשים קטן בלי צירים, 12 עמודות והחודש האחרון מודגש
+    const SW = 260, SH = 78, SPT = 16, SPB = 14;
+    const sbw = SW / PAID.length;
+    const sparks = PAID.map((v, i) => {
+        const h = Math.max(4, (SH - SPT - SPB) * (v / MAX));
+        return { v, x: SW - (i + 1) * sbw + sbw * 0.18, y: SH - SPB - h, h, w: sbw * 0.64, last: i === PAID.length - 1 };
+    });
 </script>
 
 <section class="section" id="paid">
     <div class="inner">
         {#if headTitle}<SectionHead title={headTitle} />{/if}
-        <div class="paid" class:pv={preview}>
-        <div class="left">
-            <div class="eyebrow">הספרים פתוחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
-            <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
-            <p class="paid-cap">חולקו לפותרי בעיות מאז שהכוורת נפתחה. כל תשלום מתועד ומופיע ברשימת הפתרונות.</p>
-            <div class="mini-grid">
-                <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות נפתרו</div></div>
-                <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">יום</span></div><div class="stat-l">זמן פתרון חציוני</div></div>
-                <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">מומחים שקיבלו תשלום</div></div>
-            </div>
-        </div>
-
-        <div class="panel">
-            <h3>כמה חולק בכל חודש</h3>
-            <div class="sub">12 החודשים האחרונים, בשקלים. החודש האחרון מודגש.</div>
-            <div class="chart">
-                <svg viewBox="0 0 {W} {H}" role="img" aria-label="תרשים עמודות של סכומים שחולקו בכל חודש, בעלייה מתמדת">
-                    {#each GRID as v}
-                        <line x1={PL} x2={W - PR} y1={yOf(v)} y2={yOf(v)} class="grid" stroke-dasharray={v ? '3 4' : undefined} />
-                        {#if !preview}<text x={W - PR + 8} y={yOf(v) + 4}>{v ? '₪' + v / 1000 + 'K' : '0'}</text>{/if}
+        {#if preview}
+            <div class="strip">
+                <div class="s-total">
+                    <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
+                    <p class="s-cap">חולקו לפותרים מאז שהכוורת נפתחה{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</p>
+                </div>
+                <div class="mini-grid">
+                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות נפתרו</div></div>
+                    <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">יום</span></div><div class="stat-l">זמן פתרון חציוני</div></div>
+                    <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">מומחים שקיבלו</div></div>
+                </div>
+                <svg class="spark" viewBox="0 0 {SW} {SH}" role="img" aria-label="סכומים שחולקו ב-12 החודשים האחרונים, בעלייה מתמדת">
+                    {#each sparks as b}
+                        <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="1.5" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
+                        {#if b.last}<text class="val" x={b.x + b.w / 2} y={b.y - 4} text-anchor="middle">₪{Math.round(b.v / 1000)}K</text>{/if}
                     {/each}
-                    {#each bars as b}
-                        <rect x={b.x} y={b.y} width={innerW} height={b.h} rx="2" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
-                        <text x={b.x + innerW / 2} y={H - 10} text-anchor="middle" class:strong={b.last}>{b.label}</text>
-                        {#if b.last}
-                            <text class="val" x={b.x + innerW / 2} y={b.y - 8} text-anchor="middle">₪{Math.round(b.v / 1000)}K</text>
-                        {/if}
-                    {/each}
+                    <text x={SW - 1} y={SH - 2} text-anchor="end">{MONTHS[0]}</text>
+                    <text x="1" y={SH - 2} text-anchor="start" class="strong">{MONTHS[PAID.length - 1]}</text>
                 </svg>
             </div>
-
-            {#if !preview}
-            <div class="split">
-                <h3>לאן הלך הכסף</h3>
-                <div class="split-bar" aria-hidden="true">
-                    {#each SPLIT as s}<i style="--c:{catColor(s[0])}; flex:{s[1]}"></i>{/each}
+        {:else}
+            <div class="paid">
+            <div class="left">
+                <div class="eyebrow">הספרים פתוחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
+                <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
+                <p class="paid-cap">חולקו לפותרי בעיות מאז שהכוורת נפתחה. כל תשלום מתועד ומופיע ברשימת הפתרונות.</p>
+                <div class="mini-grid">
+                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות נפתרו</div></div>
+                    <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">יום</span></div><div class="stat-l">זמן פתרון חציוני</div></div>
+                    <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">מומחים שקיבלו תשלום</div></div>
                 </div>
-                <ul class="split-list">
-                    {#each SPLIT as s}
-                        <li><span class="dot" style="--c:{catColor(s[0])}"></span>{catShort(s[0])}<b class="num">{fmt(PAID_TOTAL * s[1])}</b></li>
-                    {/each}
-                </ul>
             </div>
-            {/if}
-        </div>
-        </div>
+
+            <div class="panel">
+                <h3>כמה חולק בכל חודש</h3>
+                <div class="sub">12 החודשים האחרונים, בשקלים. החודש האחרון מודגש.</div>
+                <div class="chart">
+                    <svg viewBox="0 0 {W} {H}" role="img" aria-label="תרשים עמודות של סכומים שחולקו בכל חודש, בעלייה מתמדת">
+                        {#each GRID as v}
+                            <line x1={PL} x2={W - PR} y1={yOf(v)} y2={yOf(v)} class="grid" stroke-dasharray={v ? '3 4' : undefined} />
+                            <text x={W - PR + 8} y={yOf(v) + 4}>{v ? '₪' + v / 1000 + 'K' : '0'}</text>
+                        {/each}
+                        {#each bars as b}
+                            <rect x={b.x} y={b.y} width={innerW} height={b.h} rx="2" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
+                            <text x={b.x + innerW / 2} y={H - 10} text-anchor="middle" class:strong={b.last}>{b.label}</text>
+                            {#if b.last}
+                                <text class="val" x={b.x + innerW / 2} y={b.y - 8} text-anchor="middle">₪{Math.round(b.v / 1000)}K</text>
+                            {/if}
+                        {/each}
+                    </svg>
+                </div>
+
+                <div class="split">
+                    <h3>לאן הלך הכסף</h3>
+                    <div class="split-bar" aria-hidden="true">
+                        {#each SPLIT as s}<i style="--c:{catColor(s[0])}; flex:{s[1]}"></i>{/each}
+                    </div>
+                    <ul class="split-list">
+                        {#each SPLIT as s}
+                            <li><span class="dot" style="--c:{catColor(s[0])}"></span>{catShort(s[0])}<b class="num">{fmt(PAID_TOTAL * s[1])}</b></li>
+                        {/each}
+                    </ul>
+                </div>
+            </div>
+            </div>
+        {/if}
     </div>
 </section>
 
 <style>
     .paid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(22px, 4cqi, 56px); align-items: start; }
-    .paid.pv { align-items: center; }
-    .paid.pv .paid-total { font-size: clamp(30px, 4.6cqi, 48px); }
-    .paid.pv .mini-grid { margin-top: 18px; }
+    .strip { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(170px, 250px); gap: 18px clamp(18px, 3.4cqi, 40px); align-items: center; }
+    .s-total { min-width: 0; }
+    .strip .paid-total { font-size: clamp(30px, 4.6cqi, 44px); }
+    .s-cap { color: var(--fg-mute); font-size: 14px; margin-top: 4px; }
+    .s-cap .demo-tag { margin-inline-start: 8px; }
+    .strip .mini-grid { margin-top: 0; border-top: 0; border-inline-start: 1px solid var(--line); padding-inline-start: clamp(14px, 2.4cqi, 28px); }
+    .strip .mini-grid > div { padding-top: 0; }
+    .strip .stat-n { font-size: 22px; }
+    .strip .stat-l { font-size: 12.5px; }
+    .spark { width: 100%; height: auto; display: block; direction: ltr; overflow: visible; }
+    .spark text { font-family: inherit; fill: var(--fg-faint); font-size: 10px; }
+    .spark .strong { fill: var(--fg); font-weight: 700; }
+    .spark .val { fill: var(--honey-text); font-weight: 800; font-size: 11px; }
     .left { min-width: 0; }
     .paid-total { font-family: var(--font-display); font-weight: 900; font-size: clamp(34px, 5.2cqi, 56px); line-height: 1; color: var(--honey-text); letter-spacing: -0.02em; }
     .paid-cap { color: var(--fg-mute); margin-top: 12px; max-width: 34ch; }
@@ -111,6 +144,9 @@
 
     @container home (max-width: 820px) {
         .paid { grid-template-columns: minmax(0, 1fr); }
+        .strip { grid-template-columns: minmax(0, 1fr); }
+        .strip .mini-grid { border-inline-start: 0; padding-inline-start: 0; }
+        .spark { max-width: 300px; }
     }
     @container home (max-width: 520px) {
         .split-list { grid-template-columns: minmax(0, 1fr); }

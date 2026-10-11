@@ -4,7 +4,8 @@
     import SectionHead from './SectionHead.svelte';
 
     // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה). בדף המלא אין כותרת כזו, כי יש כותרת עמוד.
-    let { headTitle = '' }: { headTitle?: string } = $props();
+    // preview = גרסת דף הבית: בלי סדר המפגש המפורט, שנמצא רק בדף המלא.
+    let { headTitle = '', preview = false }: { headTitle?: string; preview?: boolean } = $props();
 
     // מרחק בין עכשיו ליעד, בחודשי לוח + ימים + שעות + דקות + שניות
     function diffParts(now: Date, target: Date) {
@@ -69,7 +70,7 @@
 <section class="section" id="meet">
     <div class="inner">
         {#if headTitle}<SectionHead title={headTitle} />{/if}
-        <div class="meet">
+        <div class="meet" class:solo={preview}>
             <div class="meet-main">
                 <span class="live-pill"><i></i>המפגש הוירטואלי הבא · מפגש {MEETUP.number}{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</span>
                 <h2>שלוש הבעיות הכי גדולות, בשידור חי מול מומחים</h2>
@@ -101,6 +102,7 @@
                 </div>
             </div>
 
+            {#if !preview}
             <div class="agenda">
                 <h3>סדר המפגש</h3>
                 <div class="sub">90 דקות בזום. הבעיות לדיון נבחרו לפי גובה הפרס והצבעת הקהילה.</div>
@@ -114,6 +116,7 @@
                     {/each}
                 </ol>
             </div>
+            {/if}
         </div>
     </div>
 </section>
@@ -122,6 +125,7 @@
     .meet {
         display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(22px, 4cqi, 52px);
     }
+    .meet.solo { grid-template-columns: minmax(0, 1fr); }
     .meet-main { min-width: 0; }
     .live-pill { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--honey-text); border: 1px solid var(--honey-deep); background: rgba(245, 165, 36, 0.1); padding: 4px 12px; border-radius: 999px; }
     .live-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--honey-text); box-shadow: 0 0 0 0 rgba(185, 119, 14, 0.6); animation: beat 2s infinite; }

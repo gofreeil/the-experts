@@ -10,7 +10,6 @@
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import MeetupSection from '$lib/components/home/MeetupSection.svelte';
     import RecentSolutions from '$lib/components/home/RecentSolutions.svelte';
-    import ExpertsSection from '$lib/components/home/ExpertsSection.svelte';
     import ComposerSection from '$lib/components/home/ComposerSection.svelte';
     import FloorLink from '$lib/components/home/FloorLink.svelte';
     import FancyHeading from '$lib/components/home/FancyHeading.svelte';
@@ -26,7 +25,6 @@
     const all = $derived((mounted ? problemsStore.items : seedProblems).filter((p) => p.status === 'open'));
 
     // בדף הבית רק דוגמאות. את שאר הבעיות רואים בלוח המלא (/problems)
-    let selectedId = $state<string | null>(null);
 
     const totalOpen = $derived(all.reduce((s, p) => s + p.bounty, 0));
 
@@ -95,7 +93,7 @@
     <!-- ═════ דוגמאות: המבוקשים ביותר והאחרונות ═════ -->
     <section class="section alt examples-sec">
         <div class="inner">
-            <ProblemMap {wanted} bind:selectedId onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
+            <ProblemMap {wanted} onpledge={(id, amt) => problemsStore.addToBounty(id, amt)} />
         </div>
     </section>
     <FloorLink href="/problems" label="לוח הבעיות" note="שלוש הבעיות עם הפרס הגבוה ביותר, וכל השאר בלוח" />
@@ -103,7 +101,7 @@
     <PaidSection headTitle="כסף שחולק" preview />
     <FloorLink href="/paid" label="כסף שחולק" note="חלוקה לפי חודשים ותחומים, ותשלומים אחרונים" />
 
-    <MeetupSection headTitle="מפגשי המומחים" />
+    <MeetupSection headTitle="מפגשי המומחים" preview />
     <FloorLink href="/meetup" label="מפגשי המומחים" note="מועד, סדר יום ומה קורה במפגש" />
 
     <RecentSolutions problems={all} />
@@ -131,9 +129,6 @@
         </div>
     </section>
     <FloorLink href="/categories" label="תחומים" note="תיאור כל צוות, בעיות פתוחות ומומחים" />
-
-    <ExpertsSection preview />
-    <FloorLink href="/experts" label="המומחים" note="הדירוג המלא וההיסטוריה של כל מומחה" />
 
     <ComposerSection />
 </div>
