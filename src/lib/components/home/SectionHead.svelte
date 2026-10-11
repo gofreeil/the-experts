@@ -19,4 +19,9 @@
     .sec-fancy { text-align: center; margin-bottom: clamp(14px, 2.4cqi, 24px); }
     .lede { max-width: 62ch; margin-inline: auto; margin-top: 8px; font-size: 15px; }
     .acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+
+    @container home (max-width: 520px) {
+        .sec-fancy { margin-bottom: 10px; }
+        .sec-fancy .lede { margin-top: 4px; font-size: 13.5px; line-height: 1.4; }
+    }
 </style>

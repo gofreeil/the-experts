@@ -43,8 +43,17 @@
 
     @container home (max-width: 600px) {
         .lg-head { display: none; }
-        .lg-row { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
-        .lg-days { font-size: 13px; color: var(--fg-faint); }
-        .lg-amt { grid-column: 2; grid-row: 1 / span 3; align-self: center; }
+        /* שורה קצרה: הכותרת למעלה, והפותר וזמן הפתרון זה ליד זה מתחתיה; הסכום בקצה */
+        .lg-row { grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; }
+        .lg-t { grid-column: 1 / 3; }
+        .lg-who { grid-column: 1; }
+        .lg-days { grid-column: 2; font-size: 13px; color: var(--fg-faint); }
+        .lg-days::before { content: "·"; margin-inline-end: 8px; }
+        .lg-amt { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
+        .lg-row { padding: 9px 12px; }
+        .lg-t b { font-size: 14px; }
+        .lg-who { font-size: 13px; }
+        .lg-amt { font-size: 17px; }
+        .lg-foot { padding: 10px 12px; font-size: 13px; gap: 4px 12px; }
     }
 </style>

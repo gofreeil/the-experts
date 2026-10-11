@@ -70,7 +70,17 @@
     @container home (max-width: 820px) {
         .cats { grid-template-columns: minmax(0, 1fr); }
     }
-    @container home (max-width: 420px) {
-        .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @container home (max-width: 520px) {
+        /* כרטיס תחום קצר: תיאור בשתי שורות, ארבעת הנתונים בשורה אחת, והכפתורים חולקים את הרוחב */
+        .compact { padding-block: 12px; }
+        .cats { gap: 8px; }
+        .cat { gap: 8px; padding: 12px; border-radius: 8px; }
+        .ico { width: 40px; height: 40px; font-size: 20px; border-radius: 11px; }
+        h2 { font-size: 17px; }
+        .desc { font-size: 13.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
+        .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-top: 8px; }
+        .stats dt { font-size: 11px; }
+        .stats dd { font-size: 15px; }
+        .acts .btn { flex: 1 1 0; }
     }
 </style>

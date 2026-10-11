@@ -66,4 +66,14 @@
     @container home (max-width: 900px) {
         .rs-grid { grid-template-columns: minmax(0, 1fr); }
     }
+    @container home (max-width: 520px) {
+        /* בנייד: כרטיס קצר — בלי תוויות "הבעיה"/"ההצעה", ותיאור של שורתיים */
+        .rs-grid { gap: 8px; }
+        .rs { padding: 10px 12px 8px; gap: 2px; }
+        .rs-lbl { display: none; }
+        h3 { font-size: 15px; line-height: 1.3; }
+        p { font-size: 13.5px; -webkit-line-clamp: 2; line-clamp: 2; }
+        .rs-foot { padding-top: 6px; margin-top: 4px; }
+        .rs-ask { font-size: 16px; }
+    }
 </style>

@@ -106,7 +106,7 @@
                             {#if team?.image}<img src={team.image} alt="" width="56" height="56" loading="lazy" decoding="async" />{:else}{team?.emoji ?? ''}{/if}
                         </span>
                         <b>{team?.name ?? c.short}</b>
-                        <small>{ps.length} בעיות פתוחות · <span class="num">{fmt(sum)}</span><br />{c.experts} מומחים בצוות</small>
+                        <small><span class="c-line">{ps.length} בעיות פתוחות · <span class="num">{fmt(sum)}</span></span><span class="c-ex">{c.experts} מומחים בצוות</span></small>
                         <span class="cat-bar" aria-hidden="true"><i style="width:{Math.max(3, Math.round((sum / (totalOpen || 1)) * 100))}%"></i></span>
                     </button>
                 {/each}
@@ -159,6 +159,7 @@
     .cat-ico img { width: 100%; height: 100%; object-fit: cover; }
     .cat b { font-size: 16px; font-weight: 800; line-height: 1.25; }
     .cat small { color: var(--fg-faint); font-size: 13px; line-height: 1.35; }
+    .cat .c-line, .cat .c-ex { display: block; }
     .cat-bar { grid-column: 1 / -1; height: 4px; background: var(--line-soft); border-radius: 2px; margin-top: 10px; overflow: hidden; }
     .cat-bar i { display: block; height: 100%; background: var(--c); }
 
@@ -169,8 +170,33 @@
         .hero-grid { grid-template-columns: minmax(0, 1fr); }
     }
     @container home (max-width: 520px) {
-        .cats { grid-template-columns: minmax(0, 1fr); }
-        /* בנייד ההדר כבר מציג את הלוגו, אז כאן הוא קטן יותר ולא תופס חלק גדול מהמסך */
-        .hero-logo { --logo: 68px; margin-top: 4px; }
+        /* בנייד ההדר כבר מציג את הלוגו, אז כאן מוסתר. הגיבור קומפקטי: כותרת קטנה, ושלבי "איך זה עובד" ברשת 2×2 בלי תיאורים */
+        .hero { padding-block: 12px 0; }
+        .hero-title { margin-bottom: 10px; }
+        .hero-logo { display: none; }
+        h1 { font-size: 23px; line-height: 1.2; }
+        h1 em { font-size: 0.87em; }
+        .how-frame { margin-top: 6px; }
+        .hero-grid { gap: 10px; }
+        .hero-text, .howbox { padding: 12px 14px; border-radius: 12px; }
+        .hero-lede { font-size: 14.5px; line-height: 1.45; }
+        .hero-cta { margin-top: 10px; }
+        .hero-cta .btn { padding: 9px 16px; font-size: 15px; }
+        .how { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 8px; }
+        .how li { align-items: center; gap: 8px; padding-bottom: 0; }
+        .how li:not(:last-child)::before { display: none; }
+        .step-n { width: 28px; height: 28px; font-size: 15px; box-shadow: none; }
+        .how h3 { font-size: 14px; line-height: 1.25; margin: 0; }
+        .how p { display: none; }
+        .examples-sec { padding-block: 16px; }
+
+        /* תחומים: שתי עמודות קטנות במקום כרטיס גדול לכל תחום */
+        .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .cat { grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; padding: 10px; }
+        .cat-ico { grid-row: auto; width: 36px; height: 36px; font-size: 18px; border-radius: 10px; }
+        .cat b { font-size: 14.5px; }
+        .cat small { grid-column: 1 / -1; font-size: 12px; line-height: 1.3; }
+        .cat .c-ex { display: none; }
+        .cat-bar { margin-top: 4px; }
     }
 </style>

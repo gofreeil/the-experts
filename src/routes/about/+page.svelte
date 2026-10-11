@@ -24,12 +24,12 @@
 
 <JsonLd schema={schemas} />
 
-<div class="mx-auto max-w-3xl px-4 py-8 md:py-12" dir="rtl">
+<div class="mx-auto max-w-3xl px-4 py-4 md:py-12" dir="rtl">
     <div class="rounded-3xl border border-[#3b5794] bg-[#16264d] shadow-2xl overflow-hidden">
 
         <!-- כותרת + פסקת פתיחה -->
-        <div class="p-6 md:p-10 text-center">
-            <div class="text-5xl mb-4">🐝</div>
+        <div class="p-4 md:p-10 text-center">
+            <div class="text-4xl mb-2 md:text-5xl md:mb-4">🐝</div>
             <h1 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-3">
                 אודותינו
             </h1>
@@ -42,9 +42,9 @@
         </div>
 
         <!-- צוותי הכוורת -->
-        <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
-        <div class="p-6 md:p-10">
-            <h2 class="text-2xl font-black text-white mb-4 text-center">צוותי המומחים</h2>
+        <div class="mx-4 md:mx-12 border-t border-[#3b5794]"></div>
+        <div class="p-4 md:p-10">
+            <h2 class="text-2xl font-black text-white mb-3 md:mb-4 text-center">צוותי המומחים</h2>
             <ul class="flex flex-wrap justify-center gap-2">
                 {#each teams as t (t.slug)}
                     <li class="rounded-full border px-3 py-1 text-sm font-bold text-gray-200"
@@ -53,7 +53,7 @@
                     </li>
                 {/each}
             </ul>
-            <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <div class="mt-4 md:mt-6 flex flex-wrap justify-center gap-2 md:gap-3">
                 <a href="/" class="rounded-full bg-gradient-to-l from-amber-500 to-orange-600 px-5 py-2 text-sm font-black text-white shadow-lg hover:opacity-90 transition-opacity">
                     לכוורת המומחים
                 </a>
@@ -64,25 +64,25 @@
         </div>
 
         <!-- שאלות ותשובות -->
-        <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
-        <section id="faq" aria-labelledby="faq-title" class="p-6 md:p-10">
-            <h2 id="faq-title" class="text-2xl font-black text-white mb-6 text-center">שאלות ותשובות</h2>
-            <div class="flex flex-col gap-3">
+        <div class="mx-4 md:mx-12 border-t border-[#3b5794]"></div>
+        <section id="faq" aria-labelledby="faq-title" class="p-4 md:p-10">
+            <h2 id="faq-title" class="text-2xl font-black text-white mb-3 md:mb-6 text-center">שאלות ותשובות</h2>
+            <div class="flex flex-col gap-2 md:gap-3">
                 {#each ABOUT_FAQ as item, i (item.q)}
                     <details class="faq-item group rounded-2xl border border-[#3b5794] bg-[#0f172a]/60 open:bg-[#0f172a]" open={i < 2}>
-                        <summary class="cursor-pointer list-none select-none px-5 py-4 text-base md:text-lg font-bold text-amber-200 flex items-center justify-between gap-3">
+                        <summary class="cursor-pointer list-none select-none px-4 py-3 md:px-5 md:py-4 text-base md:text-lg font-bold text-amber-200 flex items-center justify-between gap-3">
                             <span>{item.q}</span>
                             <span class="faq-chevron text-gray-400 transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
                         </summary>
-                        <p class="px-5 pb-5 text-sm md:text-base leading-relaxed text-gray-300">{item.a}</p>
+                        <p class="px-4 pb-4 md:px-5 md:pb-5 text-sm md:text-base leading-relaxed text-gray-300">{item.a}</p>
                     </details>
                 {/each}
             </div>
         </section>
 
         <!-- קישורים משלימים -->
-        <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
-        <div class="p-6 md:p-8 text-center text-sm text-gray-400">
+        <div class="mx-4 md:mx-12 border-t border-[#3b5794]"></div>
+        <div class="p-4 md:p-8 text-center text-sm text-gray-400">
             <a href="/about/advertise" class="text-amber-300 hover:text-white transition-colors font-bold">פרסם אצלנו</a>
             <span class="mx-2 text-gray-600" aria-hidden="true">|</span>
             <a href="/about/legal" class="text-amber-300 hover:text-white transition-colors font-bold">תנאי שימוש והצהרת נגישות</a>

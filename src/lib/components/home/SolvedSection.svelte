@@ -75,4 +75,20 @@
     @container home (max-width: 860px) {
         .solved-grid { grid-template-columns: minmax(0, 1fr); }
     }
+    @container home (max-width: 520px) {
+        .demo-line { margin-bottom: 8px; }
+        .stamp { font-size: 15px; padding: 2px 10px; }
+        .feature h3 { font-size: 20px; margin-top: 10px; }
+        .ba { gap: 8px; margin-top: 10px; }
+        .ba > div { padding-top: 6px; }
+        .ba p, blockquote { font-size: 14px; }
+        blockquote { margin-top: 10px; }
+        .feat-meta { gap: 8px 20px; margin-top: 12px; padding-top: 10px; }
+        .feat-meta b { font-size: 19px; }
+        .right { gap: 8px; }
+        /* סינון בשורה אחת שנגללת הצידה */
+        .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chips .chip { flex: none; }
+    }
 </style>

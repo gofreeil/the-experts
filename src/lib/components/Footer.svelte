@@ -27,7 +27,7 @@
                     height="228"
                     loading="lazy"
                     decoding="async"
-                    class="h-28 w-28 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
+                    class="h-16 w-16 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
 
                 <!-- Mobile: horizontal layout -->

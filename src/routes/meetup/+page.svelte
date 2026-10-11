@@ -48,4 +48,11 @@
     @container home (max-width: 760px) {
         .about { grid-template-columns: minmax(0, 1fr); }
     }
+    @container home (max-width: 520px) {
+        .compact { padding-block: 12px; }
+        .about { gap: 6px; }
+        .about li { padding: 8px 12px; }
+        .about b { font-size: 15px; }
+        .about p { font-size: 13.5px; margin-top: 0; }
+    }
 </style>

@@ -23,4 +23,9 @@
     .floor-link:hover { color: var(--honey-deep); }
     .floor-link svg { width: 16px; height: 16px; flex: none; }
     .note { color: var(--fg-mute); font-size: 13px; line-height: 1.3; text-wrap: balance; }
+
+    @container home (max-width: 520px) {
+        .above { margin-top: 6px; margin-bottom: -6px; }
+        .floor-link { font-size: 15px; }
+    }
 </style>

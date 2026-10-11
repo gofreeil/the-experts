@@ -33,4 +33,13 @@
     .ico { font-size: 0.8em; }
     .acts { display: flex; flex-wrap: wrap; gap: 8px; }
     p { color: var(--fg-mute); margin-top: 4px; font-size: 15px; }
+
+    @container home (max-width: 520px) {
+        /* בנייד: כותרת וכפתור הפעולה בשורה אחת; "לדף הבית" מוסתר כי הלוגו בהדר מוביל הביתה */
+        .phead { padding-block: 10px; }
+        .row { flex-wrap: nowrap; gap: 8px; }
+        h1 { font-size: 22px; gap: 8px; min-width: 0; }
+        .acts a[href="/"] { display: none; }
+        p { font-size: 14px; line-height: 1.4; }
+    }
 </style>

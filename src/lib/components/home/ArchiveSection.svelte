@@ -83,7 +83,18 @@
         .arch { grid-template-columns: minmax(0, 1fr); }
     }
     @container home (max-width: 520px) {
-        .rec { grid-template-columns: minmax(0, 1fr); }
-        .thumb { max-width: 260px; }
+        /* בנייד: התמונה הממוזערת קטנה בצד הטקסט, לא בלוק שלם מעליו */
+        .rec { grid-template-columns: 96px minmax(0, 1fr); gap: 10px; padding: 10px 0; }
+        .thumb { max-width: none; }
+        .play { width: 30px; height: 30px; }
+        .play svg { width: 11px; height: 11px; }
+        .dur { bottom: 3px; inset-inline-start: 3px; font-size: 10.5px; padding: 0 4px; }
+        h4 { font-size: 15px; margin: 0 0 3px; }
+        .rec-m { font-size: 12.5px; gap: 2px 10px; }
+        .rec-d { font-size: 13px; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .sub-h { margin-bottom: 8px; }
+        .sub-h h3 { font-size: 18px; }
+        .thread { padding: 9px 0; }
+        .thread > b { font-size: 14.5px; }
     }
 </style>

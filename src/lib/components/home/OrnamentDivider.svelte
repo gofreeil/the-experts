@@ -26,6 +26,8 @@
     .mid { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
 
     @container home (max-width: 520px) {
+        .divider:not(.has-mid) { margin-block: 12px; }
+        .divider:not(.has-mid) .orn { font-size: 20px; }
         .has-mid { gap: 6px; }
         .has-mid .orn { font-size: 18px; }
     }

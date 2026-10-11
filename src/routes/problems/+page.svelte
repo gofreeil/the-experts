@@ -31,6 +31,15 @@
     });
 
     let totalBounty = $derived(filtered().reduce((s, p) => s + p.bounty, 0));
+
+    // רשימה ארוכה מוצגת בחלקים: פחות גלילה, ו"הצג עוד" פותח את הבאים
+    const PAGE_SIZE = 12;
+    let limit = $state(PAGE_SIZE);
+    $effect(() => {
+        typeFilter; categoryFilter; sortBy;
+        limit = PAGE_SIZE;
+    });
+    let shown = $derived(filtered().slice(0, limit));
 </script>
 
 <svelte:head><title>בעיות לפתרון - לוח התקציבים</title></svelte:head>
@@ -102,7 +111,7 @@
         </div>
     {:else}
         <div class="cards">
-            {#each filtered() as p (p.id)}
+            {#each shown as p (p.id)}
                 {@const team = teamBySlug(p.category)}
                 <a class="card" href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)} style="--c:{team?.color ?? '#f59e0b'}">
                     <div class="card-head">
@@ -129,6 +138,11 @@
                 </a>
             {/each}
         </div>
+        {#if filtered().length > shown.length}
+            <button class="more" type="button" onclick={() => (limit += PAGE_SIZE)}>
+                הצג עוד ({filtered().length - shown.length})
+            </button>
+        {/if}
     {/if}
 </section>
 
@@ -284,6 +298,14 @@
 
     .meta { display: flex; align-items: center; gap: 0.35rem; color: #64748b; }
 
+    .more {
+        display: block; margin: 1.25rem auto 0; min-height: 44px; padding: 0.55rem 1.6rem;
+        border-radius: 999px; background: rgba(255, 255, 255, 0.08); color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.2); font-weight: 700; font-size: 0.95rem; cursor: pointer;
+        transition: background 0.2s;
+    }
+    .more:hover { background: rgba(255, 255, 255, 0.16); }
+
     .empty {
         text-align: center; padding: 3rem 1rem;
         background: rgba(255, 255, 255, 0.03);
@@ -307,10 +329,20 @@
         .stat-num { font-size: 1.15rem; }
         .stat-label { font-size: 0.7rem; line-height: 1.25; margin-top: 0.15rem; }
 
-        .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 0.6rem; padding: 0.75rem; margin-bottom: 1rem; }
-        .filter-group:first-child { grid-column: 1 / -1; }
-        .chips button { min-height: 40px; padding: 0.4rem 0.9rem; }
-        .select { min-height: 44px; width: 100%; }
-        .cards { gap: 0.75rem; }
+        /* מסננים בשתי שורות: סוג מעלה (צ'יפים) ומתחתיו שני בוחרים זה לצד זה; התוויות של הבוחרים מוסתרות ויזואלית כי ברירת המחדל שבהם מסבירה */
+        .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 0.5rem; padding: 0.55rem; margin-bottom: 0.75rem; }
+        .filter-group:first-child { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 0.5rem; }
+        .filter-group:not(:first-child) .filter-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        .chips button { min-height: 38px; padding: 0.3rem 0.8rem; }
+        .select { min-height: 42px; width: 100%; }
+        .cards { gap: 0.55rem; }
+
+        /* כרטיס בעיה קצר: תיאור בשורה אחת ופחות ריפוד */
+        .card { padding: 0.7rem 0.8rem; border-radius: 0.7rem; }
+        .card-head { margin-bottom: 0.35rem; }
+        .card-title { font-size: 1rem; margin-bottom: 0.3rem; }
+        .card-desc { -webkit-line-clamp: 1; line-clamp: 1; margin-bottom: 0.5rem; }
+        .card-foot { padding-top: 0.45rem; }
+        .more { margin-top: 0.9rem; width: 100%; }
     }
 </style>

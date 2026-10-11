@@ -90,6 +90,12 @@
     .home .btn { min-height: 44px; }
 }
 
+/* בנייד: ריווח אנכי קצר בין מקטעים, כדי שהתוכן יופיע כבר במסך הראשון */
+@container home (max-width: 520px) {
+    .home .section { padding-block: 16px; }
+    .home .sec-head { margin-bottom: 14px; }
+}
+
 /* אווטאר עגול */
 .home .mini-av { width: 28px; height: 28px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #0a1d33; background: var(--c2, var(--honey)); border-radius: 50%; box-shadow: 0 0 0 2px var(--surface); flex: none; }
 @media (prefers-reduced-motion: reduce) {

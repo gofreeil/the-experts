@@ -96,6 +96,21 @@
         .experts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @container home (max-width: 480px) {
-        .experts { grid-template-columns: minmax(0, 1fr); }
+        .experts { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+        /* סינון בשורה אחת שנגללת הצידה, במקום תשעה צ'יפים שמתפרסים על כמה שורות */
+        .toolbar { gap: 6px; }
+        .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; flex: 1 1 100%; margin-inline: -16px; padding-inline: 16px; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chips .chip { flex: none; }
+        .rank-note { margin: 6px 0 10px; font-size: 13px; }
+        /* כרטיס מומחה קצר: ארבעת הנתונים בשורה אחת */
+        .ex { padding: 10px 12px; gap: 8px; }
+        .mini-av.big { width: 38px; height: 42px; font-size: 14px; }
+        .ex-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-top: 8px; }
+        .ex-stats b { font-size: 17px; }
+        .ex-stats > div > span { font-size: 11.5px; line-height: 1.25; display: block; }
+        .ex-foot { font-size: 12.5px; }
+        .join { margin-top: 12px; padding: 12px 14px; gap: 10px; }
+        .join .btn { width: 100%; }
     }
 </style>
