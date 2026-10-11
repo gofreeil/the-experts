@@ -209,7 +209,7 @@
                                     height="344"
                                     fetchpriority="high"
                                     decoding="async"
-                                    class="w-full h-full object-contain"
+                                    class="w-full h-auto rounded-lg"
                                 />
                             </div>
                             <div
@@ -332,7 +332,7 @@
                                 height="344"
                                 fetchpriority="high"
                                 decoding="async"
-                                class="w-full h-full object-contain"
+                                class="w-full h-auto rounded-2xl"
                             />
                         </div>
                     </a>
