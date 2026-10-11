@@ -4,7 +4,7 @@
     import '$lib/components/home/home.css';
     import { problemsStore, seedProblems } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
-    import { CATS, STEPS, PAID_TOTAL, SOLVED_COUNT, catColor, fmt, fmtCompact } from '$lib/homeData';
+    import { CATS, STEPS, catColor, fmt } from '$lib/homeData';
     import ProblemMap from '$lib/components/home/ProblemMap.svelte';
     import SmartSearch from '$lib/components/home/SmartSearch.svelte';
     import PaidSection from '$lib/components/home/PaidSection.svelte';
@@ -58,11 +58,6 @@
                     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2l6.5 2.5v5c0 4-2.7 6.8-6.5 8.5-3.8-1.7-6.5-4.5-6.5-8.5v-5z" /><path d="M7 10l2.2 2.2L13.2 8" /></svg>
                     <span>הפרס נשמר בנאמנות. הוא עובר למומחה רק אחרי שאישרתם שהבעיה נפתרה.</span>
                 </p>
-                <div class="hero-stats">
-                    <div><div class="stat-n gold"><span class="num">{fmtCompact(totalOpen)}</span></div><div class="stat-l">פרסים פתוחים כרגע</div></div>
-                    <div><div class="stat-n gold"><span class="num">{fmtCompact(PAID_TOTAL)}</span></div><div class="stat-l">חולקו עד היום לפותרים</div></div>
-                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות שנפתרו</div></div>
-                </div>
             </div>
 
             <a class="howbox" href="/about" aria-label="אודות">
@@ -143,14 +138,9 @@
     .hero-cta .btn { width: 100%; padding: 13px 24px; font-size: 16px; box-shadow: 0 6px 16px rgba(185, 119, 14, 0.35); }
     .trust { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 10px 12px; color: var(--fg-mute); font-size: 13.5px; line-height: 1.45; background: color-mix(in srgb, var(--ok) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--ok) 26%, transparent); border-radius: 10px; }
     .trust svg { width: 18px; height: 18px; flex: none; margin-top: 1px; color: var(--ok); }
-    .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: auto; padding-top: 18px; }
-    .hero-stats > div { padding: 10px 4px; text-align: center; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 10px; }
-    .stat-n { font-family: var(--font-display); font-weight: 900; font-size: clamp(18px, 2.3cqi, 25px); line-height: 1.1; color: var(--fg); white-space: nowrap; }
-    .stat-n.gold { color: var(--honey-text); }
-    .stat-l { color: var(--fg-faint); font-size: 12.5px; margin-top: 4px; line-height: 1.3; }
 
     /* ───── איך זה עובד (בכרטיס בגיבור): ציר זמן עם קו מחבר בין השלבים ───── */
-    .how-frame { margin-top: 12px; padding: 6px clamp(14px, 3cqi, 28px) 8px; max-width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 4px 14px rgba(10, 45, 80, 0.08); }
+    .how-frame { margin-top: 12px; max-width: 100%; }
     .how { list-style: none; margin: 0; padding: 0; display: grid; }
     .how li { position: relative; display: flex; align-items: flex-start; gap: 14px; padding-bottom: 16px; }
     .how li:last-child { padding-bottom: 0; }
