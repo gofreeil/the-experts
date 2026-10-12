@@ -40,7 +40,7 @@
 </script>
 
 <svelte:head>
-	<title>שחזור גישה לחשבון | כוורת המומחים</title>
+	<title>שחזור גישה לחשבון | המומחים של העם</title>
 	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 

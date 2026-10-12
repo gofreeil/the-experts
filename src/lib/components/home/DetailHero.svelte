@@ -14,7 +14,7 @@
 </script>
 
 <svelte:head>
-    <title>{title} | כוורת המומחים</title>
+    <title>{title} | המומחים של העם</title>
     <meta name="description" content={meta || lede} />
 </svelte:head>
 

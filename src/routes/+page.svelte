@@ -36,7 +36,7 @@
 </script>
 
 <svelte:head>
-    <title>כוורת המומחים</title>
+    <title>המומחים של העם</title>
     <meta name="description" content="מעלים בעיה, ציבורית או פרטית, ומציבים עליה פרס. מומחים מרימים יד, מציעים פתרון, והכסף עובר למי שפתר." />
 </svelte:head>
 

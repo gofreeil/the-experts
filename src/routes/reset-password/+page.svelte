@@ -26,7 +26,7 @@
 </script>
 
 <svelte:head>
-	<title>בחירת סיסמה חדשה | כוורת המומחים</title>
+	<title>בחירת סיסמה חדשה | המומחים של העם</title>
 	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 

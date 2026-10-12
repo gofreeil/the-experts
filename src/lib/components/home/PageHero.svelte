@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-    <title>{item.title} | כוורת המומחים</title>
+    <title>{item.title} | המומחים של העם</title>
     <meta name="description" content={item.lede} />
 </svelte:head>
 
