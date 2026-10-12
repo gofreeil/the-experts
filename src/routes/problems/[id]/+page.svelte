@@ -1,14 +1,19 @@
 <script lang="ts">
     import { page } from '$app/state';
-    import { problemsStore, formatTimeAgo, formatBounty } from '$lib/problemsStore.svelte';
+    import { problemsStore, formatTimeAgo, formatBounty, localizeProblem } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
     import { onMount } from 'svelte';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     onMount(() => problemsStore.refresh());
 
     let id = $derived(page.params.id);
-    let problem = $derived(problemsStore.items.find((p) => p.id === id));
-    let team = $derived(problem ? teamBySlug(problem.category) : undefined);
+    let stored = $derived(problemsStore.items.find((p) => p.id === id));
+    // בעיית הדגמה מוצגת בשפת הגולש; בעיה שגולש כתב נשארת כפי שנכתבה
+    let problem = $derived(stored ? localizeProblem(stored, i18n.locale) : undefined);
+    let team = $derived(problem ? teamBySlug(problem.category, i18n.locale) : undefined);
 
     // טופס הצעת פתרון
     let solverName = $state('');
@@ -44,29 +49,29 @@
 </script>
 
 <svelte:head>
-    <title>{problem ? problem.title : 'בעיה'} - בעיות לפתרון</title>
+    <title>{problem ? problem.title : i18n.t('problem.one')} - {i18n.t('board.title')}</title>
 </svelte:head>
 
-<section dir="rtl" class="page">
-    <a href="/problems" class="back">← חזרה ללוח הבעיות</a>
+<section class="page">
+    <a href="/problems" class="back">{i18n.t('board.back')}</a>
 
     {#if !problem}
         <div class="not-found">
             <div class="emoji-big">🤔</div>
-            <h2>בעיה לא נמצאה</h2>
-            <p>ייתכן שהיא נמחקה או שהקישור שגוי.</p>
-            <a href="/problems" class="btn-primary">לכל הבעיות</a>
+            <h2>{i18n.t('pd.notFound')}</h2>
+            <p>{i18n.t('pd.notFoundNote')}</p>
+            <a href="/problems" class="btn-primary">{i18n.t('pd.allProblems')}</a>
         </div>
     {:else}
         <article class="problem" style="--c:{team?.color ?? '#f59e0b'}">
             <div class="head">
                 <span class="badge badge-{problem.type}">
-                    {problem.type === 'community' ? '🏘️ קהילה' : '👤 פרטי'}
+                    {problem.type === 'community' ? `🏘️ ${i18n.t('board.community')}` : `👤 ${i18n.t('board.individual')}`}
                 </span>
                 <span class="status status-{problem.status}">
-                    {problem.status === 'open' ? '🟢 פתוח' : problem.status === 'in-progress' ? '🟡 בטיפול' : '⚪ נפתר'}
+                    {problem.status === 'open' ? `🟢 ${i18n.t('pd.statusOpen')}` : problem.status === 'in-progress' ? `🟡 ${i18n.t('pd.statusProgress')}` : `⚪ ${i18n.t('pd.statusSolved')}`}
                 </span>
-                <span class="bounty">{formatBounty(problem.bounty)}</span>
+                <span class="bounty">{formatBounty(problem.bounty, i18n.locale)}</span>
             </div>
 
             <h1 class="ptitle">{problem.title}</h1>
@@ -79,14 +84,14 @@
                 <div class="poster-info">
                     <strong>{problem.posterName}</strong>
                     <span class="dim">•</span>
-                    <span class="dim">{formatTimeAgo(problem.createdAt)}</span>
+                    <span class="dim">{formatTimeAgo(problem.createdAt, i18n.locale)}</span>
                 </div>
             </div>
 
             <p class="pdesc">{problem.description}</p>
 
             <div class="contact-box">
-                <span class="contact-label">📞 פרטי קשר של המעלה:</span>
+                <span class="contact-label">📞 {i18n.t('pd.posterContact')}</span>
                 <span class="contact-value">{problem.contact}</span>
             </div>
         </article>
@@ -94,57 +99,57 @@
         <!-- אזור הצעות פתרון -->
         <section class="solutions">
             <div class="sol-head">
-                <h2>הצעות פתרון ({problem.solutions.length})</h2>
+                <h2>{i18n.t('pd.proposals', { n: problem.solutions.length })}</h2>
                 {#if !showForm}
                     <button class="btn-primary" onclick={() => showForm = true}>
-                        ✍️ הצעת פתרון
+                        ✍️ {i18n.t('pd.propose')}
                     </button>
                 {/if}
             </div>
 
             {#if justSubmitted}
-                <div class="ok">✅ ההצעה שלך נשלחה! המעלה יכול ליצור איתך קשר.</div>
+                <div class="ok">✅ {i18n.t('pd.submitted')}</div>
             {/if}
 
             {#if showForm}
                 <form class="solform" onsubmit={(e) => { e.preventDefault(); submitSolution(); }}>
-                    <h3>הצעת הפתרון שלך</h3>
+                    <h3>{i18n.t('pd.yourProposal')}</h3>
 
                     <div class="srow">
                         <div class="sfield">
-                            <label for="solverName">שמך</label>
-                            <input id="solverName" type="text" bind:value={solverName} placeholder="שם מלא" />
+                            <label for="solverName">{i18n.t('pd.yourName')}</label>
+                            <input id="solverName" type="text" bind:value={solverName} placeholder={i18n.t('pd.fullName')} />
                         </div>
                         <div class="sfield">
-                            <label for="solverContact">פרטי קשר</label>
-                            <input id="solverContact" type="text" bind:value={contact} placeholder="טלפון / אימייל" />
+                            <label for="solverContact">{i18n.t('newProblem.contact')}</label>
+                            <input id="solverContact" type="text" bind:value={contact} placeholder={i18n.t('pd.contactPh')} />
                         </div>
                     </div>
 
                     <div class="sfield">
-                        <label for="proposal">תיאור הפתרון המוצע</label>
+                        <label for="proposal">{i18n.t('pd.proposalLabel')}</label>
                         <textarea id="proposal" bind:value={proposal} rows="4"
-                                  placeholder="כיצד תפתור את הבעיה? באיזה לוח זמנים? איזה ניסיון רלוונטי יש לך?"
+                                  placeholder={i18n.t('pd.proposalPh')}
                                   maxlength="1500"></textarea>
                         <small>{proposal.length} / 1500</small>
                     </div>
 
                     <div class="sfield">
-                        <label for="askingPrice">מחיר מבוקש (₪)</label>
+                        <label for="askingPrice">{i18n.t('pd.askingPrice')}</label>
                         <input id="askingPrice" type="number" bind:value={askingPrice} min="1" step="50"
-                               placeholder="מתוך תקציב של {formatBounty(problem.bounty)}" />
+                               placeholder={i18n.t('pd.askingPh', { budget: formatBounty(problem.bounty, i18n.locale) })} />
                     </div>
 
                     <div class="sactions">
-                        <button type="submit" class="btn-primary" disabled={!canSubmit}>שלח הצעה</button>
-                        <button type="button" class="btn-ghost" onclick={() => showForm = false}>ביטול</button>
+                        <button type="submit" class="btn-primary" disabled={!canSubmit}>{i18n.t('pd.submit')}</button>
+                        <button type="button" class="btn-ghost" onclick={() => showForm = false}>{i18n.t('common.cancel')}</button>
                     </div>
                 </form>
             {/if}
 
             {#if problem.solutions.length === 0}
                 <div class="no-sol">
-                    <p>טרם הוגשו הצעות. תהיה הראשון! 🚀</p>
+                    <p>{i18n.t('pd.noProposals')}</p>
                 </div>
             {:else}
                 <div class="sol-list">
@@ -152,12 +157,12 @@
                         <div class="sol-card">
                             <div class="sol-top">
                                 <strong>{s.solverName}</strong>
-                                <span class="ask">{formatBounty(s.askingPrice)}</span>
+                                <span class="ask">{formatBounty(s.askingPrice, i18n.locale)}</span>
                             </div>
                             <p class="sol-text">{s.proposal}</p>
                             <div class="sol-bot">
                                 <span class="dim">📞 {s.contact}</span>
-                                <span class="dim">{formatTimeAgo(s.createdAt)}</span>
+                                <span class="dim">{formatTimeAgo(s.createdAt, i18n.locale)}</span>
                             </div>
                         </div>
                     {/each}
@@ -187,7 +192,7 @@
     .problem {
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7));
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-right: 5px solid var(--c, #f59e0b);
+        border-inline-start: 5px solid var(--c, #f59e0b);
         border-radius: 0.85rem;
         padding: 1.5rem;
         margin-bottom: 1.8rem;

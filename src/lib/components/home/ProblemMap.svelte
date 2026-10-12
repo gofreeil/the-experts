@@ -4,8 +4,12 @@
     import { adThenGo } from './nav';
     import FancyHeading from './FancyHeading.svelte';
     import Stamp from './Stamp.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     let { wanted, onpledge }: { wanted: Problem[]; onpledge?: (id: string, amount: number) => void } = $props();
+
+    const i18n = useI18n();
+    const needPrefix = $derived(i18n.l(NEED_PREFIX));
 
     // אישור קצר אחרי הוספה לפרס, במקום הכפתורים של אותו כרטיס
     let thanks = $state<{ id: string; amt: number } | null>(null);
@@ -28,29 +32,29 @@
     <div class="grid" role="group" aria-label={label}>
         {#each list as p (p.id)}
             <div class="cell" style="--c:{catColor(p.category)}">
-                <a class="card" href="/problems/{p.id}" aria-label="{p.title}, פרס {p.bounty} שקלים" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>
+                <a class="card" href="/problems/{p.id}" aria-label={i18n.t('problem.cardAria', { title: p.title, amount: fmt(p.bounty) })} onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>
                     <span class="c-media">
                         <img class="c-img" src={artOf(p)} alt="" width="400" height="260" loading="lazy" decoding="async" />
                         <span class="c-price"><span class="num">{fmt(p.bounty)}</span></span>
-                        <span class="c-stamp"><Stamp text="מבוקש: פתרון" compact /></span>
+                        <span class="c-stamp"><Stamp text={i18n.t('problem.wanted')} compact /></span>
                     </span>
                     <span class="c-body">
                         <span class="c-cat">
-                            <span class="dot"></span>{catShort(p.category)}
-                            <span class="c-sub">{p.type === 'community' ? `${backersOf(p)} תורמים` : 'פרטית'}</span>
+                            <span class="dot"></span>{catShort(p.category, i18n.locale)}
+                            <span class="c-sub">{p.type === 'community' ? i18n.tn('problem.backers', backersOf(p)) : i18n.t('problem.private')}</span>
                         </span>
-                        <span class="c-title"><span class="need">{NEED_PREFIX}</span> {p.title}</span>
+                        <span class="c-title"><span class="need">{needPrefix}</span> {p.title}</span>
                     </span>
                 </a>
                 <div class="pledge">
                     {#if p.type !== 'community'}
-                        <span class="pl-l">בעיה פרטית, הפרס ממבקש יחיד</span>
+                        <span class="pl-l">{i18n.t('problem.privateNote')}</span>
                     {:else if thanks?.id === p.id}
-                        <span class="thanks" role="status">✓ נוספו <span class="num">{fmt(thanks.amt)}</span> לפרס, תודה!</span>
+                        <span class="thanks" role="status">{i18n.t('problem.pledged', { amount: fmt(thanks.amt) })}</span>
                     {:else}
-                        <span class="pl-l">הוסיפו לפרס</span>
+                        <span class="pl-l">{i18n.t('problem.addToReward')}</span>
                         {#each PLEDGE_AMOUNTS as amt}
-                            <button class="pl-b" type="button" aria-label="הוסיפו {amt} שקלים לפרס: {p.title}" onclick={() => pledge(p, amt)}>+{amt}</button>
+                            <button class="pl-b" type="button" aria-label={i18n.t('problem.addAria', { amount: amt, title: p.title })} onclick={() => pledge(p, amt)}>+{amt}</button>
                         {/each}
                     {/if}
                 </div>
@@ -60,8 +64,8 @@
 {/snippet}
 
 <div class="mapbox">
-    <FancyHeading title="המבוקשים ביותר" />
-    {@render group(wanted, 'המבוקשים ביותר')}
+    <FancyHeading title={i18n.t('problem.mostWanted')} />
+    {@render group(wanted, i18n.t('problem.mostWanted'))}
 
 </div>
 
@@ -73,7 +77,7 @@
     .cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; transition: opacity 0.25s; }
     .card {
         display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; flex: 1;
-        padding: 8px 8px 12px; text-align: right; color: var(--fg); cursor: pointer;
+        padding: 8px 8px 12px; text-align: start; color: var(--fg); cursor: pointer;
         background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px;
         transition: border-color 0.15s, background 0.15s;
     }
@@ -107,6 +111,7 @@
         .c-body { flex: 1; }
         .c-title { font-size: 14px; }
         .c-stamp { inset-block-start: 4px; inset-inline-end: 4px; transform: scale(0.88); transform-origin: top right; }
+        :global(html[dir='ltr']) .c-stamp { transform-origin: top left; }
         /* כפתורי הוספה לפרס: יעד לחיצה נוח לאגודל */
         .pledge { gap: 8px; }
         .pl-b { min-height: 38px; padding-inline: 14px; font-size: 14px; }

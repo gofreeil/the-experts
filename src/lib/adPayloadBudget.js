@@ -273,9 +273,17 @@ export async function shrinkAdPayload(payload, limit = AD_BODY_LIMIT) {
     return { ok: bodyBytes(payload) <= limit, changed };
 }
 
+/** שמות התמונות בהודעות המשקל, לפי שפת הגולש */
+const IMAGE_LABELS = {
+    he: { main: "התמונה הראשית", logo: "הלוגו", landing: "תמונת דף הנחיתה", product: (/** @type {number} */ n) => `תמונת מוצר ${n}` },
+    en: { main: "the main image", logo: "the logo", landing: "the landing-page image", product: (/** @type {number} */ n) => `product image ${n}` },
+};
+
 /** שם התמונה הכבדה ביותר במודעה — להודעות שגיאה מדויקות.
- * @param {any} payload */
-export function heaviestImageLabel(payload) {
+ * @param {any} payload
+ * @param {'he' | 'en'} [locale] */
+export function heaviestImageLabel(payload, locale = "he") {
+    const L = IMAGE_LABELS[locale] ?? IMAGE_LABELS.he;
     let bestLabel = "";
     let bestLen = -1;
     /** @param {string} label @param {unknown} cur */
@@ -283,11 +291,11 @@ export function heaviestImageLabel(payload) {
         if (typeof cur !== "string" || !cur.startsWith("data:image/")) return;
         if (cur.length > bestLen) { bestLen = cur.length; bestLabel = label; }
     };
-    consider("התמונה הראשית", payload?.mainImage);
-    consider("הלוגו", payload?.logo);
-    consider("תמונת דף הנחיתה", payload?.landing?.image);
+    consider(L.main, payload?.mainImage);
+    consider(L.logo, payload?.logo);
+    consider(L.landing, payload?.landing?.image);
     (payload?.landing?.products ?? []).forEach((/** @type {any} */ p, /** @type {number} */ i) => {
-        consider(`תמונת מוצר ${i + 1}`, p?.image);
+        consider(L.product(i + 1), p?.image);
     });
     return bestLabel;
 }

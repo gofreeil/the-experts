@@ -1,13 +1,15 @@
 <script lang="ts">
     import { RECS, THREADS, DEMO_DATA, catColor, catShort } from '$lib/homeData';
     import SectionHead from './SectionHead.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // preview = גרסת דף הבית (2 מפגשים ו-3 דיונים). הדף המלא מציג הכול.
     // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה).
     let { preview = false, headTitle = '' }: { preview?: boolean; headTitle?: string } = $props();
 
-    const recs = $derived(preview ? RECS.slice(0, 2) : RECS);
-    const threads = $derived(preview ? THREADS.slice(0, 3) : THREADS);
+    const i18n = useI18n();
+    const recs = $derived(i18n.l(preview ? RECS.slice(0, 2) : RECS));
+    const threads = $derived(i18n.l(preview ? THREADS.slice(0, 3) : THREADS));
 </script>
 
 <section class="section alt" id="archive">
@@ -15,7 +17,7 @@
         {#if headTitle}<SectionHead title={headTitle} />{/if}
         <div class="arch">
         <div class="col">
-            <div class="sub-h"><h3>ארכיון מפגשים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</h3></div>
+            <div class="sub-h"><h3>{i18n.t('archive.recordings')}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</h3></div>
             {#each recs as r}
                 <article class="rec">
                     <div class="thumb" style="--c:{catColor(r.c)}">
@@ -23,26 +25,26 @@
                         <span class="dur">{r.dur}</span>
                     </div>
                     <div class="rec-body">
-                        <div class="rec-n">{r.n}</div>
+                        <div class="rec-n">{i18n.t('archive.meetupN', { n: r.n })}</div>
                         <h4>{r.t}</h4>
-                        <div class="rec-m"><span>{r.date}</span><span>{r.att} משתתפים</span></div>
-                        <p class="rec-d"><b>{r.dec} החלטות.</b> {r.d}</p>
+                        <div class="rec-m"><span>{i18n.date(r.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span><span>{i18n.tn('archive.attendees', r.att)}</span></div>
+                        <p class="rec-d"><b>{i18n.tn('archive.decisions', r.dec)}</b> {r.d}</p>
                     </div>
                 </article>
             {/each}
         </div>
 
         <div class="col">
-            <div class="sub-h"><h3>דיונים פעילים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</h3></div>
+            <div class="sub-h"><h3>{i18n.t('archive.threads')}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</h3></div>
             {#each threads as t}
                 <article class="thread">
                     <b>{t.t}</b>
                     <small>
-                        <span class="tag-c"><span class="dot" style="--c:{catColor(t.c)}"></span>{catShort(t.c)}</span>
+                        <span class="tag-c"><span class="dot" style="--c:{catColor(t.c)}"></span>{catShort(t.c, i18n.locale)}</span>
                         <span>{t.last}</span>
-                        {#if t.hot}<span class="hot">דיון חם</span>{/if}
+                        {#if t.hot}<span class="hot">{i18n.t('archive.hot')}</span>{/if}
                     </small>
-                    <div class="replies"><b class="num">{t.r}</b><span>תגובות</span></div>
+                    <div class="replies"><b class="num">{t.r}</b><span>{i18n.t('archive.replies')}</span></div>
                 </article>
             {/each}
         </div>
@@ -61,6 +63,8 @@
     .thumb::before { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 56 97'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 0v31M0 82l28 15 28-15' fill='none' stroke='%23ffffff' stroke-opacity='.1' stroke-width='2'/%3E%3C/svg%3E"); }
     .play { position: relative; width: 42px; height: 42px; border-radius: 50%; background: rgba(6, 22, 40, 0.75); display: grid; place-items: center; }
     .play svg { width: 14px; height: 14px; fill: #ffc65c; transform: scaleX(-1); }
+    /* משולש ההפעלה פונה בכיוון הקריאה: שמאלה בעברית, ימינה באנגלית */
+    :global(html[dir='ltr']) .play svg { transform: none; }
     .dur { position: absolute; bottom: 6px; inset-inline-start: 6px; color: #fff; background: rgba(6, 22, 40, 0.85); font-size: 12px; padding: 1px 6px; border-radius: 3px; font-variant-numeric: tabular-nums; direction: ltr; }
     .rec-body { min-width: 0; }
     .rec-n { color: var(--honey-text); font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; }

@@ -1,16 +1,19 @@
 <script lang="ts">
     import FancyHeading from './FancyHeading.svelte';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 </script>
 
 <!-- id="compose": היעד של כפתור הגיבור "העלו בעיה והציבו פרס" -->
 <section class="compose" id="compose">
     <div class="inner">
         <div class="banner">
-            <FancyHeading as="h2" title="הציבו אתגר לפתרון" />
-            <p class="lede">תארו את הבעיה, קבעו פרס, והמומחים כבר יראו אותה.</p>
+            <FancyHeading as="h2" title={i18n.t('compose.title')} />
+            <p class="lede">{i18n.t('compose.lede')}</p>
             <div class="acts">
-                <a class="btn btn-primary" href="/problems/new">הציבו אתגר לפתרון</a>
-                <a class="btn btn-ghost" href="/problems">הצטרפו לאתגר קיים</a>
+                <a class="btn btn-primary" href="/problems/new">{i18n.t('compose.title')}</a>
+                <a class="btn btn-ghost" href="/problems">{i18n.t('compose.join')}</a>
             </div>
         </div>
     </div>

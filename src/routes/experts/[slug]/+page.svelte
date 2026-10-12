@@ -2,50 +2,54 @@
     import '$lib/components/home/home.css';
     import DetailHero from '$lib/components/home/DetailHero.svelte';
     import { DEMO_DATA, catColor, fmt, fmtShort } from '$lib/homeData';
-    import { publicSolvedBy, privateSolvedCount } from '$lib/expertsData';
+    import { publicSolvedBy, privateSolvedCount, expertBySlug } from '$lib/expertsData';
     import { teamBySlug } from '$lib/teamsData';
+    import { useI18n } from '$lib/i18n/context';
     import type { PageProps } from './$types';
 
     let { data }: PageProps = $props();
 
-    const e = $derived(data.expert);
-    const team = $derived(teamBySlug(e.c));
-    const pub = $derived(publicSolvedBy(e.slug));
-    const priv = $derived(privateSolvedCount(e));
+    const i18n = useI18n();
+    // data.slug מגיע מה-load (כולל 404); הרזומה נפתר בשפה הנוכחית
+    const source = $derived(expertBySlug(data.slug)!);
+    const e = $derived(i18n.l(source));
+    const team = $derived(teamBySlug(e.c, i18n.locale));
+    const pub = $derived(i18n.l(publicSolvedBy(e.slug)));
+    const priv = $derived(privateSolvedCount(source));
 </script>
 
-<div class="home" dir="rtl">
+<div class="home">
     <DetailHero
         title={e.n}
         lede={e.role}
-        meta="הרזומה של {e.n}: {e.role}. {e.solved} בעיות שנפתרו, ובהן הבעיות הציבוריות שפתר."
+        meta={i18n.t('expert.metaDesc', { name: e.n, role: e.role, solved: e.solved })}
         backHref="/experts?cat={e.c}"
-        backLabel="← לכל המומחים"
+        backLabel={i18n.t('expert.backToAll')}
     >
         {#snippet lead()}<span class="av" style="--c2:{catColor(e.c)}" aria-hidden="true">{e.ini}</span>{/snippet}
-        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new?category={e.c}">העלו בעיה בתחום</a>{/snippet}
+        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new?category={e.c}">{i18n.t('expert.postInField')}</a>{/snippet}
     </DetailHero>
 
     <section class="section compact">
         <div class="inner">
             <p class="meta">
                 <a class="team" href="/categories/{e.c}"><span class="dot" style="--c:{catColor(e.c)}"></span>{team?.name ?? e.c}</a>
-                <span>בכוורת מאז {e.since}</span>
-                {#if DEMO_DATA}<span class="demo-tag" style="margin:0">נתוני הדגמה</span>{/if}
+                <span>{i18n.t('expert.since', { year: String(e.since) })}</span>
+                {#if DEMO_DATA}<span class="demo-tag" style="margin:0">{i18n.t('common.demoData')}</span>{/if}
             </p>
             <p class="bio">{e.bio}</p>
 
             <div class="stats">
-                <div><b class="num">{e.solved}</b><span>בעיות שנפתרו</span></div>
-                <div><b class="g"><span class="num">{fmtShort(e.earned)}</span></b><span>הרוויח בכוורת</span></div>
-                <div><b class="num">{e.rate}</b><span>דירוג</span></div>
-                <div><b>{e.rt}</b><span>זמן תגובה</span></div>
-                <div><b class="num">{e.open}</b><span>ידיים מורמות כרגע</span></div>
+                <div><b class="num">{e.solved}</b><span>{i18n.t('experts.statSolved')}</span></div>
+                <div><b class="g"><span class="num">{fmtShort(e.earned)}</span></b><span>{i18n.t('experts.statEarned')}</span></div>
+                <div><b class="num">{e.rate}</b><span>{i18n.t('experts.statRating')}</span></div>
+                <div><b>{e.rt}</b><span>{i18n.t('experts.statResponse')}</span></div>
+                <div><b class="num">{e.open}</b><span>{i18n.t('expert.handsNow')}</span></div>
             </div>
 
             <div class="grid">
                 <section class="main" aria-labelledby="pub-h">
-                    <h2 id="pub-h">בעיות ציבוריות שפתר <span class="num cnt">{pub.length}</span></h2>
+                    <h2 id="pub-h">{i18n.t('cats.publicSolved')} <span class="num cnt">{pub.length}</span></h2>
                     {#if pub.length}
                         <ul class="solved">
                             {#each pub as s (s.t)}
@@ -55,27 +59,27 @@
                                         <b class="amt"><span class="num">{fmt(s.amt)}</span></b>
                                     </div>
                                     {#if s.d}<p>{s.d}</p>{/if}
-                                    <small>נפתרה תוך {s.days} ימים ושולם למומחה</small>
+                                    <small>{i18n.t('expert.solvedWithin', { days: s.days })}</small>
                                 </li>
                             {/each}
                         </ul>
                     {:else}
-                        <p class="empty">עדיין לא פתר בעיה ציבורית.</p>
+                        <p class="empty">{i18n.t('expert.noPublic')}</p>
                     {/if}
                     {#if priv > 0}
-                        <p class="priv"><b class="num">{priv}</b> בעיות פרטיות נוספות. בעיה פרטית לא מפורסמת בשמה, כדי להגן על מי שהעלה אותה.</p>
+                        <p class="priv"><b class="num">{priv}</b> {i18n.t('expert.privNote')}</p>
                     {/if}
                 </section>
 
                 <aside class="side">
                     <div class="box">
-                        <h2>התמחויות</h2>
+                        <h2>{i18n.t('expert.skills')}</h2>
                         <div class="skills">
                             {#each e.skills as s}<span class="chip">{s}</span>{/each}
                         </div>
                     </div>
                     <div class="box">
-                        <h2>השכלה והסמכות</h2>
+                        <h2>{i18n.t('expert.credentials')}</h2>
                         <ul class="creds">
                             {#each e.creds as c}<li>{c}</li>{/each}
                         </ul>

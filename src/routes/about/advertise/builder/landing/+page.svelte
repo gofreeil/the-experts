@@ -1,3 +1,10 @@
+<script module>
+    // מילון הבילדר נטען רק בדפי הבילדר ולא בכל האתר (ראו registerMessages ב-translate.ts)
+    import * as builderMessages from "$lib/i18n/messages/builder";
+    import { registerMessages } from "$lib/i18n/translate";
+    registerMessages(builderMessages);
+</script>
+
 <script>
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
@@ -9,6 +16,10 @@
         shrinkAdPayload, heaviestImageLabel,
     } from "$lib/adPayloadBudget";
     import { getAdIntent, clearAdIntent } from "$lib/adIntent";
+    import { planTitle, planShortLabel } from "$lib/adPlans";
+    import { useI18n } from "$lib/i18n/context";
+
+    const i18n = useI18n();
 
     // עורך דף הנחיתה + שליחה סופית - פורט מקבוצות רכישה (במקור מ"קהילה בשכונה").
     // חולק את אותה טיוטת localStorage עם ה-builder הראשי.
@@ -51,7 +62,7 @@
     let title = $state("");
     let subtitle = $state("");
     let hoverText = $state("");
-    let cta = $state("הקלק לפרטים והזמנות");
+    let cta = $state(i18n.t('b.defaultCta'));
     let mainImage = $state("");
     // מיקום+זום שנבחרו בבילדר — עוברים כמו-שהם אל המודעה בשליחה
     let mainImageFit = $state({ x: 50, y: 50, z: 1 });
@@ -139,7 +150,7 @@
     async function processImageFile(file, target) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
-            alert("נא להעלות קובץ תמונה");
+            alert(i18n.t('b.notImage'));
             return;
         }
         uploadIssue = { zone: "", msg: "" };
@@ -159,8 +170,7 @@
         if (!fit.ok) {
             uploadIssue = {
                 zone: target === "landing" ? "landing" : "product",
-                msg: `אין מקום לתמונה הזו — המודעה כולה מוגבלת במשקל, וגם אחרי דחיסה היא חורגת. `
-                    + `הסירו או החליפו תמונה אחרת (הכבדה ביותר: ${heaviestImageLabel(candidate) || "—"}) ונסו שוב.`,
+                msg: i18n.t('b.noRoom', { heaviest: heaviestImageLabel(candidate, i18n.locale) || "—" }),
             };
             return; // המצב הקיים לא נגעו בו
         }
@@ -265,7 +275,7 @@
     const PLAN_DAYS_KEY = "ad_plan_days";
     let payDuration = $state(DEFAULT_PLAN_DAYS);
     const payPlan = $derived(planFor(payDuration));
-    const payDurationLabel = $derived(payPlan.label);
+    const payDurationLabel = $derived(planShortLabel(payPlan, i18n.locale));
     /** @param {number} days */
     function setPayDuration(days) {
         payDuration = days;
@@ -397,18 +407,18 @@
     let missingFields = $derived.by(() => {
         /** @type {Array<{ label: string, where: 'card' | 'landing' }>} */
         const out = [];
-        if (!mainImage) out.push({ label: "תמונה ראשית", where: "card" });
-        if (!title) out.push({ label: "כותרת הפרסומת", where: "card" });
-        if (!subtitle) out.push({ label: "סלוגן", where: "card" });
-        if (!hoverText) out.push({ label: "טקסט בריחוף", where: "card" });
-        if (!phone && !website) out.push({ label: "טלפון או אתר", where: "landing" });
-        if (!landingHeadline && !landingPitch) out.push({ label: "כותרת דף הנחיתה או משפט פתיחה", where: "landing" });
+        if (!mainImage) out.push({ label: i18n.t('l.mfImage'), where: "card" });
+        if (!title) out.push({ label: i18n.t('l.ckTitle'), where: "card" });
+        if (!subtitle) out.push({ label: i18n.t('l.ckTagline'), where: "card" });
+        if (!hoverText) out.push({ label: i18n.t('l.ckHover'), where: "card" });
+        if (!phone && !website) out.push({ label: i18n.t('l.mfPhone'), where: "landing" });
+        if (!landingHeadline && !landingPitch) out.push({ label: i18n.t('l.mfLanding'), where: "landing" });
         return out;
     });
     // משקל המודעה בזמן אמת — חוסם שליחה עוד לפני הניסיון, עם הסבר
     let adWeightBytes = $derived.by(() => bodyBytes(buildPayloadSnapshot()));
     let overweight = $derived(adWeightBytes > AD_EFFECTIVE_LIMIT);
-    let heaviestLabel = $derived.by(() => heaviestImageLabel(buildPayloadSnapshot()));
+    let heaviestLabel = $derived.by(() => heaviestImageLabel(buildPayloadSnapshot(), i18n.locale));
     // חובה להיות מחובר כדי לשלוח: מודעה שנשלחת בלי חשבון נשמרת בלי בעלים,
     // והמפרסם לא יוכל לעולם לראות את הביצועים שלה, לערוך או לחדש. הטיוטה
     // ממילא נשמרת ל-localStorage בכל הקלדה — אז ההתחברות לא מאבדת כלום.
@@ -427,9 +437,14 @@
             else if (typeof body?.error === "string") serverMsg = body.error;
         } catch {}
         serverMsg = serverMsg.trim();
-        // מציגים רק הודעות עבריות מכוונות - כל השאר טכני ומוחלף בהודעה ידידותית
-        if (serverMsg && /[֐-׿]/.test(serverMsg)) return serverMsg;
-        return "השליחה נכשלה - נסו שוב בעוד רגע";
+        // מציגים רק הודעות מכוונות של השרת (הן מגיעות בשפת הגולש) - כל השאר טכני ומוחלף בהודעה ידידותית.
+        // בעברית ההודעה המכוונת מזוהה לפי האותיות העבריות; באנגלית - כל הודעה שאינה עברית ואינה שגיאה פנימית (500).
+        const hasHebrew = /[֐-׿]/.test(serverMsg);
+        const intentional = i18n.locale === 'he' ? hasHebrew : !hasHebrew && res.status !== 500;
+        if (serverMsg && intentional) return serverMsg;
+        if (res.status === 401) return i18n.t('l.err401');
+        if (res.status === 413) return i18n.t('l.err413');
+        return i18n.t('l.errGeneric');
     }
 
     // רשת ביטחון אחרונה: העלאות כבר נשמרות בתקציב, אבל טיוטות ישנות
@@ -471,7 +486,7 @@
             // לקודמת ולא יוריד את מה שכבר רץ. עריכה (editId) מעדכנת במקום.
             const payload = { ...buildPayloadSnapshot(), intent: getAdIntent() };
             if (!(await shrinkAdPayload(payload, AD_BODY_LIMIT)).ok) {
-                throw new Error("התמונות כבדות מדי לשליחה אחת - הקטינו את התמונה הראשית או תמונות המוצרים ונסו שוב");
+                throw new Error(i18n.t('l.imagesTooHeavy'));
             }
             // עריכת מודעה קיימת מחליפה את התוכן שלה; השאר (סטטוס, תוקף,
             // מסלול) נקבע בזמנו ע"י האדמין ולא נשלח מכאן.
@@ -499,11 +514,11 @@
             clearAdIntent();
         } catch (e) {
             if (e instanceof TypeError) {
-                submitError = "בעיית תקשורת - בדקו את החיבור ונסו שוב";
+                submitError = i18n.t('l.networkError');
             } else if (e instanceof Error && e.message) {
                 submitError = e.message;
             } else {
-                submitError = "השליחה נכשלה - נסו שוב בעוד רגע";
+                submitError = i18n.t('l.errGeneric');
             }
         } finally {
             submitting = false;
@@ -535,7 +550,7 @@
             }));
         } catch {
             leavingToLogin = false;
-            draftSaveError = "לא הצלחנו לשמור את הטיוטה בדפדפן הזה — פנו מקום (היסטוריה/אחסון) או נסו דפדפן אחר";
+            draftSaveError = i18n.t('l.draftSaveError');
             return;
         }
         void goto(`/login?redirect=${encodeURIComponent("/about/advertise/builder/landing")}`);
@@ -543,37 +558,35 @@
 </script>
 
 <svelte:head>
-    <title>עריכת דף נחיתה | בונה הפרסומות</title>
+    <title>{i18n.t('l.pageTitle')}</title>
 </svelte:head>
 
-<div class="ad-landing-builder" dir="rtl">
+<div class="ad-landing-builder">
 
     {#if accessGranted}
 
         {#if compressNotice.visible}
             <div class="compress-toast" role="status" aria-live="polite">
-                <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label="סגור">✕</button>
-                <p>🪄 התמונות כווצו אוטומטית מ-{fmtWeight(compressNotice.originalBytes)} ל-{fmtWeight(compressNotice.finalBytes)} כדי שהמודעה תעמוד במשקל המותר</p>
+                <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label={i18n.t('common.close')}>✕</button>
+                <p>🪄 {i18n.t('l.compressed', { from: fmtWeight(compressNotice.originalBytes), to: fmtWeight(compressNotice.finalBytes) })}</p>
             </div>
         {/if}
 
         <!-- ===== כותרת ===== -->
         <header class="l-header">
-            <div class="l-badge">שלב אחרון - דף הנחיתה</div>
-            <h1>דף הנחיתה של הפרסומת</h1>
+            <div class="l-badge">{i18n.t('l.badge')}</div>
+            <h1>{i18n.t('l.h1')}</h1>
             <p>
-                כשגולש לוחץ על הפרסומת שלכם - הוא מגיע לדף נחיתה אישי עם כל הפרטים על העסק.
-                כאן ממלאים את התוכן שלו.
+                {i18n.t('l.intro')}
             </p>
-            <button type="button" onclick={goBack} class="l-back">→ חזרה לעריכת הכרטיס</button>
+            <button type="button" onclick={goBack} class="l-back">{i18n.t('l.backToCard')}</button>
         </header>
 
         <!-- שמירת הטיוטה נכשלה (בדרך כלל אחסון מלא) — חובה לומר, אחרת המפרסם
              סומך על "נשמר במכשיר" ומגלה אחרי מעבר דף שהכול נעלם -->
         {#if draftSaveFailed}
             <div class="draft-fail" role="alert">
-                ⚠️ <strong>הטיוטה לא נשמרת במכשיר</strong> — האחסון בדפדפן מלא או חסום (למשל גלישה בסתר).
-                אל תסגרו ואל תרעננו את הדף עד שתשלחו, או פנו מקום / נסו דפדפן אחר.
+                ⚠️ {@html i18n.t('l.draftFail')}
             </div>
         {/if}
 
@@ -582,11 +595,10 @@
         {#if !loggedIn && !submitted}
             <div class="login-banner" role="alert">
                 <p>
-                    🔒 <strong>אינכם מחוברים לחשבון</strong> — ולכן בסוף הדף לא תוכלו לשלוח את הפרסומת.
-                    אפשר להמשיך למלא; מה שמילאתם נשמר במכשיר הזה.
+                    🔒 {@html i18n.t('l.notLoggedIn')}
                 </p>
                 <button type="button" class="login-banner-btn" onclick={goLoginToSubmit} disabled={leavingToLogin}>
-                    {leavingToLogin ? "שומר טיוטה..." : "התחברות עכשיו →"}
+                    {leavingToLogin ? i18n.t('l.savingDraft') : i18n.t('l.loginNow')}
                 </button>
             </div>
         {/if}
@@ -597,45 +609,45 @@
             <section class="step-card">
                 <div class="step-head">
                     <span class="step-num">1</span>
-                    <h2>פרטי קשר ותוכן הדף</h2>
+                    <h2>{i18n.t('l.step1Title')}</h2>
                 </div>
-                <p class="step-help">לפחות טלפון או אתר - כדי שלגולשים תהיה דרך להגיע אליכם.</p>
+                <p class="step-help">{i18n.t('l.step1Help')}</p>
 
                 <div class="l-grid">
                     <div>
-                        <label class="field-label" for="l-phone">📞 טלפון</label>
+                        <label class="field-label" for="l-phone">{i18n.t('l.phone')}</label>
                         <input id="l-phone" type="tel" bind:value={phone} placeholder="050-1234567" class="text-input" />
                     </div>
                     <div>
-                        <label class="field-label" for="l-wa">💬 וואטסאפ</label>
+                        <label class="field-label" for="l-wa">{i18n.t('l.whatsapp')}</label>
                         <input id="l-wa" type="tel" bind:value={whatsapp} placeholder="050-1234567" class="text-input" />
                     </div>
                     <div>
-                        <label class="field-label" for="l-web">🌐 אתר אינטרנט</label>
+                        <label class="field-label" for="l-web">{i18n.t('l.website')}</label>
                         <input id="l-web" type="url" bind:value={website} placeholder="https://my-site.co.il" class="text-input" dir="ltr" />
                     </div>
                     <div>
-                        <label class="field-label" for="l-mail">✉️ אימייל</label>
+                        <label class="field-label" for="l-mail">{i18n.t('l.emailLabel')}</label>
                         <input id="l-mail" type="email" bind:value={email} placeholder="me@example.com" class="text-input" dir="ltr" />
                     </div>
 
                     <div class="span-2">
-                        <label class="field-label" for="l-headline">כותרת דף הנחיתה</label>
-                        <input id="l-headline" type="text" bind:value={landingHeadline} placeholder="למשל: פיצה של אמא - הפיצרייה של השכונה" class="text-input" />
+                        <label class="field-label" for="l-headline">{i18n.t('l.headline')}</label>
+                        <input id="l-headline" type="text" bind:value={landingHeadline} placeholder={i18n.t('l.headlinePh')} class="text-input" />
                     </div>
                     <div class="span-2">
-                        <label class="field-label" for="l-pitch">משפט פתיחה קצר</label>
-                        <textarea id="l-pitch" bind:value={landingPitch} rows="3" placeholder="שניים-שלושה משפטים שמציגים את העסק" class="text-input"></textarea>
+                        <label class="field-label" for="l-pitch">{i18n.t('l.pitch')}</label>
+                        <textarea id="l-pitch" bind:value={landingPitch} rows="3" placeholder={i18n.t('l.pitchPh')} class="text-input"></textarea>
                     </div>
                     <div class="span-2">
-                        <label class="field-label" for="l-extended">הסיפור שלנו (לא חובה)</label>
-                        <p class="field-note">טקסט חופשי וארוך - הסיפור של העסק, מה מציעים, למי מתאים.</p>
-                        <textarea id="l-extended" bind:value={landingExtended} rows="8" placeholder="ספרו על העסק בהרחבה..." class="text-input"></textarea>
+                        <label class="field-label" for="l-extended">{i18n.t('l.story')}</label>
+                        <p class="field-note">{i18n.t('l.storyNote')}</p>
+                        <textarea id="l-extended" bind:value={landingExtended} rows="8" placeholder={i18n.t('l.storyPh')} class="text-input"></textarea>
                     </div>
 
                     <div class="span-2">
-                        <span class="field-label">תמונה ראשית לדף הנחיתה (לא חובה)</span>
-                        <p class="field-note">אם לא תעלו - נשתמש בתמונה של הכרטיס.</p>
+                        <span class="field-label">{i18n.t('l.heroImage')}</span>
+                        <p class="field-note">{i18n.t('l.heroImageNote')}</p>
                         <label
                             class="upload-zone-lg"
                             class:has-image={!!landingImage}
@@ -645,12 +657,12 @@
                             ondrop={dropLanding}
                         >
                             {#if landingImage}
-                                <img src={landingImage} alt="תמונת דף הנחיתה" />
-                                <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearLandingImage(); }} aria-label="הסר תמונה">✕</button>
+                                <img src={landingImage} alt={i18n.t('l.heroImageAlt')} />
+                                <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearLandingImage(); }} aria-label={i18n.t('b.removeImage')}>✕</button>
                             {:else}
                                 <div class="upload-empty-sm">
                                     <div class="ue-emoji">{isDraggingLandingImage ? "✨" : "🖼️"}</div>
-                                    <p>{isDraggingLandingImage ? "שחררו כאן!" : "העלו תמונה"}</p>
+                                    <p>{isDraggingLandingImage ? i18n.t('l.dropHere') : i18n.t('l.uploadImage')}</p>
                                 </div>
                             {/if}
                             <input type="file" accept="image/*" onchange={handleLandingImage} class="hidden-input" />
@@ -661,12 +673,12 @@
                     </div>
 
                     <div class="span-2">
-                        <span class="field-label">3 יתרונות של העסק</span>
-                        <p class="field-note">כל יתרון מופיע בשורה משלו עם <strong class="amber-strong">✓</strong> - קצר וחד (עד 80 תווים).</p>
+                        <span class="field-label">{i18n.t('l.advantages')}</span>
+                        <p class="field-note">{i18n.t('l.advNoteA')} <strong class="amber-strong">✓</strong> {i18n.t('l.advNoteB')}</p>
                         <div class="adv-inputs">
-                            <input type="text" bind:value={landingAdvantages[0]} maxlength="80" placeholder="למשל: משלוח חינם מעל 100 ₪" class="text-input" />
-                            <input type="text" bind:value={landingAdvantages[1]} maxlength="80" placeholder="למשל: חומרי גלם טריים כל בוקר" class="text-input" />
-                            <input type="text" bind:value={landingAdvantages[2]} maxlength="80" placeholder="למשל: הנחה קבועה לחברי הקבוצה" class="text-input" />
+                            <input type="text" bind:value={landingAdvantages[0]} maxlength="80" placeholder={i18n.t('l.adv1Ph')} class="text-input" />
+                            <input type="text" bind:value={landingAdvantages[1]} maxlength="80" placeholder={i18n.t('l.adv2Ph')} class="text-input" />
+                            <input type="text" bind:value={landingAdvantages[2]} maxlength="80" placeholder={i18n.t('l.adv3Ph')} class="text-input" />
                         </div>
                     </div>
                 </div>
@@ -676,9 +688,9 @@
             <section class="step-card">
                 <div class="step-head">
                     <span class="step-num">2</span>
-                    <h2>מוצרים / שירותים (עד 3)</h2>
+                    <h2>{i18n.t('l.step2Title')}</h2>
                 </div>
-                <p class="step-help">הציגו מוצרים נבחרים עם תמונה ומחיר - לא חובה, אבל מוכר.</p>
+                <p class="step-help">{i18n.t('l.step2Help')}</p>
 
                 <div class="products-list">
                     {#each products as p, idx (p.id)}
@@ -695,17 +707,17 @@
                                     <img src={p.image} alt={p.name} />
                                 {:else}
                                     <div class="pz-empty">
-                                        {#if draggingProductId === p.id}✨<br />שחררו{:else}📷<br />תמונה{/if}
+                                        {#if draggingProductId === p.id}✨<br />{i18n.t('l.release')}{:else}📷<br />{i18n.t('l.image')}{/if}
                                     </div>
                                 {/if}
                                 <input type="file" accept="image/*" onchange={(e) => handleProductImage(e, p.id)} class="hidden-input" />
                             </label>
                             <div class="product-fields">
-                                <input type="text" bind:value={products[idx].name} placeholder="שם המוצר" class="text-input small" />
-                                <input type="text" bind:value={products[idx].price} placeholder="מחיר (₪)" class="text-input small" />
-                                <input type="text" bind:value={products[idx].description} placeholder="תיאור קצר" class="text-input small" />
+                                <input type="text" bind:value={products[idx].name} placeholder={i18n.t('l.productName')} class="text-input small" />
+                                <input type="text" bind:value={products[idx].price} placeholder={i18n.t('l.productPrice')} class="text-input small" />
+                                <input type="text" bind:value={products[idx].description} placeholder={i18n.t('l.productDesc')} class="text-input small" />
                             </div>
-                            <button type="button" onclick={() => removeProduct(p.id)} class="remove-btn" aria-label="הסר מוצר">✕</button>
+                            <button type="button" onclick={() => removeProduct(p.id)} class="remove-btn" aria-label={i18n.t('l.removeProduct')}>✕</button>
                         </div>
                     {/each}
                 </div>
@@ -715,7 +727,7 @@
                 {/if}
 
                 {#if products.length < 3}
-                    <button type="button" onclick={addProduct} class="add-product-btn">+ הוספת מוצר</button>
+                    <button type="button" onclick={addProduct} class="add-product-btn">{i18n.t('l.addProduct')}</button>
                 {/if}
             </section>
 
@@ -723,14 +735,14 @@
             <section class="step-card">
                 <div class="step-head">
                     <span class="step-num">3</span>
-                    <h2>מה מייחד אתכם?</h2>
+                    <h2>{i18n.t('l.step3Title')}</h2>
                 </div>
                 <p class="step-help">
-                    🌟 <strong class="amber-strong">זה הסעיף שסוגר עסקאות:</strong>
-                    למה דווקא אתם ולא המתחרים? (עד 500 תווים)
+                    🌟 <strong class="amber-strong">{i18n.t('l.uniqueA')}</strong>
+                    {i18n.t('l.uniqueB')}
                 </p>
 
-                <textarea bind:value={uniqueness} rows="5" maxlength="500" placeholder="ספרו מה מיוחד בעסק שלכם..." class="text-input"></textarea>
+                <textarea bind:value={uniqueness} rows="5" maxlength="500" placeholder={i18n.t('l.step3Ph')} class="text-input"></textarea>
                 <div class="char-count">{uniqueness.length}/500</div>
             </section>
 
@@ -738,17 +750,17 @@
             <section class="step-card">
                 <div class="step-head">
                     <span class="step-num">4</span>
-                    <h2>כתובת ושעות פעילות (לא חובה)</h2>
+                    <h2>{i18n.t('l.step4Title')}</h2>
                 </div>
 
                 <div class="l-grid">
                     <div class="span-2">
-                        <label class="field-label" for="l-address">📍 כתובת</label>
-                        <input id="l-address" type="text" bind:value={address} placeholder="רחוב, מספר, עיר" class="text-input" />
+                        <label class="field-label" for="l-address">{i18n.t('l.addressLabel')}</label>
+                        <input id="l-address" type="text" bind:value={address} placeholder={i18n.t('l.addressPh')} class="text-input" />
                     </div>
                     <div class="span-2">
-                        <label class="field-label" for="l-hours">🕒 שעות פעילות</label>
-                        <input id="l-hours" type="text" bind:value={hours} placeholder="למשל: א'-ה' 9:00-19:00, ו' 8:00-13:00" class="text-input" />
+                        <label class="field-label" for="l-hours">{i18n.t('l.hoursLabel')}</label>
+                        <input id="l-hours" type="text" bind:value={hours} placeholder={i18n.t('l.hoursPh')} class="text-input" />
                     </div>
                 </div>
             </section>
@@ -757,9 +769,9 @@
             <section class="step-card">
                 <div class="step-head">
                     <span class="step-num">🔍</span>
-                    <h2>כך ייראה דף הנחיתה</h2>
+                    <h2>{i18n.t('l.previewTitle')}</h2>
                 </div>
-                <p class="step-help">התצוגה מתעדכנת בזמן אמת בזמן שאתם ממלאים.</p>
+                <p class="step-help">{i18n.t('l.previewNote')}</p>
 
                 <div class="preview-frame">
                     <div class="landing-mock">
@@ -768,10 +780,10 @@
                             <div class="landing-hero-inner" class:has-media={!!(landingImage || mainImage)}>
                                 <div class="landing-hero-content">
                                     {#if logo}
-                                        <img src={logo} alt="לוגו" class="landing-logo" class:circle={logoShape === "circle"} />
+                                        <img src={logo} alt={i18n.t('b.logo')} class="landing-logo" class:circle={logoShape === "circle"} />
                                     {/if}
-                                    <h1>{landingHeadline || title || "כותרת דף הנחיתה"}</h1>
-                                    <p>{landingPitch || subtitle || "משפט הפתיחה יופיע כאן"}</p>
+                                    <h1>{landingHeadline || title || i18n.t('l.headline')}</h1>
+                                    <p>{landingPitch || subtitle || i18n.t('l.openingPh')}</p>
                                     {#if advInHero}
                                         <ul class="advantages-list on-hero">
                                             {#each landingAdvantages as adv}
@@ -789,12 +801,12 @@
                                             <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
                                         {/if}
                                         {#if whatsapp}
-                                            <a href="https://wa.me/{whatsapp.replace(/\D/g, '')}" class="landing-cta wa">וואטסאפ</a>
+                                            <a href="https://wa.me/{whatsapp.replace(/\D/g, '')}" class="landing-cta wa">{i18n.t('landing.whatsapp')}</a>
                                         {:else if website}
-                                            <a href={website} class="landing-cta">לאתר שלנו ←</a>
+                                            <a href={website} class="landing-cta">{i18n.t('l.toOurSite')}</a>
                                         {/if}
                                         {#if !phone && !whatsapp && !website}
-                                            <span class="landing-cta dim">השלימו פרטי קשר</span>
+                                            <span class="landing-cta dim">{i18n.t('l.completeContact')}</span>
                                         {/if}
                                     </div>
                                 </div>
@@ -825,13 +837,13 @@
                             <section class="landing-section landing-about">
                                 {#if landingExtended}
                                     <article>
-                                        <h2>הסיפור שלנו</h2>
+                                        <h2>{i18n.t('landing.story')}</h2>
                                         <p style="white-space: pre-line">{landingExtended}</p>
                                     </article>
                                 {/if}
                                 {#if uniqueness}
                                     <article>
-                                        <h2>מה מייחד אותנו</h2>
+                                        <h2>{i18n.t('landing.unique')}</h2>
                                         <p style="white-space: pre-line">{uniqueness}</p>
                                     </article>
                                 {/if}
@@ -840,17 +852,17 @@
 
                         {#if products.length > 0}
                             <section class="landing-section">
-                                <h2>המוצרים שלנו</h2>
+                                <h2>{i18n.t('l.ourProducts')}</h2>
                                 <div class="products-grid">
                                     {#each products as p}
                                         <div class="product-card">
                                             {#if p.image}
                                                 <img src={p.image} alt={p.name} />
                                             {:else}
-                                                <div class="img-placeholder small">תמונה</div>
+                                                <div class="img-placeholder small">{i18n.t('l.image')}</div>
                                             {/if}
                                             <div class="product-info">
-                                                <p class="product-name">{p.name || "שם המוצר"}</p>
+                                                <p class="product-name">{p.name || i18n.t('l.productName')}</p>
                                                 {#if p.description}<p class="product-desc">{p.description}</p>{/if}
                                                 {#if p.price}<p class="product-price">₪{p.price}</p>{/if}
                                             </div>
@@ -866,7 +878,7 @@
                                 {#if email || (website && whatsapp)}
                                     <div class="landing-pills">
                                         {#if email}<a class="landing-pill" href="mailto:{email}">✉️ {email}</a>{/if}
-                                        {#if website && whatsapp}<a class="landing-pill" href={website} target="_blank" rel="noopener">🌐 אתר</a>{/if}
+                                        {#if website && whatsapp}<a class="landing-pill" href={website} target="_blank" rel="noopener">{i18n.t('l.site')}</a>{/if}
                                     </div>
                                 {/if}
                                 {#if address || hours}
@@ -884,38 +896,37 @@
             <section class="step-card">
                 <div class="step-head">
                     <span class="step-num">✓</span>
-                    <h2>בדיקה אחרונה ושליחה</h2>
+                    <h2>{i18n.t('l.finalCheck')}</h2>
                 </div>
 
                 <ul class="checklist">
-                    <li class:done={!!mainImage}><span>{mainImage ? "✅" : "⬜"}</span> התמונה הראשית</li>
-                    <li class:done={!!title}><span>{title ? "✅" : "⬜"}</span> כותרת הפרסומת</li>
-                    <li class:done={!!subtitle}><span>{subtitle ? "✅" : "⬜"}</span> סלוגן</li>
-                    <li class:done={!!hoverText}><span>{hoverText ? "✅" : "⬜"}</span> טקסט בריחוף</li>
-                    <li class:done={!!(phone || website)}><span>{phone || website ? "✅" : "⬜"}</span> דרך ליצירת קשר</li>
-                    <li class:done={!!(landingHeadline || landingPitch)}><span>{landingHeadline || landingPitch ? "✅" : "⬜"}</span> כותרת או משפט פתיחה לדף הנחיתה</li>
-                    <li class:done={products.length > 0}><span>{products.length > 0 ? "✅" : "⬜"}</span> מוצרים ({products.length})</li>
-                    <li class:done={!!uniqueness}><span>{uniqueness ? "✅" : "⬜"}</span> מה מייחד אתכם</li>
-                    <li class:done={!!address}><span>{address ? "✅" : "⬜"}</span> כתובת</li>
+                    <li class:done={!!mainImage}><span>{mainImage ? "✅" : "⬜"}</span> {i18n.t('l.ckImage')}</li>
+                    <li class:done={!!title}><span>{title ? "✅" : "⬜"}</span> {i18n.t('l.ckTitle')}</li>
+                    <li class:done={!!subtitle}><span>{subtitle ? "✅" : "⬜"}</span> {i18n.t('l.ckTagline')}</li>
+                    <li class:done={!!hoverText}><span>{hoverText ? "✅" : "⬜"}</span> {i18n.t('l.ckHover')}</li>
+                    <li class:done={!!(phone || website)}><span>{phone || website ? "✅" : "⬜"}</span> {i18n.t('l.ckContact')}</li>
+                    <li class:done={!!(landingHeadline || landingPitch)}><span>{landingHeadline || landingPitch ? "✅" : "⬜"}</span> {i18n.t('l.ckLanding')}</li>
+                    <li class:done={products.length > 0}><span>{products.length > 0 ? "✅" : "⬜"}</span> {i18n.t('l.ckProducts')} ({products.length})</li>
+                    <li class:done={!!uniqueness}><span>{uniqueness ? "✅" : "⬜"}</span> {i18n.t('l.ckUnique')}</li>
+                    <li class:done={!!address}><span>{address ? "✅" : "⬜"}</span> {i18n.t('l.ckAddress')}</li>
                 </ul>
 
                 <!-- ===== תקופת פרסום + תשלום — אחרי העיצוב, לפני השליחה ===== -->
                 {#if editId}
                     <!-- עריכה של מודעה קיימת: אין בחירת מסלול ואין תשלום נוסף -->
                     <div class="pay-box">
-                        <p class="pay-title">✏️ עריכת מודעה קיימת</p>
+                        <p class="pay-title">✏️ {i18n.t('l.editExisting')}</p>
                         <p class="pay-sub">
-                            השמירה מחליפה את התוכן של המודעה שכבר קיימת — התקופה, המסלול
-                            והתשלום נשארים כמו שהם. אין צורך לשלם שוב.
+                            {i18n.t('l.editExistingNote')}
                         </p>
                         <a href="/about/advertise/manage/{editId}" class="pay-wa" style="background:#3b5794">
-                            → חזרה לדשבורד הנכס בלי לשמור
+                            {i18n.back} {i18n.t('l.backNoSave')}
                         </a>
                     </div>
                 {:else}
                 <div class="pay-box">
-                    <p class="pay-title">💳 לבחור ולשלם מראש</p>
-                    <div class="pay-duration" role="group" aria-label="תקופת הפרסום">
+                    <p class="pay-title">💳 {i18n.t('advertise.plansTitle')}</p>
+                    <div class="pay-duration" role="group" aria-label={i18n.t('l.periodLabel')}>
                         {#each adPlans as plan (plan.days)}
                             <button
                                 type="button"
@@ -923,37 +934,36 @@
                                 class:active={payDuration === plan.days}
                                 onclick={() => setPayDuration(plan.days)}
                             >
-                                <span class="pay-plan-label">{plan.title}</span>
+                                <span class="pay-plan-label">{planTitle(plan, i18n.locale)}</span>
                                 <span class="pay-plan-price">{plan.price} ₪</span>
                             </button>
                         {/each}
                     </div>
                     <p class="pay-terms">
-                        <a href="/about/advertise/terms" target="_blank" rel="noopener">📜 תנאי הפרסום</a>
-                        — לקריאה לפני התשלום
+                        <a href="/about/advertise/terms" target="_blank" rel="noopener">📜 {i18n.t('advertise.termsLink')}</a>
+                        — {i18n.t('l.readBeforePaying')}
                     </p>
                     {#if payCodeOk}
                         <!-- הקוד הוא בקשה, לא זכות: אסור להבטיח כאן "כמו ששולם" -->
-                        <p class="pay-ok">✅ הקוד התקבל — בקשה לפרסום חינם ל{payDurationLabel} תישלח לאישור המנהל.</p>
+                        <p class="pay-ok">✅ {i18n.t('l.codeOk', { period: payDurationLabel })}</p>
                     {:else}
                         <!-- כפתור הוואטסאפ עבר למסך "נשלח": כשהיה כאן, מפרסמים יצאו לוואטסאפ
                              ולא חזרו ללחוץ "שליחה" — והבקשה מעולם לא הגיעה למנהל. -->
                         <p class="pay-sub">
-                            המודעה תעלה לאוויר אחרי אישור מנהל, בהתאם לתשלום.
-                            מיד אחרי השליחה יופיע כאן כפתור לתיאום התשלום בוואטסאפ.
+                            {i18n.t('l.afterApproval')}
                         </p>
                         <form class="pay-code" onsubmit={tryPayCode}>
                             <input
                                 type="text"
                                 bind:value={payCode}
-                                placeholder="הזן קוד בעלים"
+                                placeholder={i18n.t('l.ownerCodePh')}
                                 class="pay-code-input"
-                                aria-label="קוד תשלום"
+                                aria-label={i18n.t('l.paymentCode')}
                             />
-                            <button type="submit" class="pay-code-btn">אישור</button>
+                            <button type="submit" class="pay-code-btn">{i18n.t('l.codeConfirm')}</button>
                         </form>
                         {#if payCodeError}
-                            <p class="pay-error">הקוד לא זוהה — בדקו את האיות ונסו שוב</p>
+                            <p class="pay-error">{i18n.t('l.codeBad')}</p>
                         {/if}
                     {/if}
                 </div>
@@ -961,16 +971,15 @@
 
                 {#if !loggedIn}
                     <div class="login-gate" class:flash={blockedFlash}>
-                        <p class="login-gate-title">🔐 שלב אחרון לפני השליחה — התחברות</p>
+                        <p class="login-gate-title">🔐 {i18n.t('l.gateTitle')}</p>
                         <p class="login-gate-text">
-                            הפרסומת נשמרת על החשבון שלכם, וכך תוכלו לראות כמה גולשים ראו והקליקו עליה,
-                            לערוך אותה בכל רגע ולחדש בסוף התקופה. בלי חשבון אין דרך להחזיר אתכם אליה.
+                            {i18n.t('l.gateText')}
                         </p>
                         <button type="button" class="login-gate-btn" onclick={goLoginToSubmit} disabled={leavingToLogin}>
-                            {leavingToLogin ? "שומר טיוטה..." : "שמירת הטיוטה והתחברות →"}
+                            {leavingToLogin ? i18n.t('l.savingDraft') : i18n.t('l.saveAndLogin')}
                         </button>
                         <p class="login-gate-note">
-                            מה שמילאתם נשמר כטיוטה במכשיר הזה ויחכה לכם כאן מיד אחרי ההתחברות.
+                            {i18n.t('l.gateNote')}
                         </p>
                         {#if draftSaveError}
                             <p class="submit-error">{draftSaveError}</p>
@@ -981,37 +990,35 @@
                 {#if missingFields.length > 0 || overweight}
                     <p class="submit-note">
                         {#if missingFields.length > 0}
-                            ⚠️ אי אפשר לשלוח עדיין — חסר: {missingFields.map((f) => f.label).join(", ")}.
+                            ⚠️ {i18n.t('b.cannotSubmit')} {missingFields.map((f) => f.label).join(", ")}.
                             {#if missingFields.some((f) => f.where === "landing")}
-                                ממלאים את זה כאן למעלה, בדף הזה.
+                                {i18n.t('l.fillHere')}
                             {/if}
                             {#if missingFields.some((f) => f.where === "card")}
-                                את פרטי הכרטיס משלימים <button type="button" class="inline-link" onclick={goBack}>בעמוד עריכת הכרטיס</button>.
+                                {i18n.t('l.cardDetailsA')} <button type="button" class="inline-link" onclick={goBack}>{i18n.t('l.cardDetailsLink')}</button>.
                             {/if}
                         {/if}
                         {#if overweight}
-                            ⚖️ המודעה כבדה מדי ({fmtWeight(adWeightBytes)} מתוך {fmtWeight(AD_EFFECTIVE_LIMIT)} מותרים) —
-                            הקטינו או הסירו תמונה{#if heaviestLabel}&nbsp;(הכבדה ביותר: {heaviestLabel}){/if}.
+                            ⚖️ {i18n.t('b.tooHeavy', { used: fmtWeight(adWeightBytes), max: fmtWeight(AD_EFFECTIVE_LIMIT) })}{#if heaviestLabel}&nbsp;({i18n.t('b.heaviest')} {heaviestLabel}){/if}.
                         {/if}
                     </p>
                 {/if}
                 {#if !loggedIn}
                     <p class="submit-note" class:flash={blockedFlash} bind:this={blockedNoteEl}>
-                        🔒 כפתור השליחה לא פעיל כי <strong>אינכם מחוברים לחשבון</strong>. לחצו למעלה על
-                        "שמירת הטיוטה והתחברות" — אחרי ההתחברות תחזרו ישר לכאן, והטיוטה תחכה לכם.
+                        🔒 {@html i18n.t('l.submitDisabled')}
                     </p>
                 {/if}
                 {#if submitError}
-                    <p class="submit-error">{editId ? "השמירה נכשלה" : "השליחה נכשלה"}: {submitError}</p>
+                    <p class="submit-error">{editId ? i18n.t('l.saveFailed') : i18n.t('l.sendFailed')}: {submitError}</p>
                 {/if}
 
                 <button type="button" onclick={submitAd} disabled={submitting} aria-disabled={!canSubmit} class="submit-btn" class:enabled={canSubmit && !submitting}>
                     {#if submitting}
-                        {editId ? "שומר..." : "שולח..."}
+                        {editId ? i18n.t('l.saving') : i18n.t('l.sending')}
                     {:else if editId}
-                        💾 שמירת השינויים במודעה
+                        💾 {i18n.t('l.saveChanges')}
                     {:else}
-                        🚀 שליחת הפרסומת לאישור
+                        🚀 {i18n.t('l.submitForApproval')}
                     {/if}
                 </button>
             </section>
@@ -1022,32 +1029,30 @@
                 <div class="done-box">
                     <div class="done-emoji">🎉</div>
                     {#if editId}
-                        <h2>השינויים נשמרו!</h2>
+                        <h2>{i18n.t('l.savedTitle')}</h2>
                         <p>
-                            המודעה המעודכנת מוצגת באתר מעכשיו (עד דקה עד שהתצוגה מתרעננת).
-                            הנתונים והתקופה של הפרסום נשמרו כמו שהיו.
+                            {i18n.t('l.savedText')}
                         </p>
                         <div class="done-actions">
-                            <a href="/about/advertise/manage/{editId}" class="l-btn amber">לדשבורד הנכס</a>
-                            <a href="/ads/{editId}" class="l-btn ghost">לדף הנחיתה</a>
+                            <a href="/about/advertise/manage/{editId}" class="l-btn amber">{i18n.t('l.toDashboard')}</a>
+                            <a href="/ads/{editId}" class="l-btn ghost">{i18n.t('detail.toLanding')}</a>
                         </div>
                     {:else}
-                        <h2>הפרסומת נשלחה לאישור!</h2>
+                        <h2>{i18n.t('l.sentTitle')}</h2>
                         <p>
-                            הצוות שלנו יעבור על הפרסומת ויאשר אותה בהקדם.
-                            ברגע שתאושר - היא תופיע באתר ותקבלו עדכון.
+                            {i18n.t('l.sentText')}
                         </p>
                         {#if !payCodeOk}
                             <a
-                                href={"https://wa.me/972587448061?text=" + encodeURIComponent(`שלום, שלחתי פרסומת באתר המומחים של העם ורוצה לתאם תשלום עבור ${payPlan.title} (${payPlan.price} ₪)`)}
+                                href={"https://wa.me/972587448061?text=" + encodeURIComponent(i18n.t('l.payWaText', { plan: planTitle(payPlan, i18n.locale), price: payPlan.price }))}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="pay-wa"
-                            >💬 לתיאום תשלום בוואטסאפ</a>
+                            >💬 {i18n.t('l.payWa')}</a>
                         {/if}
                         <div class="done-actions">
-                            <a href="/about/advertise/manage" class="l-btn amber">לנכסים שלי</a>
-                            <a href="/" class="l-btn ghost">לדף הבית</a>
+                            <a href="/about/advertise/manage" class="l-btn amber">{i18n.t('l.toMine')}</a>
+                            <a href="/" class="l-btn ghost">{i18n.t('l.toHome')}</a>
                         </div>
                     {/if}
                 </div>

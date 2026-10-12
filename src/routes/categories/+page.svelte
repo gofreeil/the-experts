@@ -4,7 +4,10 @@
     import PageHero from '$lib/components/home/PageHero.svelte';
     import { problemsStore, seedProblems } from '$lib/problemsStore.svelte';
     import { teamBySlug } from '$lib/teamsData';
-    import { CATS, catColor, fmt } from '$lib/homeData';
+    import { CATS, catColor, catShort, fmt } from '$lib/homeData';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     // הרינדור הראשון משתמש בבעיות ההתחלתיות (זהה בשרת ובלקוח), אחריו עוברים לנתוני הדפדפן
     let mounted = $state(false);
@@ -15,16 +18,16 @@
     const open = $derived((mounted ? problemsStore.items : seedProblems).filter((p) => p.status === 'open'));
 </script>
 
-<div class="home" dir="rtl">
+<div class="home">
     <PageHero href="/categories">
-        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new">העלו בעיה</a>{/snippet}
+        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new">{i18n.t('common.postProblem')}</a>{/snippet}
     </PageHero>
 
     <section class="section compact">
         <div class="inner">
             <div class="cats">
                 {#each CATS as c}
-                    {@const team = teamBySlug(c.slug)}
+                    {@const team = teamBySlug(c.slug, i18n.locale)}
                     {@const ps = open.filter((p) => p.category === c.slug)}
                     {@const sum = ps.reduce((s, p) => s + p.bounty, 0)}
                     <article class="cat" style="--c:{catColor(c.slug)}">
@@ -32,18 +35,18 @@
                             <span class="ico" aria-hidden="true">
                                 {#if team?.image}<img src={team.image} alt="" width="56" height="56" loading="lazy" decoding="async" />{:else}{team?.emoji ?? ''}{/if}
                             </span>
-                            <h2><a class="name" href="/categories/{c.slug}">{team?.name ?? c.short}</a></h2>
+                            <h2><a class="name" href="/categories/{c.slug}">{team?.name ?? catShort(c.slug, i18n.locale)}</a></h2>
                         </div>
                         {#if team?.desc}<p class="desc">{team.desc}</p>{/if}
                         <dl class="stats">
-                            <div><dt>בעיות פתוחות</dt><dd class="num">{ps.length}</dd></div>
-                            <div><dt>סך הפרסים</dt><dd class="num">{fmt(sum)}</dd></div>
-                            <div><dt>מומחים בצוות</dt><dd class="num">{c.experts}</dd></div>
-                            <div><dt>זמן פתרון חציוני</dt><dd>{c.days} ימים</dd></div>
+                            <div><dt>{i18n.t('cats.openProblems')}</dt><dd class="num">{ps.length}</dd></div>
+                            <div><dt>{i18n.t('cats.totalRewards')}</dt><dd class="num">{fmt(sum)}</dd></div>
+                            <div><dt>{i18n.t('cats.teamExperts')}</dt><dd class="num">{c.experts}</dd></div>
+                            <div><dt>{i18n.t('paid.median')}</dt><dd>{i18n.tn('ledger.days', c.days)}</dd></div>
                         </dl>
                         <div class="acts">
-                            <a class="btn btn-primary btn-sm" href="/problems?cat={c.slug}">בעיות בתחום</a>
-                            <a class="btn btn-ghost btn-sm" href="/categories/{c.slug}">דף הצוות</a>
+                            <a class="btn btn-primary btn-sm" href="/problems?cat={c.slug}">{i18n.t('cats.problemsInField')}</a>
+                            <a class="btn btn-ghost btn-sm" href="/categories/{c.slug}">{i18n.t('cats.teamPage')}</a>
                         </div>
                     </article>
                 {/each}

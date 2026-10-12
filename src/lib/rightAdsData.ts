@@ -9,9 +9,11 @@
 // אחרת ה-JIT לא מייצר אותן.
 // ============================================================
 
+import type { L10n } from '$lib/i18n';
+
 export interface RightAd {
-    text: string;           // כותרת המודעה
-    description: string;    // שורת המשנה
+    text: L10n;             // כותרת המודעה
+    description: L10n;      // שורת המשנה
     href: string;           // לאן מוביל הקליק — /advertise למשבצת פנויה
     // מחלקות עיצוב למשבצת בטור הדסקטופ
     borderColor: string;
@@ -25,7 +27,11 @@ export interface RightAd {
     interstitialColor: string;
 }
 
-const vacant = { text: 'מקום פרסום זה', description: 'יכול להיות שלך', href: '/about/advertise' };
+const vacant = {
+    text: { he: 'מקום פרסום זה', en: 'This ad space' },
+    description: { he: 'יכול להיות שלך', en: 'could be yours' },
+    href: '/about/advertise'
+};
 
 export const rightAds: RightAd[] = [
     {

@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
+	import { useI18n } from '$lib/i18n/context';
 
 	let { data } = $props();
+
+	const i18n = useI18n();
 
 	let email = $state('');
 	let password = $state('');
@@ -40,7 +43,7 @@
 			callbackUrl: data.redirectTo || '/'
 		});
 		if (res?.error) {
-			err = 'אימייל או סיסמה שגויים';
+			err = i18n.t('login.badCreds');
 			loading = null;
 		} else {
 			window.location.href = withWelcome(data.redirectTo || '/');
@@ -65,30 +68,30 @@
 	}
 </script>
 
-<svelte:head><title>התחברות</title></svelte:head>
+<svelte:head><title>{i18n.t('login.title')}</title></svelte:head>
 
-<div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
 	<div class="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f172a] p-8 shadow-2xl">
 		<div class="mb-6 text-center">
 			<div class="mb-3 text-4xl">🕊️</div>
-			<h1 class="text-2xl font-black text-white">התחברות</h1>
-			<p class="mt-1 text-sm text-gray-400">התחברו לחשבון יוצאים לחירות שלכם</p>
+			<h1 class="text-2xl font-black text-white">{i18n.t('login.title')}</h1>
+			<p class="mt-1 text-sm text-gray-400">{i18n.t('login.subtitle')}</p>
 		</div>
 
 		<!-- הודעה למשתמש חדש: הכניסה עם Google/Facebook היא גם ההרשמה -->
 		{#if !data.ssoName}
 			<p class="mb-5 text-center text-amber-200 text-[13px] sm:text-sm font-bold leading-relaxed">
-				👋 פעם ראשונה כאן? כניסה עם Google או Facebook יוצרת לך חשבון בלחיצה אחת.
+				{i18n.t('login.newUser')}
 			</p>
 		{/if}
 
 		{#if err || data.error}
 			<div class="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
-				{err ?? 'שגיאה בהתחברות. נסו שוב.'}
+				{err ?? i18n.t('login.genericError')}
 				{#if err}
-					<ul class="mt-2 list-disc space-y-1 pr-5 text-right text-xs leading-relaxed text-gray-300">
-						<li>נרשמתם בעבר עם <strong>Google</strong> או <strong>Facebook</strong>? אז אין לכם סיסמה — היכנסו עם הכפתורים שלמעלה.</li>
-						<li>שכחתם את הסיסמה? <a href={forgotHref} class="font-bold text-purple-300 underline">שלחו לי קישור לבחירת סיסמה חדשה</a></li>
+					<ul class="mt-2 list-disc space-y-1 ps-5 text-start text-xs leading-relaxed text-gray-300">
+						<li>{@html i18n.t('login.hintOauth')}</li>
+						<li>{i18n.t('login.hintForgot')} <a href={forgotHref} class="font-bold text-purple-300 underline">{i18n.t('login.hintForgotLink')}</a></li>
 					</ul>
 				{/if}
 			</div>
@@ -107,15 +110,15 @@
 				{:else}
 					<span class="text-xl">🕊️</span>
 				{/if}
-				<span>המשך כ-{data.ssoName}</span>
+				<span>{i18n.t('login.continueAs', { name: data.ssoName })}</span>
 			</button>
-			<p class="mb-5 text-center text-xs leading-relaxed text-gray-500">
-				זוהית דרך יוצאים לחירות. לא את/ה? אפשר להיכנס עם חשבון אחר למטה.
-			</p>
+		<p class="mb-5 text-center text-xs leading-relaxed text-gray-500">
+			{i18n.t('login.recognized')}
+		</p>
 
-			<div class="mb-5 flex items-center gap-3">
-				<div class="h-px flex-1 bg-white/10"></div>
-				<span class="text-xs text-gray-500">או</span>
+		<div class="mb-5 flex items-center gap-3">
+			<div class="h-px flex-1 bg-white/10"></div>
+			<span class="text-xs text-gray-500">{i18n.t('login.or')}</span>
 				<div class="h-px flex-1 bg-white/10"></div>
 			</div>
 		{/if}
@@ -137,7 +140,7 @@
 					<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 				</svg>
 			{/if}
-			המשך עם Google
+			{i18n.t('login.withGoogle')}
 		</button>
 		{/if}
 		{#if data.oauth?.facebook}
@@ -154,7 +157,7 @@
 					<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
 				</svg>
 			{/if}
-			המשך עם Facebook
+			{i18n.t('login.withFacebook')}
 		</button>
 		{/if}
 
@@ -173,16 +176,16 @@
 				{:else}
 					<span class="text-lg">🕊️</span>
 				{/if}
-				<span>כניסה דרך קהילת יוצאים לחירות (חשבון קיים או קוד ב-SMS)</span>
+				<span>{i18n.t('login.sso')}</span>
 			</button>
 			<p class="mb-5 text-center text-xs leading-relaxed text-gray-500">
-				חברות בקבוצות הווצאפ אינה חשבון באתר. אם עדיין אין לך חשבון, הכניסה עם Google או Facebook למעלה יוצרת אחד בלחיצה.
+				{i18n.t('login.ssoNote')}
 			</p>
 		{/if}
 
 		<div class="mb-5 flex items-center gap-3">
 			<div class="h-px flex-1 bg-white/10"></div>
-			<span class="text-xs text-gray-500">או</span>
+			<span class="text-xs text-gray-500">{i18n.t('login.or')}</span>
 			<div class="h-px flex-1 bg-white/10"></div>
 		</div>
 
@@ -191,7 +194,7 @@
 				type="email"
 				required
 				bind:value={email}
-				placeholder="אימייל"
+				placeholder={i18n.t('login.email')}
 				autocomplete="email"
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
 			/>
@@ -199,25 +202,25 @@
 				type="password"
 				required
 				bind:value={password}
-				placeholder="סיסמה"
+				placeholder={i18n.t('login.password')}
 				autocomplete="current-password"
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
 			/>
-			<div class="-mt-2 text-left">
-				<a href={forgotHref} class="text-sm text-purple-400 hover:text-purple-300">שכחתי סיסמה</a>
+			<div class="-mt-2 text-end">
+				<a href={forgotHref} class="text-sm text-purple-400 hover:text-purple-300">{i18n.t('login.forgot')}</a>
 			</div>
 			<button
 				type="submit"
 				disabled={loading === 'credentials'}
 				class="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3.5 font-bold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
 			>
-				{loading === 'credentials' ? 'מתחבר...' : 'התחבר'}
+				{loading === 'credentials' ? i18n.t('login.submitting') : i18n.t('login.submit')}
 			</button>
 		</form>
 
 		<p class="mt-6 text-center text-sm text-gray-400">
-			אין לכם חשבון?
-			<a href="/register?redirect={encodeURIComponent(data.redirectTo || '/')}" class="font-bold text-purple-400 hover:text-purple-300">הרשמה</a>
+			{i18n.t('login.noAccount')}
+			<a href="/register?redirect={encodeURIComponent(data.redirectTo || '/')}" class="font-bold text-purple-400 hover:text-purple-300">{i18n.t('login.register')}</a>
 		</p>
 	</div>
 </div>

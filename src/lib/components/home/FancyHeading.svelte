@@ -24,6 +24,9 @@
     .orn { flex: none; font-size: 22px; color: #b45309; text-shadow: 0 1px 1px rgba(120, 53, 15, 0.4); }
     .olive { flex: none; height: 30px; width: auto; object-fit: contain; user-select: none; --flip: 1; transform: translateY(0.5rem) scaleX(var(--flip)) scaleY(-1); }
     .olive-b { --flip: -1; }
+    /* ענפי הזית מצוירים לכיוון עברית (ימין→שמאל); באנגלית הסדר מתהפך */
+    :global(html[dir='ltr']) .olive-a { --flip: -1; }
+    :global(html[dir='ltr']) .olive-b { --flip: 1; }
     .line { width: clamp(150px, 40cqi, 256px); height: 2px; margin: 4px auto 0; background: linear-gradient(to right, transparent, #b45309, transparent); }
 
     @container home (max-width: 560px) {

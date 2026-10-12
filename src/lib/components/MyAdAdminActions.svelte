@@ -5,6 +5,9 @@
     // הניהול. הפעולות עצמן ב-$lib/server/myAdsActions. "צפה" מוצג לכל
     // מפרסם כשהפרסומת באוויר.
     import { enhance } from '$app/forms';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     interface AdLike {
         id: string;
@@ -22,7 +25,7 @@
     const DANGER = `${BTN} border-rose-500/40 bg-rose-500/10 text-rose-200 hover:bg-rose-500/25`;
 
     function askReason(e: MouseEvent & { currentTarget: HTMLButtonElement }) {
-        const reason = prompt('סיבת הדחייה (אפשר להשאיר ריק):', '');
+        const reason = prompt(i18n.t('adminActions.reasonPrompt'), '');
         if (reason === null) {
             e.preventDefault();
             return;
@@ -39,21 +42,21 @@
                 <form method="POST" action="?/approve" class="contents" use:enhance>
                     <input type="hidden" name="id" value={ad.id} />
                     <input type="hidden" name="durationDays" value={ad.requestedDurationDays ?? ''} />
-                    <button type="submit" class={OK} title="אישור ופרסום">✅ אשר</button>
+                    <button type="submit" class={OK} title={i18n.t('adminActions.approveTitle')}>✅ {i18n.t('adminActions.approve')}</button>
                 </form>
             {:else if ad.status === 'approved' && !live && !ad.paused}
                 <!-- פג התוקף: אישור מחדש = תקופה חדשה מהיום, באותו מקום -->
                 <form method="POST" action="?/approve" class="contents" use:enhance>
                     <input type="hidden" name="id" value={ad.id} />
                     <input type="hidden" name="durationDays" value={ad.requestedDurationDays ?? ''} />
-                    <button type="submit" class={OK} title="תקופה חדשה מהיום, באותו מקום בטור">🔄 חדש</button>
+                    <button type="submit" class={OK} title={i18n.t('adminActions.renewTitle')}>🔄 {i18n.t('adminActions.renew')}</button>
                 </form>
             {/if}
             {#if ad.status === 'approved'}
                 {#if ad.paused}
                     <form method="POST" action="?/resume" class="contents" use:enhance>
                         <input type="hidden" name="id" value={ad.id} />
-                        <button type="submit" class={OK} title="הימים השמורים נספרים מהיום">▶ המשך</button>
+                        <button type="submit" class={OK} title={i18n.t('adminActions.resumeTitle')}>▶ {i18n.t('adminActions.resume')}</button>
                     </form>
                 {:else if live}
                     <form method="POST" action="?/pause" class="contents" use:enhance>
@@ -61,11 +64,11 @@
                         <button
                             type="submit"
                             class={GHOST}
-                            title="יורדת מהאתר, הימים שנותרו נשמרים לה"
+                            title={i18n.t('adminActions.pauseTitle')}
                             onclick={(e) => {
-                                if (!confirm('להשהות את הפרסומת? היא תרד מהאתר והימים שנותרו יישמרו לה.')) e.preventDefault();
+                                if (!confirm(i18n.t('adminActions.pauseConfirm'))) e.preventDefault();
                             }}
-                        >⏸ השהה</button>
+                        >⏸ {i18n.t('adminActions.pause')}</button>
                     </form>
                 {/if}
                 <form method="POST" action="?/unapprove" class="contents" use:enhance>
@@ -73,23 +76,23 @@
                     <button
                         type="submit"
                         class={GHOST}
-                        title="חוזרת לממתינות בלי מחיקה"
+                        title={i18n.t('adminActions.unapproveTitle')}
                         onclick={(e) => {
-                            if (!confirm('להוריד את הפרסומת מהאתר ולהחזיר אותה לממתינות?')) e.preventDefault();
+                            if (!confirm(i18n.t('adminActions.unapproveConfirm'))) e.preventDefault();
                         }}
-                    >⬇ הורד</button>
+                    >⬇ {i18n.t('adminActions.unapprove')}</button>
                 </form>
             {/if}
             {#if ad.status !== 'rejected'}
                 <form method="POST" action="?/reject" class="contents" use:enhance>
                     <input type="hidden" name="id" value={ad.id} />
                     <input type="hidden" name="reason" value="" />
-                    <button type="submit" class={DANGER} title="דחייה עם סיבה (לא חובה)" onclick={askReason}>❌ דחה</button>
+                    <button type="submit" class={DANGER} title={i18n.t('adminActions.rejectTitle')} onclick={askReason}>❌ {i18n.t('adminActions.reject')}</button>
                 </form>
             {/if}
         {/if}
         {#if live}
-            <a class={GHOST} href="/ads/{ad.id}" target="_blank" title="דף הנחיתה באתר">👁 צפה</a>
+            <a class={GHOST} href="/ads/{ad.id}" target="_blank" title={i18n.t('adminActions.viewTitle')}>👁 {i18n.t('adminActions.view')}</a>
         {/if}
     </div>
 {/if}

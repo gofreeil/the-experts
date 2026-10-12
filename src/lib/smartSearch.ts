@@ -1,19 +1,24 @@
 // חיפוש חכם לדף הבית: בעיות, מומחים ותחומים בשורה אחת.
-// מעל מנוע הטקסט העברי (search.ts) יש כאן שלוש שכבות:
-//   1. הבנת שפה חופשית: "עורך דין מעל 5000", "בעיות פרטיות מהשבוע", "הכי גבוה"
-//      הופכים לסינון וסדר, והשאר לטקסט לחיפוש.
+// מעל מנוע הטקסט (search.ts) יש כאן שלוש שכבות:
+//   1. הבנת שפה חופשית: "עורך דין מעל 5000" / "lawyer over 5000", "בעיות פרטיות מהשבוע" / "private this week",
+//      "הכי גבוה" / "highest" הופכים לסינון וסדר, והשאר לטקסט לחיפוש.
 //   2. מושגים: כל תחום מכיר עשרות מילים נרדפות (אפליקציה ← טכנולוגיה, קנס ← עורכי דין),
 //      ולכן אפשר למצוא בעיה לפי נושא גם כשהמילה עצמה לא כתובה בה.
 //   3. "האם התכוונת ל...": תיקון טעויות הקלדה מול אוצר המילים של האתר.
+//
+// החיפוש מותאם לשפת הגולש: לכל שפה יש לקסיקון משלה (מילות סינון, ביטויי סכום, מושגים), והאינדקס נבנה
+// מהטקסטים בשפה הנוכחית. הנתונים עצמם דו-לשוניים, ולכן עברית ואנגלית מחפשות באותו מאגר.
 
 import type { Problem } from './problemsStore.svelte';
 import { catShort, fmt } from './homeData';
 import { EXPERTS, type Expert } from './expertsData';
-import { teams, teamBySlug, type Team } from './teamsData';
+import { teamsFor, teamBySlug, type Team } from './teamsData';
+import { resolve, type Locale } from './i18n';
+import { createTranslator } from './i18n/translate';
 import { buildVocab, editDistance, foldFinals, indexItems, levelOf, makeDoc, makePlan, normalizeHe, rank, suggest, type Doc, type Entry, type Plan, type Vocab } from './search';
 
 /** מילים נרדפות ונושאים לכל תחום. נבדקות רק כשהחיפוש הרגיל לא מכסה, ומסומנות "קשור לתחום". */
-export const CONCEPTS: Record<string, string> = {
+export const CONCEPTS_HE: Record<string, string> = {
     law: 'עורך דין עורכת דין עוד משפט משפטי משפטית תביעה תביעות תובע ייצוגית חוזה חוזים הסכם שכירות שוכר משכיר ערעור ערר קנס קנסות דוח חניה בית משפט רשות רשויות עירייה חוק זכות צוואה ירושה יורשים גישור הגנה מכתב התראה ייפוי כוח נוטריון',
     economy: 'כסף כלכלה כלכלי תקציב משכנתא הלוואה ריבית חיסכון פנסיה השקעה מס מסים חשבון חשבונות חשמל מים ארנונה הוצאות עלות עלויות יקר זול מימון מיחזור ספק חברת אשראי חוב חובות יועץ פיננסי ביטוח',
     education: 'חינוך לימוד ללמוד בית ספר תלמיד תלמידים מורה מורים שיעור שיעורים בגרות מתמטיקה הוראה חוג חוגים גן ילדים נוער הורים ועד הורים סדנה קורס הדרכה מערך שיעור מדריך הכשרה',
@@ -23,6 +28,19 @@ export const CONCEPTS: Record<string, string> = {
     ethics: 'מוסר אתיקה גישור סכסוך סכסוכים מחלוקת מחלוקות קהילה קהילתי ועד ועדים שכנים שכנות לשון הרע התנהגות כללים הסכמה פיוס שלום יחסים משפחה ירושה מגשר',
     rights: 'זכויות זכות מיצוי הטבה הטבות קצבה קצבאות ביטוח לאומי נכות פנסיה עולים עולה חדש קליטה סל קליטה קשישים גמלה סיוע הנחה הנחות מענק מענקים רווחה שירותים רשות מדינה טפסים הגשה בקשה'
 };
+
+export const CONCEPTS_EN: Record<string, string> = {
+    law: 'lawyer lawyers attorney law legal court lawsuit sue claim claims contract contracts agreement lease rent tenant landlord appeal fine fines ticket parking municipality municipal authority authorities city hall regulation will inheritance heir mediation defense warning letter power of attorney notary',
+    economy: 'money economy economic economics budget mortgage loan interest savings save pension investment tax taxes bill bills electricity water property tax expenses cost costs expensive cheap funding refinance supplier provider credit debt debts financial advisor insurance',
+    education: 'education learning study school student students teacher teachers lesson lessons matriculation math mathematics teaching class classes kindergarten children kids youth teens teenagers parents workshop course training curriculum guide',
+    agriculture: 'agriculture farming garden gardens gardening plants plant trees tree citrus irrigation watering growing vegetables fruit edible compost soil seeds planting green roof yard disease diseases',
+    technology: 'technology tech app apps application website websites software computer computers network internet wifi security cyber digital system systems development code data backup recovery printer cameras password email phone smartphone',
+    health: 'health medicine medical doctor physician nutrition diet diabetes allergy allergies treatment natural complementary herbs herbal sleep pain illness disease medication vitamins seniors elderly second opinion breathing blood pressure weight',
+    ethics: 'ethics moral morality mediation conflict conflicts dispute disputes community committee committees neighbors neighbours slander gossip behavior rules agreement reconciliation peace relationships family inheritance mediator',
+    rights: 'rights right entitlement benefit benefits allowance allowances national insurance disability pension immigrants immigrant olim absorption seniors elderly grant grants welfare services state forms application apply discount discounts'
+};
+
+export const CONCEPTS: Record<Locale, Record<string, string>> = { he: CONCEPTS_HE, en: CONCEPTS_EN };
 
 export type ProblemFilters = {
     min?: number;
@@ -43,31 +61,89 @@ export type Parsed = {
 
 const f = foldFinals;
 const wordSet = (s: string) => new Set(s.split(' ').map(f));
-
-const PRIVATE = wordSet('פרטי פרטית פרטיות פרטיים');
-const PUBLIC = wordSet('ציבורי ציבורית ציבוריות ציבוריים קהילתי קהילתית קהילתיות');
-const TODAY = wordSet('היום');
-const WEEK = wordSet('השבוע בשבוע');
-const MONTH = wordSet('החודש בחודש');
-const NEWEST = wordSet('אחרונות אחרונה אחרון חדשות חדשה עדכניות טריות');
-const HIGH = wordSet('גבוה גבוהה גבוהות גבוהים גדול גדולה גדולות גדולים יקר יקרה יקרות יקרים משתלם משתלמת משתלמות');
-const EXPERT_WORDS = wordSet('מומחה מומחים מומחית מומחיות');
-const PROBLEM_WORDS = wordSet('בעיה בעיות משימה משימות');
-
-const UNIT = String.raw`(?:\s*(אלף|אלפים|k|ק|מיליון)(?![א-תa-z]))?`;
-const NUM = String.raw`₪?\s*(\d+)` + UNIT + String.raw`(?:\s*(?:שח|שקל|שקלים|₪))?`;
 const re = (src: string) => new RegExp(f(src), 'u');
-const MIN_RE = re(String.raw`(?:^| )(?:מעל|יותר מ|מעבר ל|לפחות|גדול מ|מינימום)\s*ל?\s*` + NUM);
-const MAX_RE = re(String.raw`(?:^| )(?:עד|פחות מ|מתחת ל|לכל היותר|קטן מ|מקסימום)\s*ל?\s*` + NUM);
-const BETWEEN_RE = re(String.raw`(?:^| )בין\s*` + NUM + String.raw`\s*(?:ל|ו|עד)\s*-?\s*` + NUM);
 
-function amount(digits: string, unit?: string): number {
-    const n = parseInt(digits, 10);
-    if (!unit) return n;
-    return /^(מיליונ)$/.test(f(unit)) ? n * 1_000_000 : n * 1000;
+/** הלקסיקון של שפה אחת: מילות סינון וביטויי סכום */
+interface Lexicon {
+    isPrivate: Set<string>;
+    isPublic: Set<string>;
+    today: Set<string>;
+    week: Set<string>;
+    month: Set<string>;
+    newest: Set<string>;
+    expertWords: Set<string>;
+    problemWords: Set<string>;
+    minRe: RegExp;
+    maxRe: RegExp;
+    betweenRe: RegExp;
+    /** האם יחידת הסכום היא "מיליון" (אחרת אלפים) */
+    isMillion: (unit: string) => boolean;
+    /** כמה מילים צורכת הבעת "פרס גבוה" שמתחילה במילה i (0 = אין) */
+    high: (words: string[], i: number) => number;
 }
 
-export function parseQuery(raw: string): Parsed {
+const HE_UNIT = String.raw`(?:\s*(אלף|אלפים|k|ק|מיליון)(?![א-תa-z]))?`;
+const HE_NUM = String.raw`₪?\s*(\d+)` + HE_UNIT + String.raw`(?:\s*(?:שח|שקל|שקלים|₪))?`;
+const HE_HIGH = wordSet('גבוה גבוהה גבוהות גבוהים גדול גדולה גדולות גדולים יקר יקרה יקרות יקרים משתלם משתלמת משתלמות');
+
+const HE: Lexicon = {
+    isPrivate: wordSet('פרטי פרטית פרטיות פרטיים'),
+    isPublic: wordSet('ציבורי ציבורית ציבוריות ציבוריים קהילתי קהילתית קהילתיות'),
+    today: wordSet('היום'),
+    week: wordSet('השבוע בשבוע'),
+    month: wordSet('החודש בחודש'),
+    newest: wordSet('אחרונות אחרונה אחרון חדשות חדשה עדכניות טריות'),
+    expertWords: wordSet('מומחה מומחים מומחית מומחיות'),
+    problemWords: wordSet('בעיה בעיות משימה משימות'),
+    minRe: re(String.raw`(?:^| )(?:מעל|יותר מ|מעבר ל|לפחות|גדול מ|מינימום)\s*ל?\s*` + HE_NUM),
+    maxRe: re(String.raw`(?:^| )(?:עד|פחות מ|מתחת ל|לכל היותר|קטן מ|מקסימום)\s*ל?\s*` + HE_NUM),
+    betweenRe: re(String.raw`(?:^| )בין\s*` + HE_NUM + String.raw`\s*(?:ל|ו|עד)\s*-?\s*` + HE_NUM),
+    isMillion: (unit) => /^(מיליונ)$/.test(f(unit)),
+    high: (words, i) => {
+        const next = words[i + 1];
+        if ((words[i] === f('הכי') || words[i] === f('פרס')) && next && HE_HIGH.has(next)) return 2;
+        return 0;
+    }
+};
+
+const EN_NUM = String.raw`₪?\s*(\d+)(?:\s*(k|thousand|million)(?![a-z]))?(?:\s*(?:nis|ils|shekels?|sheqels?|₪))?`;
+const EN_TOP = wordSet('highest biggest largest richest top');
+const EN_BIG = wordSet('high big large');
+const EN_REWARD = wordSet('reward rewards bounty bounties prize prizes');
+
+const EN: Lexicon = {
+    isPrivate: wordSet('private individual'),
+    isPublic: wordSet('public community communal'),
+    today: wordSet('today'),
+    week: wordSet('week weekly'),
+    month: wordSet('month monthly'),
+    newest: wordSet('newest latest recent recently fresh'),
+    expertWords: wordSet('expert experts specialist specialists professional professionals'),
+    problemWords: wordSet('problem problems task tasks challenge challenges'),
+    minRe: re(String.raw`(?:^| )(?:over|above|more than|greater than|at least|minimum|min)\s*` + EN_NUM),
+    maxRe: re(String.raw`(?:^| )(?:under|below|less than|up to|at most|no more than|maximum|max)\s*` + EN_NUM),
+    betweenRe: re(String.raw`(?:^| )between\s*` + EN_NUM + String.raw`\s*(?:and|to)?\s*-?\s*` + EN_NUM),
+    isMillion: (unit) => unit.toLowerCase() === 'million',
+    high: (words, i) => {
+        const w = words[i];
+        const next = words[i + 1];
+        if (EN_TOP.has(w)) return next && EN_REWARD.has(next) ? 2 : 1;
+        if (EN_BIG.has(w) && next && EN_REWARD.has(next)) return 2;
+        return 0;
+    }
+};
+
+const LEXICONS: Record<Locale, Lexicon> = { he: HE, en: EN };
+
+function amount(lex: Lexicon, digits: string, unit?: string): number {
+    const n = parseInt(digits, 10);
+    if (!unit) return n;
+    return lex.isMillion(unit) ? n * 1_000_000 : n * 1000;
+}
+
+export function parseQuery(raw: string, locale: Locale = 'he'): Parsed {
+    const lex = LEXICONS[locale];
+    const { t } = createTranslator(locale);
     let s = ' ' + normalizeHe(raw) + ' ';
     const filters: ProblemFilters = {};
     const chips: string[] = [];
@@ -79,20 +155,20 @@ export function parseQuery(raw: string): Parsed {
         s = s.replace(rx, ' ');
     };
 
-    take(BETWEEN_RE, (m) => {
-        const a = amount(m[1], m[2]);
-        const b = amount(m[3], m[4]);
+    take(lex.betweenRe, (m) => {
+        const a = amount(lex, m[1], m[2]);
+        const b = amount(lex, m[3], m[4]);
         filters.min = Math.min(a, b);
         filters.max = Math.max(a, b);
-        chips.push(`פרס בין ${fmt(filters.min)} ל-${fmt(filters.max)}`);
+        chips.push(t('search.chipBetween', { min: fmt(filters.min), max: fmt(filters.max) }));
     });
-    take(MIN_RE, (m) => {
-        filters.min = amount(m[1], m[2]);
-        chips.push(`פרס מעל ${fmt(filters.min)}`);
+    take(lex.minRe, (m) => {
+        filters.min = amount(lex, m[1], m[2]);
+        chips.push(t('search.chipMin', { n: fmt(filters.min) }));
     });
-    take(MAX_RE, (m) => {
-        filters.max = amount(m[1], m[2]);
-        chips.push(`פרס עד ${fmt(filters.max)}`);
+    take(lex.maxRe, (m) => {
+        filters.max = amount(lex, m[1], m[2]);
+        chips.push(t('search.chipMax', { n: fmt(filters.max) }));
     });
 
     const words = s.split(' ').filter(Boolean);
@@ -101,27 +177,24 @@ export function parseQuery(raw: string): Parsed {
     let wantsProblems = false;
     for (let i = 0; i < words.length; i++) {
         const w = words[i];
-        const next = words[i + 1];
-        if (w === f('הכי') && next && HIGH.has(next)) {
+        const consumed = lex.high(words, i);
+        if (consumed) {
             filters.sort = 'bounty';
-            i++;
-        } else if (w === f('פרס') && next && HIGH.has(next)) {
-            filters.sort = 'bounty';
-            i++;
-        } else if (PRIVATE.has(w)) filters.type = 'individual';
-        else if (PUBLIC.has(w)) filters.type = 'community';
-        else if (TODAY.has(w)) filters.sinceDays = 1;
-        else if (WEEK.has(w)) filters.sinceDays = 7;
-        else if (MONTH.has(w)) filters.sinceDays = 30;
-        else if (NEWEST.has(w)) filters.sort = filters.sort ?? 'new';
-        else if (EXPERT_WORDS.has(w)) wantsExperts = true;
-        else if (PROBLEM_WORDS.has(w)) wantsProblems = true;
+            i += consumed - 1;
+        } else if (lex.isPrivate.has(w)) filters.type = 'individual';
+        else if (lex.isPublic.has(w)) filters.type = 'community';
+        else if (lex.today.has(w)) filters.sinceDays = 1;
+        else if (lex.week.has(w)) filters.sinceDays = 7;
+        else if (lex.month.has(w)) filters.sinceDays = 30;
+        else if (lex.newest.has(w)) filters.sort = filters.sort ?? 'new';
+        else if (lex.expertWords.has(w)) wantsExperts = true;
+        else if (lex.problemWords.has(w)) wantsProblems = true;
         else keep.push(w);
     }
-    if (filters.type) chips.push(filters.type === 'individual' ? 'בעיות פרטיות' : 'בעיות ציבוריות');
-    if (filters.sinceDays) chips.push(filters.sinceDays === 1 ? 'מהיום' : filters.sinceDays === 7 ? 'מהשבוע האחרון' : 'מהחודש האחרון');
-    if (filters.sort === 'bounty') chips.push('מהפרס הגבוה');
-    else if (filters.sort === 'new') chips.push('מהחדשות לישנות');
+    if (filters.type) chips.push(t(filters.type === 'individual' ? 'search.chipPrivate' : 'search.chipPublic'));
+    if (filters.sinceDays) chips.push(t(filters.sinceDays === 1 ? 'search.chipToday' : filters.sinceDays === 7 ? 'search.chipWeek' : 'search.chipMonth'));
+    if (filters.sort === 'bounty') chips.push(t('search.chipHigh'));
+    else if (filters.sort === 'new') chips.push(t('search.chipNew'));
 
     return { text: keep.join(' '), filters, chips, wantsExperts, wantsProblems };
 }
@@ -141,44 +214,73 @@ function applyFilters(list: readonly Problem[], fl: ProblemFilters, now: number)
 
 // ───── אינדקס ─────
 
-const teamName = (slug: string) => teamBySlug(slug)?.name ?? '';
-const realTeams = teams.filter((t) => t.slug !== 'admin');
+/** האינדקס הקבוע (מומחים, צוותים, מושגים) של שפה אחת — נבנה פעם אחת לשפה */
+interface StaticIndex {
+    experts: Expert[];
+    realTeams: Team[];
+    expertEntries: Entry<Expert>[];
+    teamEntries: Entry<Team>[];
+    conceptDocs: { slug: string; doc: Doc }[];
+    expertConceptDocs: Map<string, Doc>;
+    teamName: (slug: string) => string;
+}
 
-const expertEntries = indexItems(EXPERTS, (e) => [e.n, e.role, teamName(e.c), catShort(e.c), ...e.skills, e.bio]);
-const teamEntries = indexItems(realTeams, (t) => [t.name, catShort(t.slug), t.desc]);
-const conceptDocs = Object.entries(CONCEPTS).map(([slug, words]) => ({ slug, doc: makeDoc(words + ' ' + teamName(slug) + ' ' + catShort(slug)) }));
-const conceptOf = (slug: string) => CONCEPTS[slug] ?? '';
+const staticIndexes: Partial<Record<Locale, StaticIndex>> = {};
 
-/** כל המומחים עם מילות המושגים של התחום שלהם, לשכבת "קשור לתחום" */
-const expertConceptDocs = new Map<string, Doc>(
-    EXPERTS.map((e) => [e.slug, makeDoc([e.n, e.role, teamName(e.c), catShort(e.c), ...e.skills, e.bio, conceptOf(e.c)].join(' '))])
-);
+function staticIndex(locale: Locale): StaticIndex {
+    const cached = staticIndexes[locale];
+    if (cached) return cached;
 
-const problemFields = (p: Problem) => [p.title, p.description, catShort(p.category), teamName(p.category)];
+    const concepts = CONCEPTS[locale];
+    const experts = resolve(EXPERTS, locale);
+    const realTeams = teamsFor(locale).filter((t) => t.slug !== 'admin');
+    const teamName = (slug: string) => teamBySlug(slug, locale)?.name ?? '';
+    const conceptOf = (slug: string) => concepts[slug] ?? '';
+
+    const built: StaticIndex = {
+        experts,
+        realTeams,
+        teamName,
+        expertEntries: indexItems(experts, (e) => [e.n, e.role, teamName(e.c), catShort(e.c, locale), ...e.skills, e.bio]),
+        teamEntries: indexItems(realTeams, (t) => [t.name, catShort(t.slug, locale), t.desc]),
+        conceptDocs: Object.entries(concepts).map(([slug, words]) => ({ slug, doc: makeDoc(words + ' ' + teamName(slug) + ' ' + catShort(slug, locale)) })),
+        /** כל המומחים עם מילות המושגים של התחום שלהם, לשכבת "קשור לתחום" */
+        expertConceptDocs: new Map<string, Doc>(
+            experts.map((e) => [e.slug, makeDoc([e.n, e.role, teamName(e.c), catShort(e.c, locale), ...e.skills, e.bio, conceptOf(e.c)].join(' '))])
+        )
+    };
+    staticIndexes[locale] = built;
+    return built;
+}
 
 let cachedFor: readonly Problem[] | null = null;
+let cachedLocale: Locale | null = null;
 let cachedEntries: Entry<Problem>[] = [];
 let cachedVocab: Vocab | null = null;
 let cachedConceptDocs = new Map<string, Doc>();
 
-function problemIndex(problems: readonly Problem[]) {
-    if (cachedFor !== problems) {
+function problemIndex(problems: readonly Problem[], locale: Locale) {
+    const idx = staticIndex(locale);
+    if (cachedFor !== problems || cachedLocale !== locale) {
         cachedFor = problems;
+        cachedLocale = locale;
+        const concepts = CONCEPTS[locale];
+        const problemFields = (p: Problem) => [p.title, p.description, catShort(p.category, locale), idx.teamName(p.category)];
         cachedEntries = indexItems(problems, problemFields);
-        cachedConceptDocs = new Map(problems.map((p) => [p.id, makeDoc([...problemFields(p), conceptOf(p.category)].join(' '))]));
+        cachedConceptDocs = new Map(problems.map((p) => [p.id, makeDoc([...problemFields(p), concepts[p.category] ?? ''].join(' '))]));
         cachedVocab = buildVocab([
             ...problems.flatMap((p) => [
                 { text: p.title, weight: 3 },
                 { text: p.description, weight: 1 },
-                { text: catShort(p.category), weight: 2 }
+                { text: catShort(p.category, locale), weight: 2 }
             ]),
-            ...EXPERTS.flatMap((e) => [
+            ...idx.experts.flatMap((e) => [
                 { text: e.n, weight: 2 },
                 { text: e.role, weight: 2 },
                 { text: e.skills.join(' '), weight: 2 }
             ]),
-            ...realTeams.map((t) => ({ text: t.name, weight: 2 })),
-            ...Object.values(CONCEPTS).map((w) => ({ text: w, weight: 1 }))
+            ...idx.realTeams.map((t) => ({ text: t.name, weight: 2 })),
+            ...Object.values(concepts).map((w) => ({ text: w, weight: 1 }))
         ]);
     }
     return { entries: cachedEntries, vocab: cachedVocab!, conceptDocs: cachedConceptDocs };
@@ -209,7 +311,7 @@ export type SmartResult = {
 const LIMITS = { problems: 6, experts: 4, teams: 3 };
 
 /** התחומים שמילות השאילתה שייכות למושגים שלהם (לתצוגה: "הבנתי: תחום ..."). מילה שלמה, תחילת מילה או טעות הקלדה אחת, בלי התאמת אמצע מילה. */
-function detectConcepts(plan: Plan): string[] {
+function detectConcepts(plan: Plan, conceptDocs: { slug: string; doc: Doc }[]): string[] {
     const score = new Map<string, number>();
     const bump = (slug: string) => score.set(slug, (score.get(slug) ?? 0) + 1);
     plan.stems.forEach((qs, i) => {
@@ -223,9 +325,13 @@ function detectConcepts(plan: Plan): string[] {
     return [...score.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([slug]) => slug);
 }
 
-export function smartSearch(rawQuery: string, problems: readonly Problem[], now = Date.now()): SmartResult {
-    const parsed = parseQuery(rawQuery);
+/**
+ * problems = הבעיות כפי שמוצגות בשפה הנוכחית (localizeProblems), כך שהחיפוש רץ על מה שהגולש רואה.
+ */
+export function smartSearch(rawQuery: string, problems: readonly Problem[], locale: Locale = 'he', now = Date.now()): SmartResult {
+    const parsed = parseQuery(rawQuery, locale);
     const { filters } = parsed;
+    const idx = staticIndex(locale);
     const filtered = applyFilters(problems, filters, now);
     const filteredIds = new Set(filtered.map((p) => p.id));
     const blank: SmartResult = {
@@ -236,14 +342,14 @@ export function smartSearch(rawQuery: string, problems: readonly Problem[], now 
         // רק סינון ("מעל 5000", "פרטיות"): כל הבעיות שעוברות אותו
         if (!hasProblemFilter(filters) && !filters.sort && !parsed.wantsExperts && !parsed.wantsProblems) return blank;
         if (parsed.wantsExperts && !parsed.wantsProblems && !hasProblemFilter(filters)) {
-            const ex = [...EXPERTS].sort((a, b) => b.solved - a.solved);
+            const ex = [...idx.experts].sort((a, b) => b.solved - a.solved);
             return { ...blank, experts: ex.slice(0, LIMITS.experts).map((e) => ({ e, related: false })), totalExperts: ex.length, empty: ex.length === 0 };
         }
         const hits = filtered.map((p) => ({ p, related: false }));
         return { ...blank, problems: hits.slice(0, LIMITS.problems), totalProblems: hits.length, empty: hits.length === 0 };
     }
 
-    const { entries, vocab, conceptDocs: problemConceptDocs } = problemIndex(problems);
+    const { entries, vocab, conceptDocs: problemConceptDocs } = problemIndex(problems, locale);
     const candidates = entries.filter((e) => filteredIds.has(e.item.id));
     // סדר הכניסה קובע שוויון בדירוג: הפרס הגבוה (או החדש) קודם
     const order = new Map(filtered.map((p, i) => [p.id, i]));
@@ -255,8 +361,8 @@ export function smartSearch(rawQuery: string, problems: readonly Problem[], now 
         return {
             plan,
             pr: rank(plan, candidates),
-            ex: onlyProblems ? [] : rank(plan, expertEntries),
-            tm: onlyProblems ? [] : rank(plan, teamEntries)
+            ex: onlyProblems ? [] : rank(plan, idx.expertEntries),
+            tm: onlyProblems ? [] : rank(plan, idx.teamEntries)
         };
     };
     const exact = (r: ReturnType<typeof run>) => [...r.pr, ...r.ex, ...r.tm].filter((x) => x.score < 4).length;
@@ -280,7 +386,7 @@ export function smartSearch(rawQuery: string, problems: readonly Problem[], now 
 
     const hitIds = new Set(res.pr.map((x) => x.item.id));
     const hitExperts = new Set(res.ex.map((x) => x.item.slug));
-    const conceptSlugs = detectConcepts(res.plan);
+    const conceptSlugs = detectConcepts(res.plan, idx.conceptDocs);
 
     // קשורים לפי תחום: מה שלא נמצא בחיפוש עצמו, אבל מכוסה כשמוסיפים לו את מילות המושגים של התחום שלו
     // ("אפליקציה לחוגים" מוצאת בעיה בטכנולוגיה שמדברת על חוגים, גם בלי המילה אפליקציה)
@@ -297,9 +403,9 @@ export function smartSearch(rawQuery: string, problems: readonly Problem[], now 
         relatedProblems.push(...relP.slice(0, 3).map(({ p }) => ({ p, related: true })));
         if (!onlyProblems) {
             const relE: { e: Expert; l: number }[] = [];
-            for (const e of EXPERTS) {
+            for (const e of idx.experts) {
                 if (hitExperts.has(e.slug)) continue;
-                const l = levelOf(res.plan, expertConceptDocs.get(e.slug)!, false);
+                const l = levelOf(res.plan, idx.expertConceptDocs.get(e.slug)!, false);
                 if (l >= 0 && l <= 3) relE.push({ e, l });
             }
             relE.sort((a, b) => a.l - b.l || b.e.solved - a.e.solved);
@@ -320,7 +426,7 @@ export function smartSearch(rawQuery: string, problems: readonly Problem[], now 
         teams: teamHits.slice(0, LIMITS.teams),
         totalProblems: problemHits.length,
         totalExperts: expertHits.length,
-        concepts: conceptSlugs.map((s) => teamBySlug(s)).filter((t): t is Team => !!t),
+        concepts: conceptSlugs.map((s) => teamBySlug(s, locale)).filter((t): t is Team => !!t),
         corrected,
         usedCorrection,
         expertsFirst: parsed.wantsExperts && !parsed.wantsProblems,

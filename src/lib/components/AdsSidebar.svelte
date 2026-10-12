@@ -1,5 +1,8 @@
 <script lang="ts">
     import { ads } from '$lib/adsData';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     // נעילה מכוונת: הטור השמאלי מחזיק אך ורק אתרי "יוצאים לחירות".
     // ענף approvedAds הוסר - הוא הועתק לכאן מאתר האם יחד עם הרכיב, אבל
@@ -8,7 +11,7 @@
     let {}: { approvedAds?: never } = $props();
 
     let merged = $derived([
-        ...ads.map(a => ({
+        ...i18n.l(ads).map(a => ({
             id: String(a.id),
             title: a.title,
             description: a.description,
@@ -24,11 +27,11 @@
 </script>
 
 <aside
-    aria-label="אתרי יוצאים לחירות"
+    aria-label={i18n.t('ads.networkLabel')}
     class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2">
-        מתקדמים לחברה מתוקנת ועצמאית
+        {i18n.t('ads.networkHeading')}
     </h4>
     <div class="space-y-4">
         {#each merged as ad (ad.id)}
@@ -36,7 +39,7 @@
                 href={ad.href}
                 target={ad.target}
                 rel={ad.target === '_blank' ? 'noopener noreferrer' : undefined}
-                aria-label="{ad.title} – {ad.description}{ad.target === '_blank' ? ' (נפתח בחלון חדש)' : ''}"
+                aria-label="{ad.title} – {ad.description}{ad.target === '_blank' ? ` (${i18n.t('common.opensNewWindow')})` : ''}"
                 class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
             >
                 <div class="relative overflow-hidden" style="height: {ad.imageHeight ?? '160px'}">

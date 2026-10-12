@@ -22,6 +22,8 @@
     .arrow { flex: 1; min-width: 12px; height: 8px; box-shadow: 0 1px 2px rgba(120, 53, 15, 0.35); }
     .a { background: linear-gradient(to left, transparent, rgba(245, 158, 11, 0.7), #b45309); clip-path: polygon(0% 0%, 0% 100%, 100% 50%); }
     .b { background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.7), #b45309); clip-path: polygon(0% 50%, 100% 0%, 100% 100%); }
+    /* בעברית הראשון בימין, באנגלית בשמאל — מהפכים את החצים כדי שייצרו תמיד מהמרכז החוצה */
+    :global(html[dir='ltr']) .arrow { transform: scaleX(-1); }
     .orn { flex: none; font-size: 24px; color: #b45309; text-shadow: 0 1px 1px rgba(120, 53, 15, 0.4); }
     .mid { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
 

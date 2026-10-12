@@ -3,10 +3,13 @@
 // ההזרקה לדף נעשית דרך רכיב JsonLd.svelte.
 // ============================================================
 
-export function faqSchema(items: { q: string; a: string }[]) {
+import type { Locale } from './i18n';
+
+export function faqSchema(items: { q: string; a: string }[], locale: Locale = 'he') {
     return {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
+        inLanguage: locale,
         mainEntity: items.map((i) => ({
             '@type': 'Question',
             name: i.q,
@@ -15,14 +18,15 @@ export function faqSchema(items: { q: string; a: string }[]) {
     };
 }
 
-export function aboutPageSchema(opts: { name: string; url: string; description: string }) {
+export function aboutPageSchema(opts: { name: string; url: string; description: string; siteName: string; orgName: string; locale?: Locale }) {
     return {
         '@context': 'https://schema.org',
         '@type': 'AboutPage',
         name: opts.name,
         url: opts.url,
         description: opts.description,
-        isPartOf: { '@type': 'WebSite', name: 'המומחים של העם', url: 'https://experts.gofreeil.com' },
-        publisher: { '@type': 'Organization', name: 'יוצאים לחירות', url: 'https://gofreeil.com' }
+        inLanguage: opts.locale ?? 'he',
+        isPartOf: { '@type': 'WebSite', name: opts.siteName, url: 'https://experts.gofreeil.com' },
+        publisher: { '@type': 'Organization', name: opts.orgName, url: 'https://gofreeil.com' }
     };
 }

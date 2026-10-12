@@ -8,6 +8,9 @@
     import { interstitial } from '$lib/adGate';
     import { loadApprovedAds } from '$lib/adSlots';
     import { markAdSeen, trackAdClick } from '$lib/adTrack';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     // הרכיב יושב גלובלית ב-+layout — נקודה נוחה להתניע את טעינת
     // המודעות המאושרות (חד-פעמי, no-op בצד השרת).
@@ -28,18 +31,16 @@
     });
 
     const pct = $derived(Math.round($interstitial.progress * 100));
-    const remainLabel = $derived(
-        $interstitial.remaining <= 1 ? 'עוד שנייה' : `עוד ${$interstitial.remaining} שניות`
-    );
+    const remainLabel = $derived(i18n.tn('ads.secondsLeft', Math.max(1, $interstitial.remaining)));
 </script>
 
 {#if $interstitial.open && $interstitial.ad}
-    {@const ad = $interstitial.ad!}
+    {@const ad = i18n.l($interstitial.ad!)}
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="ad-int-backdrop" role="dialog" aria-modal="true"
-         aria-label="פרסומת — התוכן נטען" tabindex="-1" dir="rtl">
+         aria-label={i18n.t('ads.interstitialLabel')} tabindex="-1">
         <div class="ad-int-card">
-            <span class="ad-int-badge">פרסומת</span>
+            <span class="ad-int-badge">{i18n.t('ads.badge')}</span>
 
             <!-- הקריאייטיב — קליק פותח את המפרסם בלשונית חדשה, בלי לעצור את הספירה -->
             <a href={ad.href} target="_blank" rel="noopener noreferrer"
@@ -55,15 +56,15 @@
                 {/if}
                 <h3 class="ad-int-title">{ad.title}</h3>
                 <p class="ad-int-desc">{ad.description}</p>
-                {#if ad.cta}<span class="ad-int-cta">{ad.cta} ←</span>{/if}
+                {#if ad.cta}<span class="ad-int-cta">{#if i18n.rtl}{ad.cta} ←{:else}{ad.cta} →{/if}</span>{/if}
             </a>
 
             <!-- מחוון טעינה + ספירה-לאחור: הסימן למשתמש שהתוכן נטען וכמה זמן נשאר -->
             <div class="ad-int-loader" aria-live="polite">
                 <div class="ad-int-loader-row">
                     <span class="ad-int-spinner" aria-hidden="true"></span>
-                    <span class="ad-int-loading">התוכן נטען…</span>
-                    <span class="ad-int-count" dir="rtl">{remainLabel}</span>
+                    <span class="ad-int-loading">{i18n.t('ads.contentLoading')}</span>
+                    <span class="ad-int-count">{remainLabel}</span>
                 </div>
                 <div class="ad-int-bar" aria-hidden="true">
                     <div class="ad-int-bar-fill" style="width:{pct}%"></div>
@@ -72,7 +73,7 @@
 
             <!-- הפניית מתעניינים לדף הפרסום המקומי — נפתח בלשונית חדשה כדי לא לעצור את הספירה -->
             <a href="/about/advertise" target="_blank" rel="noopener" class="ad-int-advertise">
-                רוצים לפרסם כאן? ←
+                {i18n.t('ads.wantToAdvertise')}
             </a>
         </div>
     </div>

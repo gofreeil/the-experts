@@ -8,6 +8,9 @@
         type AdStyle,
     } from "$lib/adStyle";
     import type { ApprovedAd } from "$lib/adSlots";
+    import { useI18n } from "$lib/i18n/context";
+
+    const i18n = useI18n();
 
     // העיצוב שהמפרסם קבע בבילדר הוא מה שמוצג כאן — אותו מודול משותף
     // (adStyle.ts) מנרמל אותו בשני הצדדים. מודעה שנשלחה לפני שהעיצוב
@@ -66,13 +69,13 @@
 
 <!-- RightAdBanner.svelte -->
 <aside
-    aria-label="פרסומות"
+    aria-label={i18n.t('ads.label')}
     class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4
         class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2"
     >
-        תוכן שיווקי
+        {i18n.t('ads.marketing')}
     </h4>
     <!-- כל הקבוצות שוכבות זו על זו באותו תא grid; ההחלפה היא מיזוג
          שקיפות איטי בין השכבות — בלי רגע ריק ובלי קפיצות תוכן. -->
@@ -158,7 +161,7 @@
                         class="p-2.5 text-center"
                         style="background: {item.ad.gradient || 'linear-gradient(135deg, #f59e0b, #ea580c)'}"
                     >
-                        <p class="text-white font-bold text-xs leading-tight">{item.ad.cta || 'לפרטים'}</p>
+                        <p class="text-white font-bold text-xs leading-tight">{item.ad.cta || i18n.t('ads.details')}</p>
                     </div>
                     {/if}
                 </a>
@@ -170,11 +173,11 @@
                     aria-hidden="true"
                 ></div>
             {:else}
-                {@const ad = item.slot}
+                {@const ad = i18n.l(item.slot)}
                 <!-- משבצת פנויה — כל הבאנר הוא קישור לדף הפרסום, לא רק כפתור "לפרטים" -->
                 <a
                     href={ad.href}
-                    aria-label="{ad.text} — {ad.description}: לדף הפרסום"
+                    aria-label={i18n.t('ads.vacantLabel', { text: ad.text, description: ad.description })}
                     class="h-[490px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
                 >
                     <!-- Ad Numbering -->
@@ -215,7 +218,7 @@
                         <span
                             class="mb-4 z-10 rounded-full {ad.buttonColor} px-5 py-2 text-sm font-bold text-white shadow-xl transition-transform group-hover:scale-105"
                         >
-                            לפרטים
+                            {i18n.t('ads.details')}
                         </span>
                     </div>
                 </a>
@@ -313,7 +316,7 @@
         bottom: 0;
         padding: 0.55rem 0.7rem 1.1rem;
         z-index: 4;
-        text-align: right;
+        text-align: start;
         pointer-events: none;
     }
     .promo-sub {

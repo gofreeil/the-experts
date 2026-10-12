@@ -4,8 +4,10 @@
     // ולא מתחתיה — כדי לחסוך גלילה. הגולש רואה את כל העיקר במסך הראשון.
     import { onMount } from 'svelte';
     import { trackAdLanding, trackAdLead } from '$lib/adTrack';
+    import { useI18n } from '$lib/i18n/context';
 
     let { data } = $props();
+    const i18n = useI18n();
     let ad = $derived(data.ad);
     let lp = $derived(data.ad.landing ?? {});
 
@@ -65,7 +67,7 @@
 </script>
 
 <svelte:head>
-    <title>{ad.title} | המומחים של העם</title>
+    <title>{ad.title} | {i18n.t('site.name')}</title>
     {#if lp.pitch}
         <meta name="description" content={lp.pitch} />
     {/if}
@@ -73,13 +75,13 @@
 
 {#snippet rich(raw: string)}{#each segments(raw) as s}{#if s.url}<a class="al-link" href={s.url} target="_blank" rel="noopener noreferrer">{s.text} ↗</a>{:else}{s.text}{/if}{/each}{/snippet}
 
-<div class="ad-landing" dir="rtl">
+<div class="ad-landing">
     <!-- קומה 1+2+3 — הכל במסך הראשון, ליד התמונה -->
     <header class="al-hero" style:background={ad.gradient || 'linear-gradient(135deg, #f59e0b, #ea580c)'}>
         <div class="al-hero-inner" class:has-media={!!heroImage}>
             <div class="al-copy">
                 {#if ad.logo}
-                    <img src={ad.logo} alt="לוגו {ad.title}" decoding="async" class="al-logo" class:is-circle={logoCircle} />
+                    <img src={ad.logo} alt={i18n.t('landing.logoAlt', { title: ad.title })} decoding="async" class="al-logo" class:is-circle={logoCircle} />
                 {/if}
                 <h1>{lp.headline || ad.title}</h1>
                 {#if lp.pitch}
@@ -100,9 +102,9 @@
                             <a href="tel:{lp.phone}" onclick={() => trackAdLead(ad.id)} class="al-btn light">📞 {lp.phone}</a>
                         {/if}
                         {#if lp.whatsapp}
-                            <a href="https://wa.me/{waNumber(lp.whatsapp)}" onclick={() => trackAdLead(ad.id)} target="_blank" rel="noopener noreferrer" class="al-btn wa">וואטסאפ</a>
+                            <a href="https://wa.me/{waNumber(lp.whatsapp)}" onclick={() => trackAdLead(ad.id)} target="_blank" rel="noopener noreferrer" class="al-btn wa">{i18n.t('landing.whatsapp')}</a>
                         {:else if lp.website}
-                            <a href={lp.website} onclick={() => trackAdLead(ad.id)} target="_blank" rel="noopener noreferrer" class="al-btn ghost">לאתר ←</a>
+                            <a href={lp.website} onclick={() => trackAdLead(ad.id)} target="_blank" rel="noopener noreferrer" class="al-btn ghost">{i18n.t('landing.toSite')}</a>
                         {/if}
                     </div>
                 {/if}
@@ -135,13 +137,13 @@
         <section class="al-section al-about">
             {#if lp.extended}
                 <article>
-                    <h2>הסיפור שלנו</h2>
+                    <h2>{i18n.t('landing.story')}</h2>
                     <p class="pre-line">{@render rich(lp.extended)}</p>
                 </article>
             {/if}
             {#if lp.uniqueness}
                 <article>
-                    <h2>מה מייחד אותנו</h2>
+                    <h2>{i18n.t('landing.unique')}</h2>
                     <p class="pre-line">{@render rich(lp.uniqueness)}</p>
                 </article>
             {/if}
@@ -151,7 +153,7 @@
     <!-- מוצרים -->
     {#if lp.products?.length}
         <section class="al-section">
-            <h2>מוצרים / שירותים</h2>
+            <h2>{i18n.t('landing.products')}</h2>
             <div class="al-products">
                 {#each lp.products as p}
                     <div class="al-product">
@@ -211,7 +213,7 @@
         .al-hero { padding: 2.25rem 2rem; }
         .al-hero-inner.has-media {
             grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
-            text-align: right;
+            text-align: start;
         }
     }
     .al-copy { min-width: 0; }
@@ -311,7 +313,7 @@
         margin: 0;
         display: grid;
         gap: 0.5rem;
-        text-align: right;
+        text-align: start;
     }
     .al-advantages li {
         display: flex;

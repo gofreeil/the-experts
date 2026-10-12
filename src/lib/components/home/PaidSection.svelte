@@ -1,32 +1,44 @@
 <script lang="ts">
     import { MONTHS, PAID, PAID_TOTAL, SPLIT, SOLVED_COUNT, PAID_EXPERTS, MEDIAN_DAYS, DEMO_DATA, catColor, catShort, fmt } from '$lib/homeData';
     import SectionHead from './SectionHead.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה). בדף המלא אין כותרת כזו, כי יש כותרת עמוד.
     // preview = גרסת דף הבית: סיכום חזותי קצר (סכום, שלושה מספרים ותרשים עמודות בלי צירים). החלוקה לתחומים רק בדף המלא.
     let { headTitle = '', preview = false }: { headTitle?: string; preview?: boolean } = $props();
 
-    // תרשים עמודות. ציר הזמן מימין לשמאל (החודש הראשון בימין), כמו כיוון הקריאה.
-    const W = 640, H = 250, PT = 24, PB = 30, PL = 8, PR = 52;
+    const i18n = useI18n();
+    const months = $derived(i18n.l(MONTHS));
+
+    // תרשים עמודות. ציר הזמן בכיוון הקריאה: בעברית מימין לשמאל (החודש הראשון בימין, המספרים בימין),
+    // באנגלית משמאל לימין (החודש הראשון בשמאל, המספרים בשמאל).
+    const W = 640, H = 250, PT = 24, PB = 30;
     const MAX = 200000;
-    const bw = (W - PL - PR) / PAID.length;
-    const innerW = bw * 0.62;
+    const PL = $derived(i18n.rtl ? 8 : 52);
+    const PR = $derived(i18n.rtl ? 52 : 8);
+    const bw = $derived((W - PL - PR) / PAID.length);
+    const innerW = $derived(bw * 0.62);
     const GRID = [0, 50000, 100000, 150000, 200000];
     const yOf = (v: number) => PT + (H - PT - PB) * (1 - v / MAX);
 
-    const bars = PAID.map((v, i) => {
-        const h = (H - PT - PB) * (v / MAX);
-        const x = W - PR - (i + 1) * bw + (bw - innerW) / 2;
-        return { v, x, y: H - PB - h, h, label: MONTHS[i], last: i === PAID.length - 1 };
-    });
+    const bars = $derived(
+        PAID.map((v, i) => {
+            const h = (H - PT - PB) * (v / MAX);
+            const x = i18n.rtl ? W - PR - (i + 1) * bw + (bw - innerW) / 2 : PL + i * bw + (bw - innerW) / 2;
+            return { v, x, y: H - PB - h, h, label: months[i], last: i === PAID.length - 1 };
+        })
+    );
 
     // גרסת הבית: תרשים קטן בלי צירים, 12 עמודות והחודש האחרון מודגש
     const SW = 260, SH = 78, SPT = 16, SPB = 14;
     const sbw = SW / PAID.length;
-    const sparks = PAID.map((v, i) => {
-        const h = Math.max(4, (SH - SPT - SPB) * (v / MAX));
-        return { v, x: SW - (i + 1) * sbw + sbw * 0.18, y: SH - SPB - h, h, w: sbw * 0.64, last: i === PAID.length - 1 };
-    });
+    const sparks = $derived(
+        PAID.map((v, i) => {
+            const h = Math.max(4, (SH - SPT - SPB) * (v / MAX));
+            const x = i18n.rtl ? SW - (i + 1) * sbw + sbw * 0.18 : i * sbw + sbw * 0.18;
+            return { v, x, y: SH - SPB - h, h, w: sbw * 0.64, last: i === PAID.length - 1 };
+        })
+    );
 </script>
 
 <section class="section" id="paid">
@@ -36,43 +48,43 @@
             <div class="strip">
                 <div class="s-total">
                     <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
-                    <p class="s-cap">חולקו לפותרים מאז שהכוורת נפתחה{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</p>
+                    <p class="s-cap">{i18n.t('paid.sinceOpened')}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</p>
                 </div>
                 <div class="mini-grid">
-                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות נפתרו</div></div>
-                    <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">יום</span></div><div class="stat-l">זמן פתרון חציוני</div></div>
-                    <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">מומחים שקיבלו</div></div>
+                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">{i18n.t('paid.solved')}</div></div>
+                    <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">{i18n.t('paid.days')}</span></div><div class="stat-l">{i18n.t('paid.median')}</div></div>
+                    <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">{i18n.t('paid.expertsShort')}</div></div>
                 </div>
-                <svg class="spark" viewBox="0 0 {SW} {SH}" role="img" aria-label="סכומים שחולקו ב-12 החודשים האחרונים, בעלייה מתמדת">
+                <svg class="spark" viewBox="0 0 {SW} {SH}" role="img" aria-label={i18n.t('paid.sparkAria')}>
                     {#each sparks as b}
                         <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="1.5" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
                         {#if b.last}<text class="val" x={b.x + b.w / 2} y={b.y - 4} text-anchor="middle">₪{Math.round(b.v / 1000)}K</text>{/if}
                     {/each}
-                    <text x={SW - 1} y={SH - 2} text-anchor="end">{MONTHS[0]}</text>
-                    <text x="1" y={SH - 2} text-anchor="start" class="strong">{MONTHS[PAID.length - 1]}</text>
+                    <text x={i18n.rtl ? SW - 1 : 1} y={SH - 2} text-anchor={i18n.rtl ? 'end' : 'start'}>{months[0]}</text>
+                    <text x={i18n.rtl ? 1 : SW - 1} y={SH - 2} text-anchor={i18n.rtl ? 'start' : 'end'} class="strong">{months[PAID.length - 1]}</text>
                 </svg>
             </div>
         {:else}
             <div class="paid">
             <div class="left">
-                <div class="eyebrow">הספרים פתוחים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
+                <div class="eyebrow">{i18n.t('paid.booksOpen')}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</div>
                 <div class="paid-total"><span class="num">{fmt(PAID_TOTAL)}</span></div>
-                <p class="paid-cap">חולקו לפותרי בעיות מאז שהכוורת נפתחה. כל תשלום מתועד ומופיע ברשימת הפתרונות.</p>
+                <p class="paid-cap">{i18n.t('paid.cap')}</p>
                 <div class="mini-grid">
-                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">בעיות נפתרו</div></div>
-                    <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">יום</span></div><div class="stat-l">זמן פתרון חציוני</div></div>
-                    <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">מומחים שקיבלו תשלום</div></div>
+                    <div><div class="stat-n"><span class="num">{SOLVED_COUNT}</span></div><div class="stat-l">{i18n.t('paid.solved')}</div></div>
+                    <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">{i18n.t('paid.days')}</span></div><div class="stat-l">{i18n.t('paid.median')}</div></div>
+                    <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">{i18n.t('paid.expertsPaid')}</div></div>
                 </div>
             </div>
 
             <div class="panel">
-                <h3>כמה חולק בכל חודש</h3>
-                <div class="sub">12 החודשים האחרונים, בשקלים. החודש האחרון מודגש.</div>
+                <h3>{i18n.t('paid.chartTitle')}</h3>
+                <div class="sub">{i18n.t('paid.chartSub')}</div>
                 <div class="chart">
-                    <svg viewBox="0 0 {W} {H}" role="img" aria-label="תרשים עמודות של סכומים שחולקו בכל חודש, בעלייה מתמדת">
+                    <svg viewBox="0 0 {W} {H}" role="img" aria-label={i18n.t('paid.chartAria')}>
                         {#each GRID as v}
                             <line x1={PL} x2={W - PR} y1={yOf(v)} y2={yOf(v)} class="grid" stroke-dasharray={v ? '3 4' : undefined} />
-                            <text x={W - PR + 8} y={yOf(v) + 4}>{v ? '₪' + v / 1000 + 'K' : '0'}</text>
+                            <text x={i18n.rtl ? W - PR + 8 : PL - 8} y={yOf(v) + 4} text-anchor={i18n.rtl ? 'start' : 'end'}>{v ? '₪' + v / 1000 + 'K' : '0'}</text>
                         {/each}
                         {#each bars as b}
                             <rect x={b.x} y={b.y} width={innerW} height={b.h} rx="2" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
@@ -85,13 +97,13 @@
                 </div>
 
                 <div class="split">
-                    <h3>לאן הלך הכסף</h3>
+                    <h3>{i18n.t('paid.whereTitle')}</h3>
                     <div class="split-bar" aria-hidden="true">
                         {#each SPLIT as s}<i style="--c:{catColor(s[0])}; flex:{s[1]}"></i>{/each}
                     </div>
                     <ul class="split-list">
                         {#each SPLIT as s}
-                            <li><span class="dot" style="--c:{catColor(s[0])}"></span>{catShort(s[0])}<b class="num">{fmt(PAID_TOTAL * s[1])}</b></li>
+                            <li><span class="dot" style="--c:{catColor(s[0])}"></span>{catShort(s[0], i18n.locale)}<b class="num">{fmt(PAID_TOTAL * s[1])}</b></li>
                         {/each}
                     </ul>
                 </div>

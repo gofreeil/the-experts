@@ -5,9 +5,12 @@
     import { adThenGo } from './nav';
     import SectionHead from './SectionHead.svelte';
     import Stamp from './Stamp.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // הצעות הפתרון האחרונות שהועלו לבעיות פתוחות, מהחדשה לישנה. הבחירה והתשלום מגיעים אחר כך.
     let { problems, limit = 3 }: { problems: Problem[]; limit?: number } = $props();
+
+    const i18n = useI18n();
 
     const recent = $derived(
         problems
@@ -15,32 +18,33 @@
             .sort((a, b) => b.s.createdAt - a.s.createdAt)
             .slice(0, limit)
     );
-    const expertOf = (name: string) => EXPERTS.find((e) => e.n === name);
+    // שם הפותר יכול להגיע בכל אחת מהשפות (הבעיות כבר מתורגמות), לכן משווים לשתיהן
+    const expertOf = (name: string) => EXPERTS.find((e) => e.n.he === name || e.n.en === name);
 </script>
 
 <section class="section" id="recent-solutions">
     <div class="inner">
-        <SectionHead title="פתרונות אחרונים שהועלו" lede="הצעות שמומחים הגישו לבעיות פתוחות בימים האחרונים. בעלי הבעיה והשותפים בה בוחרים ביניהן." demo />
+        <SectionHead title={i18n.t('recent.title')} lede={i18n.t('recent.lede')} demo />
 
         <div class="rs-grid">
             {#each recent as { s, p } (s.id)}
                 {@const ex = expertOf(s.solverName)}
                 <article class="rs" style="--c:{catColor(p.category)}">
                     <div class="rs-top">
-                        <span class="tag-c"><span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category)}</span>
-                        <Stamp text="נמצא פתרון" tone="ok" compact />
+                        <span class="tag-c"><span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category, i18n.locale)}</span>
+                        <Stamp text={i18n.t('recent.found')} tone="ok" compact />
                     </div>
-                    <small class="rs-lbl">הבעיה</small>
+                    <small class="rs-lbl">{i18n.t('recent.problem')}</small>
                     <h3><a href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>{p.title}</a></h3>
-                    <small class="rs-lbl">ההצעה</small>
+                    <small class="rs-lbl">{i18n.t('recent.proposal')}</small>
                     <p>{s.proposal}</p>
                     <div class="rs-foot">
-                        <span class="rs-who">{#if ex}<a href="/experts/{ex.slug}">{s.solverName}</a>{:else}{s.solverName}{/if}<span class="rs-age">{formatTimeAgo(s.createdAt)}</span></span>
+                        <span class="rs-who">{#if ex}<a href="/experts/{ex.slug}">{s.solverName}</a>{:else}{s.solverName}{/if}<span class="rs-age">{formatTimeAgo(s.createdAt, i18n.locale)}</span></span>
                         <span class="rs-ask"><span class="num">{fmt(s.askingPrice)}</span></span>
                     </div>
                 </article>
             {:else}
-                <div class="empty">עדיין לא הוגשו הצעות פתרון. הראשון שיגיש יופיע כאן.</div>
+                <div class="empty">{i18n.t('recent.empty')}</div>
             {/each}
         </div>
     </div>

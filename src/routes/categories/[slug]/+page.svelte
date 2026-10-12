@@ -5,9 +5,13 @@
     import { problemsStore, seedProblems } from '$lib/problemsStore.svelte';
     import { CATS, DEMO_DATA, catColor, fmt, fmtShort } from '$lib/homeData';
     import { teamExperts, publicSolvedBy } from '$lib/expertsData';
+    import { teamBySlug } from '$lib/teamsData';
+    import { useI18n } from '$lib/i18n/context';
     import type { PageProps } from './$types';
 
     let { data }: PageProps = $props();
+
+    const i18n = useI18n();
 
     // הרינדור הראשון משתמש בבעיות ההתחלתיות (זהה בשרת ובלקוח), אחריו עוברים לנתוני הדפדפן
     let mounted = $state(false);
@@ -16,52 +20,53 @@
         mounted = true;
     });
 
-    const team = $derived(data.team);
+    // data.slug מגיע מה-load (כולל 404); הצוות עצמו נפתר בשפה הנוכחית
+    const team = $derived(teamBySlug(data.slug, i18n.locale)!);
     const meta = $derived(CATS.find((c) => c.slug === team.slug));
     const open = $derived((mounted ? problemsStore.items : seedProblems).filter((p) => p.status === 'open' && p.category === team.slug));
     const sum = $derived(open.reduce((s, p) => s + p.bounty, 0));
-    const experts = $derived(teamExperts(team.slug));
+    const experts = $derived(i18n.l(teamExperts(team.slug)));
 
     const SHOWN = 3; // כמה בעיות ציבוריות מוצגות בכרטיס של כל מומחה
 </script>
 
-<div class="home" dir="rtl" style="--c:{catColor(team.slug)}">
+<div class="home" style="--c:{catColor(team.slug)}">
     <DetailHero
         title={team.name}
         lede={team.desc}
         meta={team.desc.replace(/\s*\n\s*/g, ' ')}
         backHref="/categories"
-        backLabel="← לכל התחומים"
+        backLabel={i18n.t('cats.backToAll')}
     >
         {#snippet lead()}
             <span class="ico" aria-hidden="true">
                 {#if team.image}<img src={team.image} alt="" width="52" height="52" decoding="async" />{:else}{team.emoji}{/if}
             </span>
         {/snippet}
-        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems?cat={team.slug}">בעיות בתחום</a>{/snippet}
+        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems?cat={team.slug}">{i18n.t('cats.problemsInField')}</a>{/snippet}
     </DetailHero>
 
     <section class="section compact">
         <div class="inner">
             {#if meta}
                 <dl class="stats">
-                    <div><dt>בעיות פתוחות</dt><dd class="num">{open.length}</dd></div>
-                    <div><dt>סך הפרסים</dt><dd class="num">{fmt(sum)}</dd></div>
-                    <div><dt>מומחים בצוות</dt><dd class="num">{meta.experts}</dd></div>
-                    <div><dt>זמן פתרון חציוני</dt><dd>{meta.days} ימים</dd></div>
+                    <div><dt>{i18n.t('cats.openProblems')}</dt><dd class="num">{open.length}</dd></div>
+                    <div><dt>{i18n.t('cats.totalRewards')}</dt><dd class="num">{fmt(sum)}</dd></div>
+                    <div><dt>{i18n.t('cats.teamExperts')}</dt><dd class="num">{meta.experts}</dd></div>
+                    <div><dt>{i18n.t('paid.median')}</dt><dd>{i18n.tn('ledger.days', meta.days)}</dd></div>
                 </dl>
             {/if}
 
             <div class="head">
-                <h2>המומחים המובילים בתחום{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</h2>
-                <p>מדורגים לפי בעיות שאושרו כפתורות, ולכל אחד הבעיות הציבוריות שפתר.</p>
+                <h2>{i18n.t('cats.topExperts')}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</h2>
+                <p>{i18n.t('cats.topExpertsNote')}</p>
             </div>
 
             <div class="experts">
                 {#each experts as e, i (e.slug)}
                     {@const pub = publicSolvedBy(e.slug)}
                     <article class="ex">
-                        <span class="rank num" aria-label="מקום {i + 1}">{i + 1}</span>
+                        <span class="rank num" aria-label={i18n.t('cats.rank', { n: i + 1 })}>{i + 1}</span>
                         <div class="ex-top">
                             <span class="mini-av big" style="--c2:{catColor(e.c)}" aria-hidden="true">{e.ini}</span>
                             <div class="who">
@@ -70,25 +75,25 @@
                             </div>
                         </div>
                         <div class="ex-stats">
-                            <div><b class="num">{e.solved}</b><span>בעיות שנפתרו</span></div>
-                            <div><b class="g"><span class="num">{fmtShort(e.earned)}</span></b><span>הרוויח בכוורת</span></div>
-                            <div><b class="num">{e.rate}</b><span>דירוג</span></div>
+                            <div><b class="num">{e.solved}</b><span>{i18n.t('experts.statSolved')}</span></div>
+                            <div><b class="g"><span class="num">{fmtShort(e.earned)}</span></b><span>{i18n.t('experts.statEarned')}</span></div>
+                            <div><b class="num">{e.rate}</b><span>{i18n.t('experts.statRating')}</span></div>
                         </div>
                         <div class="solved">
-                            <small>בעיות ציבוריות שפתר</small>
+                            <small>{i18n.t('cats.publicSolved')}</small>
                             <ul>
-                                {#each pub.slice(0, SHOWN) as s (s.t)}<li>{s.t}</li>{/each}
+                                {#each pub.slice(0, SHOWN) as s (s.t.he)}<li>{i18n.l(s.t)}</li>{/each}
                             </ul>
-                            <span class="cv">{pub.length > SHOWN ? `ועוד ${pub.length - SHOWN} ברזומה` : 'לרזומה המלא'} ←</span>
+                            <span class="cv">{pub.length > SHOWN ? i18n.t('cats.moreInResume', { n: pub.length - SHOWN }) : i18n.t('cats.fullResume')}</span>
                         </div>
                     </article>
                 {:else}
-                    <div class="empty">עדיין אין פתרונות מאושרים בתחום הזה.</div>
+                    <div class="empty">{i18n.t('cats.noSolutions')}</div>
                 {/each}
             </div>
 
             {#if experts.length}
-                <p class="all"><a href="/experts?cat={team.slug}">כל המומחים בתחום</a></p>
+                <p class="all"><a href="/experts?cat={team.slug}">{i18n.t('cats.allExperts')}</a></p>
             {/if}
         </div>
     </section>
@@ -111,7 +116,7 @@
     .ex { position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: 6px; padding: 16px 18px; transition: border-color 0.2s; }
     .ex:hover { border-color: var(--honey-deep); border-top-color: var(--c); }
     .cv-link::after { content: ""; position: absolute; inset: 0; border-radius: 6px; }
-    .rank { position: absolute; top: 12px; left: 14px; font-family: var(--font-display); font-weight: 900; font-size: 26px; line-height: 1; color: var(--line); }
+    .rank { position: absolute; top: 12px; inset-inline-end: 14px; font-family: var(--font-display); font-weight: 900; font-size: 26px; line-height: 1; color: var(--line); }
     .ex-top { display: flex; align-items: center; gap: 12px; padding-inline-end: 28px; }
     .mini-av.big { width: 48px; height: 54px; font-size: 17px; }
     .who { min-width: 0; }
@@ -128,7 +133,7 @@
     .solved li::before { content: ""; position: absolute; inset-inline-start: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--c); }
     .cv { margin-top: auto; padding-top: 4px; color: var(--honey-text); font-size: 13.5px; font-weight: 700; }
     .empty { grid-column: 1 / -1; text-align: center; color: var(--fg-mute); padding: 32px 0; border: 1px dashed var(--line); border-radius: 6px; }
-    .all { margin-top: 14px; text-align: left; }
+    .all { margin-top: 14px; text-align: end; }
     .all a { color: var(--honey-text); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
     @container home (max-width: 720px) {

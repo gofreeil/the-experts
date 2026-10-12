@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { coinAnim } from '$lib/coinAnimationState.svelte';
+	import { useI18n } from '$lib/i18n/context';
+
+	const i18n = useI18n();
+	const money = (n: number) => `₪${i18n.num(n)}`;
 
 	// Stage: 1=burst, 2=travel, 3=fill bag, 4=summary+countdown
 	let stage = $state(0);
@@ -73,7 +77,7 @@
 </script>
 
 {#if coinAnim.active}
-<div class="overlay" role="dialog" aria-modal="true" aria-label="העברת מעשר לקופת העיר">
+<div class="overlay" role="dialog" aria-modal="true" aria-label={i18n.t('coin.dialog')}>
 
 	<!-- ===== STAGE 1: coins burst ===== -->
 	{#if stage === 1}
@@ -96,7 +100,7 @@
 			</svg>
 			{/each}
 		</div>
-		<p class="stage-label">מעביר מעשר לקופת העיר...</p>
+		<p class="stage-label">{i18n.t('coin.moving')}</p>
 	</div>
 	{/if}
 
@@ -106,7 +110,7 @@
 		<div class="travel-row">
 			<div class="travel-source">
 				<span class="travel-icon">📋</span>
-				<span class="travel-sub">הזמנה</span>
+				<span class="travel-sub">{i18n.t('coin.order')}</span>
 			</div>
 			<div class="travel-path">
 				<svg class="path-svg" viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
@@ -125,10 +129,10 @@
 			</div>
 			<div class="travel-dest">
 				<img src="/images/kupat-hair.webp" alt="" width="480" height="362" decoding="async" class="travel-bag"/>
-				<span class="travel-sub">קופת העיר</span>
+				<span class="travel-sub">{i18n.t('coin.fund')}</span>
 			</div>
 		</div>
-		<p class="stage-amount">₪{coinAnim.amount.toLocaleString('he-IL')} מועברים לקופה</p>
+		<p class="stage-amount">{i18n.t('coin.transferred', { amount: money(coinAnim.amount) })}</p>
 	</div>
 	{/if}
 
@@ -145,11 +149,11 @@
 				</svg>
 				{/each}
 			</div>
-			<img src="/images/kupat-hair.webp" alt="שק המטבעות של קופת העיר מתמלא" width="480" height="362" decoding="async" class="bag-fill"/>
+			<img src="/images/kupat-hair.webp" alt={i18n.t('coin.bagAlt')} width="480" height="362" decoding="async" class="bag-fill"/>
 		</div>
 		<div class="counter-wrap">
-			<span class="counter-label">סכום בקופה</span>
-			<span class="counter-value">₪{displayTotal.toLocaleString('he-IL')}</span>
+			<span class="counter-label">{i18n.t('coin.fundTotal')}</span>
+			<span class="counter-value">{money(displayTotal)}</span>
 		</div>
 	</div>
 	{/if}
@@ -159,23 +163,23 @@
 	<div class="stage stage4">
 		<div class="summary-card">
 			<div class="summary-emoji">🙏</div>
-			<h2 class="summary-title">תודה שתרמת לקופת העיר!</h2>
+			<h2 class="summary-title">{i18n.t('coin.thanks')}</h2>
 			<div class="summary-rows">
 				<div class="summary-row">
-					<span class="sr-label">שילמת</span>
-					<span class="sr-value">₪{coinAnim.orderTotal.toLocaleString('he-IL')}</span>
+					<span class="sr-label">{i18n.t('coin.paid')}</span>
+					<span class="sr-value">{money(coinAnim.orderTotal)}</span>
 				</div>
 				<div class="summary-row highlight">
-					<span class="sr-label">תרמת לקופה (10%)</span>
-					<span class="sr-value gold">₪{coinAnim.amount.toLocaleString('he-IL')}</span>
+					<span class="sr-label">{i18n.t('coin.donated')}</span>
+					<span class="sr-value gold">{money(coinAnim.amount)}</span>
 				</div>
 				<div class="summary-row">
-					<span class="sr-label">סה"כ בקופה כעת</span>
-					<span class="sr-value">₪{coinAnim.newFundTotal.toLocaleString('he-IL')}</span>
+					<span class="sr-label">{i18n.t('coin.fundNow')}</span>
+					<span class="sr-value">{money(coinAnim.newFundTotal)}</span>
 				</div>
 			</div>
-			<p class="summary-email">📧 הפרטים והקבלה יישלחו לאימייל שלך</p>
-			<p class="summary-countdown">חוזר לדף הבית בעוד {countdown}...</p>
+			<p class="summary-email">{i18n.t('coin.email')}</p>
+			<p class="summary-countdown">{i18n.t('coin.returning', { n: countdown })}</p>
 		</div>
 	</div>
 	{/if}
@@ -192,7 +196,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		direction: rtl;
 	}
 
 	/* ---- shared stage ---- */

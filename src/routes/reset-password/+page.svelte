@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { useI18n } from '$lib/i18n/context';
 
 	let { data, form } = $props();
+
+	const i18n = useI18n();
 
 	let password = $state('');
 	let confirm = $state('');
@@ -18,7 +21,7 @@
 		if (/[^a-zA-Z0-9א-ת]/.test(password) || (/[A-Z]/.test(password) && /[a-z]/.test(password))) s++;
 		return Math.min(s, 4);
 	});
-	const LABELS = ['', 'חלשה', 'סבירה', 'טובה', 'חזקה'];
+	const LABELS = $derived(['', i18n.t('reset.strength1'), i18n.t('reset.strength2'), i18n.t('reset.strength3'), i18n.t('reset.strength4')]);
 	const BAR = ['bg-white/10', 'bg-red-500', 'bg-amber-500', 'bg-lime-500', 'bg-green-500'];
 	const mismatch = $derived(confirm.length > 0 && password !== confirm);
 	const canSubmit = $derived(password.length >= 6 && password === confirm && !loading);
@@ -26,30 +29,30 @@
 </script>
 
 <svelte:head>
-	<title>בחירת סיסמה חדשה | המומחים של העם</title>
+	<title>{i18n.t('reset.pageTitle')} | {i18n.t('site.name')}</title>
 	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 
-<div class="flex min-h-[70vh] items-center justify-center px-4 py-12" dir="rtl">
-	<div class="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f172a] p-8 text-right shadow-2xl">
+<div class="flex min-h-[70vh] items-center justify-center px-4 py-12">
+	<div class="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f172a] p-8 text-start shadow-2xl">
 		{#if invalidLink}
 			<div class="mb-5 text-center">
 				<div class="mb-3 text-5xl">⏳</div>
-				<h1 class="text-2xl font-black text-white">הקישור כבר לא תקף</h1>
+				<h1 class="text-2xl font-black text-white">{i18n.t('reset.invalidTitle')}</h1>
 			</div>
 			<p class="mb-6 text-center text-sm leading-relaxed text-gray-300">
-				{form?.error || 'הקישור חסר או לא תקין.'}
-				זה קורה כשנשלח מייל חדש אחריו, או שכבר השתמשתם בו. בקשת קישור חדש לוקחת חצי דקה.
+				{form?.error || i18n.t('reset.missing')}
+				{i18n.t('reset.invalidBody')}
 			</p>
 			<a href="/forgot-password" class="block w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-4 py-3.5 text-center font-bold text-white transition">
-				שלחו לי קישור חדש
+				{i18n.t('reset.newLink')}
 			</a>
-			<p class="mt-5 text-center text-sm"><a href="/login" class="text-purple-400 hover:text-purple-300">← חזרה להתחברות</a></p>
+			<p class="mt-5 text-center text-sm"><a href="/login" class="text-purple-400 hover:text-purple-300">{i18n.t('forgot.backToLogin')}</a></p>
 		{:else}
 			<div class="mb-6 text-center">
 				<div class="mb-3 text-5xl">🔒</div>
-				<h1 class="text-2xl font-black text-white">בחירת סיסמה חדשה</h1>
-				<p class="mt-2 text-sm leading-relaxed text-gray-400">נשאר רק לבחור סיסמה — ומיד אחרי זה תהיו מחוברים.</p>
+				<h1 class="text-2xl font-black text-white">{i18n.t('reset.pageTitle')}</h1>
+				<p class="mt-2 text-sm leading-relaxed text-gray-400">{i18n.t('reset.chooseBody')}</p>
 			</div>
 
 			<form
@@ -66,7 +69,7 @@
 				<input type="hidden" name="code" value={data.code} />
 
 				<label class="block">
-					<span class="mb-1.5 block text-sm text-gray-300">סיסמה חדשה</span>
+					<span class="mb-1.5 block text-sm text-gray-300">{i18n.t('reset.newPw')}</span>
 					<span class="relative block">
 						<!-- svelte-ignore a11y_autofocus -->
 						<input
@@ -75,18 +78,18 @@
 							bind:value={password}
 							autocomplete="new-password"
 							minlength="6"
-							placeholder="לפחות 6 תווים"
+							placeholder={i18n.t('reset.atLeast6')}
 							autofocus
 							required
-							class="w-full rounded-xl border border-white/10 bg-[#1e293b] py-3 pr-4 pl-16 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+							class="w-full rounded-xl border border-white/10 bg-[#1e293b] py-3 ps-4 pe-16 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
 						/>
 						<button
 							type="button"
 							onclick={() => (show = !show)}
 							aria-pressed={show}
-							class="absolute top-1/2 left-2 -translate-y-1/2 rounded-lg bg-white/10 px-2.5 py-1 text-xs text-gray-200 hover:bg-white/20"
+							class="absolute top-1/2 end-2 -translate-y-1/2 rounded-lg bg-white/10 px-2.5 py-1 text-xs text-gray-200 hover:bg-white/20"
 						>
-							{show ? 'הסתר' : 'הצג'}
+							{show ? i18n.t('reset.hide') : i18n.t('reset.show')}
 						</button>
 					</span>
 				</label>
@@ -103,18 +106,18 @@
 				{/if}
 
 				<label class="block">
-					<span class="mb-1.5 block text-sm text-gray-300">הקלידו שוב לאימות</span>
+					<span class="mb-1.5 block text-sm text-gray-300">{i18n.t('reset.confirm')}</span>
 					<input
 						type={show ? 'text' : 'password'}
 						name="confirm"
 						bind:value={confirm}
 						autocomplete="new-password"
-						placeholder="אותה סיסמה"
+						placeholder={i18n.t('reset.samePw')}
 						required
 						class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
 					/>
 				</label>
-				{#if mismatch}<p role="alert" class="-mt-2 text-sm text-red-400">הסיסמאות עדיין לא זהות</p>{/if}
+				{#if mismatch}<p role="alert" class="-mt-2 text-sm text-red-400">{i18n.t('reset.mismatch')}</p>{/if}
 
 				{#if form?.error}
 					<div role="alert" class="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
@@ -127,7 +130,7 @@
 					disabled={!canSubmit}
 					class="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-4 py-3.5 font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					{loading ? 'שומר…' : 'שמירת הסיסמה והתחברות'}
+					{loading ? i18n.t('reset.saving') : i18n.t('reset.save')}
 				</button>
 			</form>
 		{/if}

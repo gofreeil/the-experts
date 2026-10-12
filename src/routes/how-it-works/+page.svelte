@@ -2,17 +2,21 @@
     import '$lib/components/home/home.css';
     import PageHero from '$lib/components/home/PageHero.svelte';
     import { STEPS } from '$lib/homeData';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
+    const steps = $derived(i18n.l(STEPS));
 </script>
 
-<div class="home" dir="rtl">
+<div class="home">
     <PageHero href="/how-it-works">
-        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new">העלו בעיה</a>{/snippet}
+        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new">{i18n.t('common.postProblem')}</a>{/snippet}
     </PageHero>
 
     <section class="section compact">
         <div class="inner">
             <ol class="steps">
-                {#each STEPS as s, i}
+                {#each steps as s, i}
                     <li class="step">
                         <div class="step-n">{i + 1}</div>
                         <div class="step-body">
@@ -28,12 +32,11 @@
 
             <p class="trust">
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2l6.5 2.5v5c0 4-2.7 6.8-6.5 8.5-3.8-1.7-6.5-4.5-6.5-8.5v-5z" /><path d="M7 10l2.2 2.2L13.2 8" /></svg>
-                <span>הפרס נשמר בנאמנות. הוא עובר למומחה רק אחרי שאישרתם שהבעיה נפתרה.</span>
+                <span>{i18n.t('how.trust')}</span>
             </p>
 
             <div class="cta">
-                <a class="btn btn-primary" href="/problems/new">העלו בעיה והציבו פרס</a>
-                <a class="btn btn-ghost" href="/problems">אני מומחה, להראות לי בעיות</a>
+                <a class="btn btn-primary" href="/problems/new">{i18n.t('home.cta')}</a>
             </div>
         </div>
     </section>
@@ -48,7 +51,7 @@
     .step h2 { font-size: 18px; font-weight: 800; }
     .step p { color: var(--fg-mute); font-size: 14.5px; margin-top: 2px; text-wrap: pretty; }
     .step ul { margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line-soft); }
-    .step li { position: relative; padding: 6px 16px 0 0; font-size: 14px; color: var(--fg); }
+    .step li { position: relative; padding: 6px 0 0; padding-inline-start: 16px; font-size: 14px; color: var(--fg); }
     .step li::before { content: ""; position: absolute; inset-inline-start: 0; top: 0.95em; width: 8px; height: 8px; border-radius: 50%; background: var(--honey); }
     .trust { display: flex; gap: 10px; align-items: flex-start; margin-top: 18px; color: var(--fg-mute); font-size: 14.5px; }
     .trust svg { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--ok); }

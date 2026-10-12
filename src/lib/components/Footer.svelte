@@ -1,9 +1,7 @@
 <script lang="ts">
-    import { t, locale } from "svelte-i18n";
-    import { get } from "svelte/store";
-    let _loc = $state(get(locale));
-    $effect(() => locale.subscribe(l => (_loc = l)));
-    const tFn = (k: string) => { void _loc; return get(t)(k); };
+    import { useI18n } from "$lib/i18n/context";
+
+    const i18n = useI18n();
 </script>
 
 <footer class="bg-[#0d1117] border-t border-white/10 py-0 md:py-2 mt-1 md:mt-0">
@@ -16,69 +14,69 @@
                 href="https://gofreeil.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="יוצאים לחירות – לכלל פעילות התנועה החברתית (נפתח בחלון חדש)"
+                aria-label={i18n.t("footer.movementAria")}
                 style="cursor: pointer;"
                 class="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
                 <img
                     src="/images/yotzim-lecherut.webp"
-                    alt="לוגו יוצאים לחירות"
+                    alt={i18n.t("footer.logoAlt")}
                     width="400"
                     height="228"
                     loading="lazy"
                     decoding="async"
-                    class="h-16 w-16 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
+                    class="h-28 w-28 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
 
                 <!-- Mobile: horizontal layout -->
                 <div
-                    class="flex md:hidden flex-col text-right leading-tight text-sm"
+                    class="flex md:hidden flex-col text-start leading-tight text-sm"
                 >
                     <p class="text-yellow-400 font-black text-sm">
-                        יוצאים לחירות
+                        {i18n.t("footer.movement")}
                     </p>
                     <p class="text-gray-300 font-normal text-xs">
-                        לכלל פעילות התנועה החברתית
+                        {i18n.t("footer.movementSub")}
                     </p>
                 </div>
 
                 <!-- Desktop: original layout -->
                 <div
-                    class="hidden md:flex md:flex-col text-right leading-tight gap-1"
+                    class="hidden md:flex md:flex-col text-start leading-tight gap-1"
                 >
                     <p
                         class="text-base md:text-lg text-gray-300 font-normal"
                     >
-                        לכלל פעילות התנועה החברתית
+                        {i18n.t("footer.movementSub")}
                     </p>
                     <p
                         class="text-lg md:text-xl font-black flex items-center gap-2 justify-end text-yellow-500"
                     >
-                        <span>👉</span> יוצאים לחירות
+                        <span>👉</span> {i18n.t("footer.movement")}
                     </p>
                 </div>
             </a>
 
             <!-- Center: Links -->
             <nav
-                aria-label="ניווט תחתון"
+                aria-label={i18n.t("footer.navLabel")}
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold flex-wrap justify-center"
             >
-                <a href="/about" class="hover:text-white transition-colors">{tFn("about_us")}</a>
+                <a href="/about" class="hover:text-white transition-colors">{i18n.t("footer.about")}</a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
                 <a href="/about/legal" class="hover:text-white transition-colors">
-                    <span class="md:hidden block">תנאי שימוש<br />הצהרת נגישות וכו'</span>
-                    <span class="hidden md:inline-block whitespace-nowrap">תנאי שימוש, הצהרת נגישות וכו'</span>
+                    <span class="md:hidden block">{@html i18n.t("footer.legalMobile")}</span>
+                    <span class="hidden md:inline-block whitespace-nowrap">{i18n.t("footer.legal")}</span>
                 </a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
-                <a href="mailto:freedomhasbegun@gmail.com" class="hover:text-white transition-colors" aria-label="צור קשר – שלח אימייל">{tFn("contact_us")}</a>
+                <a href="mailto:freedomhasbegun@gmail.com" class="hover:text-white transition-colors" aria-label={i18n.t("footer.contactAria")}>{i18n.t("footer.contact")}</a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
-                <a href="/about/advertise" class="hover:text-white transition-colors">פרסם אצלנו</a>
+                <a href="/about/advertise" class="hover:text-white transition-colors">{i18n.t("footer.advertise")}</a>
             </nav>
 
             <!-- Left: Copyright -->
-            <p class="text-gray-400 font-bold text-[10px] md:text-lg text-center md:text-right pb-4 md:pb-0">
-                &copy; {new Date().getFullYear()} {tFn("all_rights_reserved")}
+            <p class="text-gray-400 font-bold text-[10px] md:text-lg text-center md:text-start pb-4 md:pb-0">
+                &copy; {new Date().getFullYear()} {i18n.t("footer.rights")}
             </p>
         </div>
     </div>

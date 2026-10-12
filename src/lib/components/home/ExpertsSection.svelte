@@ -4,32 +4,36 @@
     import { EXPERTS } from '$lib/expertsData';
     import { teamBySlug } from '$lib/teamsData';
     import SectionHead from './SectionHead.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // preview = גרסת דף הבית (4 מומחים). הדף המלא מציג את כולם עם סינון לפי תחום (?cat=...).
     let { preview = false }: { preview?: boolean } = $props();
 
+    const i18n = useI18n();
+    const experts = $derived(i18n.l(EXPERTS));
+
     const fromUrl = page.url.searchParams.get('cat');
     let cat = $state(fromUrl && CATS.some((c) => c.slug === fromUrl) ? fromUrl : 'all');
-    const list = $derived(preview ? EXPERTS.slice(0, 4) : EXPERTS.filter((e) => cat === 'all' || e.c === cat));
+    const list = $derived(preview ? experts.slice(0, 4) : experts.filter((e) => cat === 'all' || e.c === cat));
 </script>
 
 <section class="section" id="experts">
     <div class="inner">
         {#if preview}
-            <SectionHead title="המומחים המדורגים ביותר" lede="הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות. אפשר לראות לכל מומחה את ההיסטוריה המלאה." demo />
+            <SectionHead title={i18n.t('experts.topTitle')} lede={i18n.t('experts.topLede')} demo />
         {:else}
             <div class="toolbar">
-                <div class="chips" role="group" aria-label="סינון לפי תחום">
-                    <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => (cat = 'all')}>הכל <span class="num cnt">{EXPERTS.length}</span></button>
+                <div class="chips" role="group" aria-label={i18n.t('common.filterByField')}>
+                    <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => (cat = 'all')}>{i18n.t('common.all')} <span class="num cnt">{EXPERTS.length}</span></button>
                     {#each CATS as c}
                         <button class="chip" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => (cat = cat === c.slug ? 'all' : c.slug)}>
-                            <span class="dot" style="--c:{catColor(c.slug)}"></span>{c.short}
+                            <span class="dot" style="--c:{catColor(c.slug)}"></span>{catShort(c.slug, i18n.locale)}
                         </button>
                     {/each}
                 </div>
-                {#if DEMO_DATA}<span class="demo-tag" style="margin:0">נתוני הדגמה</span>{/if}
+                {#if DEMO_DATA}<span class="demo-tag" style="margin:0">{i18n.t('common.demoData')}</span>{/if}
             </div>
-            <p class="rank-note">הדירוג מבוסס על בעיות שאושרו כפתורות, לא על כמות ההצעות.</p>
+            <p class="rank-note">{i18n.t('experts.rankNote')}</p>
         {/if}
 
         <div class="experts">
@@ -39,29 +43,29 @@
                         <span class="mini-av big" style="--c2:{catColor(e.c)}">{e.ini}</span>
                         <div class="who">
                             <b><a class="cv-link" href="/experts/{e.slug}">{e.n}</a></b>
-                            <small><span class="dot" style="--c:{catColor(e.c)}"></span>{teamBySlug(e.c)?.name ?? catShort(e.c)}</small>
+                            <small><span class="dot" style="--c:{catColor(e.c)}"></span>{teamBySlug(e.c, i18n.locale)?.name ?? catShort(e.c, i18n.locale)}</small>
                         </div>
                     </div>
                     <div class="ex-stats">
-                        <div><b class="num">{e.solved}</b><span>בעיות שנפתרו</span></div>
-                        <div><b class="g"><span class="num">{fmtShort(e.earned)}</span></b><span>הרוויח בכוורת</span></div>
-                        <div><b class="num">{e.rate}</b><span>דירוג</span></div>
-                        <div><b>{e.rt}</b><span>זמן תגובה</span></div>
+                        <div><b class="num">{e.solved}</b><span>{i18n.t('experts.statSolved')}</span></div>
+                        <div><b class="g"><span class="num">{fmtShort(e.earned)}</span></b><span>{i18n.t('experts.statEarned')}</span></div>
+                        <div><b class="num">{e.rate}</b><span>{i18n.t('experts.statRating')}</span></div>
+                        <div><b>{e.rt}</b><span>{i18n.t('experts.statResponse')}</span></div>
                     </div>
                     <div class="ex-foot">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8" /><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></svg>
-                        יד מורמת כרגע על {e.open} בעיות
-                        <span class="cv">לרזומה ←</span>
+                        {i18n.tn('experts.handsNow', e.open)}
+                        <span class="cv">{i18n.t('experts.toResume')}</span>
                     </div>
                 </article>
             {:else}
-                <div class="empty">אין עדיין מומחים בתחום הזה בדוגמה.</div>
+                <div class="empty">{i18n.t('experts.empty')}</div>
             {/each}
         </div>
 
         <div class="join">
-            <p><b>מומחים בתחום שלכם?</b> מגישים תעודות וניסיון, עוברים אימות, ומתחילים להרים יד על בעיות עם פרס. אין דמי הצטרפות.</p>
-            <a class="btn btn-primary" href="/register">הצטרפו כמומחים</a>
+            <p><b>{i18n.t('experts.joinQ')}</b> {i18n.t('experts.joinBody')}</p>
+            <a class="btn btn-primary" href="/register">{i18n.t('experts.joinCta')}</a>
         </div>
     </div>
 </section>

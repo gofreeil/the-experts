@@ -5,30 +5,32 @@ import { isOwnerCode } from '$lib/server/adsCode';
 import { notifyAdminsNewAd, notifyOwnerCodeUse } from '$lib/server/adsNotify';
 import { adPayloadIssue } from '$lib/server/adBudget';
 import { normalizePlanDays, planLabelWithPrice } from '$lib/adPlans';
+import { createTranslator } from '$lib/i18n/translate';
 
 // קליטת פרסומת חדשה מהבילדר — נשמרת ב-Strapi במצב "ממתינה לאישור".
 // חובה להיות מחובר: מודעה בלי submitted_by היא מודעה בלי בעלים — המפרסם
 // לא יכול לראות את הביצועים שלה, לערוך אותה או לחדש אותה לעולם.
 export const POST: RequestHandler = async ({ request, locals }) => {
+    const { t } = createTranslator(locals.locale);
     const session = await locals.auth();
     if (!session?.user) {
-        throw error(401, 'צריך להתחבר לפני השליחה — כך הפרסומת נשמרת על החשבון שלכם ותוכלו לעקוב אחריה ולערוך אותה');
+        throw error(401, t('api.loginToSubmit'));
     }
 
     let payload: any;
     try {
         payload = await request.json();
     } catch {
-        throw error(400, 'גוף הבקשה חייב להיות JSON תקין');
+        throw error(400, t('api.badJson'));
     }
 
     for (const k of ['title', 'subtitle', 'mainImage', 'gradient']) {
         if (!payload?.[k] || typeof payload[k] !== 'string') {
-            throw error(400, `חסר שדה: ${k}`);
+            throw error(400, t('api.missingField', { field: k }));
         }
     }
     if (!payload.landing || typeof payload.landing !== 'object') {
-        throw error(400, 'חסר אובייקט landing');
+        throw error(400, t('api.missingLanding'));
     }
 
     // אכיפת התקרות גם בשרת — הבילדר אוכף בצד הלקוח, אבל בקשה ישירה עוקפת אותו
@@ -88,8 +90,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         console.error('ads/submit failed:', err);
         // תקרת koa-body של Strapi (~1MB) — שגיאה שהמפרסם יכול לתקן בעצמו
         if (err instanceof Error && err.message.includes('→ 413')) {
-            throw error(413, 'התמונות כבדות מדי — הקטינו תמונה ונסו שוב');
+            throw error(413, t('api.tooHeavy'));
         }
-        throw error(502, 'השליחה נכשלה — נסו שוב בעוד רגע');
+        throw error(502, t('api.submitFailed'));
     }
 };

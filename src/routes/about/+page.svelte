@@ -5,46 +5,55 @@
     import { ABOUT_FAQ, SITE_NAME, SITE_URL } from "$lib/aboutFaq";
     import { faqSchema, aboutPageSchema } from "$lib/seo";
     import JsonLd from "$lib/components/JsonLd.svelte";
-    import { teams } from "$lib/teamsData";
+    import { teamsFor } from "$lib/teamsData";
+    import { useI18n } from "$lib/i18n/context";
 
-    const description =
-        "המומחים של העם — כוורת של צוותי מומחים מתנדבים לפי תחום ולוח בעיות לפתרון עם תקציב. חלק מרשת האתרים של התנועה החברתית יוצאים לחירות.";
+    const i18n = useI18n();
+    const teams = $derived(teamsFor(i18n.locale));
+    const siteName = $derived(i18n.l(SITE_NAME));
+    const faq = $derived(i18n.l(ABOUT_FAQ));
 
-    const schemas = [
-        aboutPageSchema({ name: `אודותינו | ${SITE_NAME}`, url: `${SITE_URL}/about`, description }),
-        faqSchema(ABOUT_FAQ)
-    ];
+    const description = $derived(i18n.t("about.metaDesc"));
+
+    const schemas = $derived([
+        aboutPageSchema({
+            name: `${i18n.t("about.title")} | ${siteName}`,
+            url: `${SITE_URL}/about`,
+            description,
+            siteName,
+            orgName: i18n.t("footer.movement"),
+            locale: i18n.locale
+        }),
+        faqSchema(faq, i18n.locale)
+    ]);
 </script>
 
 <svelte:head>
-    <title>אודותינו | {SITE_NAME}</title>
+    <title>{i18n.t("about.title")} | {siteName}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href="{SITE_URL}/about" />
 </svelte:head>
 
 <JsonLd schema={schemas} />
 
-<div class="mx-auto max-w-3xl px-4 py-4 md:py-12" dir="rtl">
+<div class="mx-auto max-w-3xl px-4 py-4 md:py-12">
     <div class="rounded-3xl border border-[#3b5794] bg-[#16264d] shadow-2xl overflow-hidden">
 
         <!-- כותרת + פסקת פתיחה -->
         <div class="p-4 md:p-10 text-center">
             <div class="text-4xl mb-2 md:text-5xl md:mb-4">🐝</div>
             <h1 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-3">
-                אודותינו
+                {i18n.t("about.title")}
             </h1>
             <p class="text-gray-300 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                המומחים של העם הוא אתר שמרכז צוותי מומחים מתנדבים לפי תחום — "כוורת המומחים" —
-                שתפקידם לסייע לתושבים ולוועדי השכונות, ולצידה לוח "בעיות לפתרון" שבו כל אחד
-                יכול להעלות בעיה עם תקציב ולקבל הצעות פתרון ממומחים. האתר הוא חלק מרשת
-                האתרים של התנועה החברתית "יוצאים לחירות", והשימוש בו חינם.
+                {i18n.t("about.intro")}
             </p>
         </div>
 
         <!-- צוותי הכוורת -->
         <div class="mx-4 md:mx-12 border-t border-[#3b5794]"></div>
         <div class="p-4 md:p-10">
-            <h2 class="text-2xl font-black text-white mb-3 md:mb-4 text-center">צוותי המומחים</h2>
+            <h2 class="text-2xl font-black text-white mb-3 md:mb-4 text-center">{i18n.t("about.teams")}</h2>
             <ul class="flex flex-wrap justify-center gap-2">
                 {#each teams as t (t.slug)}
                     <li class="rounded-full border px-3 py-1 text-sm font-bold text-gray-200"
@@ -55,10 +64,10 @@
             </ul>
             <div class="mt-4 md:mt-6 flex flex-wrap justify-center gap-2 md:gap-3">
                 <a href="/" class="rounded-full bg-gradient-to-l from-amber-500 to-orange-600 px-5 py-2 text-sm font-black text-white shadow-lg hover:opacity-90 transition-opacity">
-                    לכוורת המומחים
+                    {i18n.t("about.toHive")}
                 </a>
                 <a href="/problems" class="rounded-full border border-amber-400/50 px-5 py-2 text-sm font-bold text-amber-200 hover:bg-amber-400/10 transition-colors">
-                    ללוח בעיות לפתרון
+                    {i18n.t("about.toBoard")}
                 </a>
             </div>
         </div>
@@ -66,9 +75,9 @@
         <!-- שאלות ותשובות -->
         <div class="mx-4 md:mx-12 border-t border-[#3b5794]"></div>
         <section id="faq" aria-labelledby="faq-title" class="p-4 md:p-10">
-            <h2 id="faq-title" class="text-2xl font-black text-white mb-3 md:mb-6 text-center">שאלות ותשובות</h2>
+            <h2 id="faq-title" class="text-2xl font-black text-white mb-3 md:mb-6 text-center">{i18n.t("about.faq")}</h2>
             <div class="flex flex-col gap-2 md:gap-3">
-                {#each ABOUT_FAQ as item, i (item.q)}
+                {#each faq as item, i (item.q)}
                     <details class="faq-item group rounded-2xl border border-[#3b5794] bg-[#0f172a]/60 open:bg-[#0f172a]" open={i < 2}>
                         <summary class="cursor-pointer list-none select-none px-4 py-3 md:px-5 md:py-4 text-base md:text-lg font-bold text-amber-200 flex items-center justify-between gap-3">
                             <span>{item.q}</span>
@@ -83,11 +92,11 @@
         <!-- קישורים משלימים -->
         <div class="mx-4 md:mx-12 border-t border-[#3b5794]"></div>
         <div class="p-4 md:p-8 text-center text-sm text-gray-400">
-            <a href="/about/advertise" class="text-amber-300 hover:text-white transition-colors font-bold">פרסם אצלנו</a>
+            <a href="/about/advertise" class="text-amber-300 hover:text-white transition-colors font-bold">{i18n.t("footer.advertise")}</a>
             <span class="mx-2 text-gray-600" aria-hidden="true">|</span>
-            <a href="/about/legal" class="text-amber-300 hover:text-white transition-colors font-bold">תנאי שימוש והצהרת נגישות</a>
+            <a href="/about/legal" class="text-amber-300 hover:text-white transition-colors font-bold">{i18n.t("about.legal")}</a>
             <span class="mx-2 text-gray-600" aria-hidden="true">|</span>
-            <a href="https://gofreeil.com/" target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:text-white transition-colors font-bold">יוצאים לחירות</a>
+            <a href="https://gofreeil.com/" target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:text-white transition-colors font-bold">{i18n.t("footer.movement")}</a>
         </div>
     </div>
 </div>

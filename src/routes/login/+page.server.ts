@@ -2,6 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { oauthEnabled } from '../../auth';
 import { getStrapiMe, bestStrapiName, friendlyName } from '$lib/server/strapiAuth';
+import { createTranslator } from '$lib/i18n/translate';
 
 export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 	const session = await locals.auth();
@@ -16,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 	if (sharedJwt) {
 		try {
 			const me = await getStrapiMe(sharedJwt);
-			if (me?.email) ssoName = friendlyName(bestStrapiName(me), me.email) || 'חבר הקהילה';
+			if (me?.email) ssoName = friendlyName(bestStrapiName(me), me.email) || createTranslator(locals.locale).t('login.memberFallback');
 		} catch {
 			/* Strapi לא זמין - מציגים את הדף הרגיל */
 		}

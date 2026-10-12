@@ -1,7 +1,8 @@
 <script lang="ts">
 	import "../app.css";
 	import "flag-icons/css/flag-icons.min.css";
-	import "$lib/i18n";
+	import { setI18n } from "$lib/i18n/context";
+	import { LOCALE_META } from "$lib/i18n";
 	import Header from "$lib/components/Header.svelte";
 	import RightAdBanner from "$lib/components/RightAdBanner.svelte";
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
@@ -19,6 +20,16 @@
 
 	let { children, data } = $props();
 
+	// השפה מגיעה מהשרת (+layout.server.ts ← hooks.server.ts) ולכן כבר נכונה ב-SSR.
+	// ההקשר קורא את data.locale בכל שימוש, כך שהחלפת שפה מעדכנת את כל האתר.
+	const i18n = setI18n(() => data.locale);
+
+	// מחליף שפה בלי רענון מלא: ה-SSR קבע את lang/dir הראשוניים, וכאן הם מתעדכנים בניווט הבא
+	$effect(() => {
+		document.documentElement.lang = i18n.locale;
+		document.documentElement.dir = i18n.dir;
+	});
+
 	beforeNavigate(() => {
 		closeAdPopup();
 	});
@@ -30,14 +41,21 @@
 </script>
 
 <svelte:head>
-	<title>המומחים של העם</title>
+	<title>{i18n.t('site.name')}</title>
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={i18n.t('site.name')} />
+	<meta property="og:description" content={i18n.t('site.name')} />
+	<meta property="og:locale" content={LOCALE_META[i18n.locale].ogLocale} />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content={i18n.t('site.name')} />
+	<meta name="twitter:description" content={i18n.t('site.name')} />
 </svelte:head>
 
-<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+<a href="#main-content" class="skip-link">{i18n.t('site.skipLink')}</a>
 
 <!-- פס התקדמות בזמן ניווט: SvelteKit נשאר על הדף הקודם עד שהחדש מוכן, ובלי סימן כלשהו הלחיצה מרגישה כאילו לא קרה כלום. הפס נדלק מיידית עם הלחיצה — משוב תוך כדי הטעינה, גם במחיר הבהוב קצר בניווט מהיר. -->
 {#if navigating.to}
-	<div class="nav-progress" role="status" aria-label="טוען…"></div>
+	<div class="nav-progress" role="status" aria-label={i18n.t('site.loading')}></div>
 {/if}
 
 <!-- מסך פתיחה אחרי הרשמה / זיהוי ראשון — גלובלי, מופעל ע"י ?welcome ב-URL -->
@@ -109,6 +127,14 @@
 	.main-content {
 		flex: 1;
 		min-width: 0;
+	}
+
+	/* באנגלית (LTR) הטורים נשארים במקומם הפיזי: הפרסומות בימין ואתרי הרשת בשמאל,
+	   כפי שמובטח למפרסמים ("הטור הימני"). בנייד הם ממילא בעמודה אחת. */
+	@media (min-width: 1025px) {
+		:global(html[dir='ltr']) .layout-container {
+			flex-direction: row-reverse;
+		}
 	}
 
 	@media (max-width: 1024px) {

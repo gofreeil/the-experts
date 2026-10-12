@@ -4,17 +4,21 @@
     import PaidSection from '$lib/components/home/PaidSection.svelte';
     import LedgerTable from '$lib/components/home/LedgerTable.svelte';
     import { LEDGER, DEMO_DATA } from '$lib/homeData';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     const FLOW = [
-        { t: 'נשמר בנאמנות', d: 'ברגע שמציבים פרס הכסף נשמר, ולא עובר לאף אחד.' },
-        { t: 'משתחרר באישור', d: 'הפרס עובר למומחה רק אחרי שמי שהעלה את הבעיה אישר שהיא נפתרה.' },
-        { t: 'מתועד לציבור', d: 'כל תשלום מופיע ברשימת הפתרונות, ואפשר ללמוד ממנו.' }
+        { t: { he: 'נשמר בנאמנות', en: 'Held in escrow' }, d: { he: 'ברגע שמציבים פרס הכסף נשמר, ולא עובר לאף אחד.', en: 'As soon as a reward is set, the money is held, and goes to no one.' } },
+        { t: { he: 'משתחרר באישור', en: 'Released on approval' }, d: { he: 'הפרס עובר למומחה רק אחרי שמי שהעלה את הבעיה אישר שהיא נפתרה.', en: 'The reward goes to the expert only after whoever posted the problem confirms it was solved.' } },
+        { t: { he: 'מתועד לציבור', en: 'Documented publicly' }, d: { he: 'כל תשלום מופיע ברשימת הפתרונות, ואפשר ללמוד ממנו.', en: 'Every payment appears in the solutions list, so you can learn from it.' } }
     ];
+    const flow = $derived(i18n.l(FLOW));
 </script>
 
-<div class="home" dir="rtl">
+<div class="home">
     <PageHero href="/paid">
-        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new">העלו בעיה</a>{/snippet}
+        {#snippet actions()}<a class="btn btn-primary btn-sm" href="/problems/new">{i18n.t('common.postProblem')}</a>{/snippet}
     </PageHero>
 
     <PaidSection />
@@ -23,22 +27,22 @@
         <div class="inner">
             <div class="sec-head">
                 <div>
-                    <div class="eyebrow">תשלומים אחרונים{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</div>
-                    <h2 class="title">מי קיבל, על מה, ובכמה</h2>
+                    <div class="eyebrow">{i18n.t('paid.latestPayments')}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</div>
+                    <h2 class="title">{i18n.t('paid.whoWhatHow')}</h2>
                 </div>
-                <a class="btn btn-ghost btn-sm" href="/solved">לכל הפתרונות</a>
+                <a class="btn btn-ghost btn-sm" href="/solved">{i18n.t('paid.allSolutions')}</a>
             </div>
-            <LedgerTable rows={LEDGER} label="תשלומים אחרונים לפותרי בעיות" />
+            <LedgerTable rows={LEDGER} label={i18n.t('paid.ledgerLabel')} />
         </div>
     </section>
 
     <section class="section compact">
         <div class="inner">
             <div class="sec-head">
-                <div><div class="eyebrow">איך הכסף עובר</div></div>
+                <div><div class="eyebrow">{i18n.t('paid.howMoneyMoves')}</div></div>
             </div>
             <ol class="flow">
-                {#each FLOW as f, i}
+                {#each flow as f, i}
                     <li><span class="n">{i + 1}</span><div><b>{f.t}</b><p>{f.d}</p></div></li>
                 {/each}
             </ol>

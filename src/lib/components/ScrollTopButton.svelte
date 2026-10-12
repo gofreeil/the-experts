@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { useI18n } from '$lib/i18n/context';
+
+	const i18n = useI18n();
 
 	// כפתור "חזרה למעלה" לנייד: הדפים ארוכים, וגלילה חזרה באצבע מעייפת.
 	// מופיע רק אחרי גלילה של כמה מסכים, ובלי להיות מוצג בדסקטופ.
@@ -21,7 +24,7 @@
 </script>
 
 {#if show}
-	<button type="button" class="to-top" onclick={toTop} aria-label="חזרה לראש הדף">
+	<button type="button" class="to-top" onclick={toTop} aria-label={i18n.t('common.backToTop')}>
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 			<path d="M6 14l6-6 6 6" />
 		</svg>

@@ -5,17 +5,21 @@
     import ArchiveSection from '$lib/components/home/ArchiveSection.svelte';
     import FloorLink from '$lib/components/home/FloorLink.svelte';
     import { MEETUP } from '$lib/homeData';
+    import { navItem } from '$lib/navMenu';
+    import { useI18n } from '$lib/i18n/context';
 
-    const ABOUT = [
-        { t: 'מתי', d: `אחת ל-${MEETUP.periodDays} ימים, בזום, 90 דקות.` },
-        { t: 'איזה בעיות עולות', d: 'הבעיות לדיון נבחרות לפי גובה הפרס והצבעת הקהילה.' },
-        { t: 'מה יוצא מזה', d: 'בסוף המפגש מצביעים איזה פתרון מקבל את הפרס.' }
-    ];
+    const i18n = useI18n();
+
+    const about = $derived([
+        { t: i18n.t('meetup.aboutWhen'), d: i18n.t('meetup.aboutWhenBody', { days: MEETUP.periodDays }) },
+        { t: i18n.t('meetup.aboutWhich'), d: i18n.t('meetup.aboutWhichBody') },
+        { t: i18n.t('meetup.aboutResult'), d: i18n.t('meetup.aboutResultBody') }
+    ]);
 </script>
 
-<div class="home" dir="rtl">
+<div class="home">
     <PageHero href="/meetup">
-        {#snippet actions()}<a class="btn btn-ghost btn-sm" href="/archive">מפגשים קודמים</a>{/snippet}
+        {#snippet actions()}<a class="btn btn-ghost btn-sm" href="/archive">{i18n.t('meetup.previous')}</a>{/snippet}
     </PageHero>
 
     <MeetupSection />
@@ -23,19 +27,19 @@
     <section class="section alt compact">
         <div class="inner">
             <div class="sec-head">
-                <div><div class="eyebrow">על המפגש</div></div>
-                <a class="btn btn-ghost btn-sm" href="/archive">לארכיון המפגשים</a>
+                <div><div class="eyebrow">{i18n.t('meetup.about')}</div></div>
+                <a class="btn btn-ghost btn-sm" href="/archive">{i18n.t('meetup.toArchive')}</a>
             </div>
             <ul class="about">
-                {#each ABOUT as a}
+                {#each about as a}
                     <li><b>{a.t}</b><p>{a.d}</p></li>
                 {/each}
             </ul>
         </div>
     </section>
 
-    <ArchiveSection preview headTitle="ארכיון ודיונים" />
-    <FloorLink href="/archive" label="ארכיון ודיונים" note="כל המפגשים הקודמים והדיונים הפעילים" />
+    <ArchiveSection preview headTitle={i18n.l(navItem('/archive').title)} />
+    <FloorLink href="/archive" label={i18n.l(navItem('/archive').title)} note={i18n.t('meetup.archiveNote')} />
 </div>
 
 <style>

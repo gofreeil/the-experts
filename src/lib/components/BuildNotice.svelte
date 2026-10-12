@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { _ } from "svelte-i18n";
+	import { useI18n } from "$lib/i18n/context";
+
+	const i18n = useI18n();
 </script>
 
 <!-- אזהרה גלובלית: האתר בבנייה ומשמש לתצוגה בלבד — פס דק בראש העמוד (לא דביק, נגלל החוצה) -->
 <div class="build-notice" role="note">
 	<span aria-hidden="true">🚧</span>
-	<span>{$_("beta_notice")}</span>
+	<span>{i18n.t("site.buildNotice")}</span>
 </div>
 
 <style>

@@ -11,14 +11,18 @@
         RENEW_WARNING_DAYS, type AdStatusKind,
     } from '$lib/adOwner';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
+    import { planShortLabel } from '$lib/adPlans';
+    import { useI18n } from '$lib/i18n/context';
 
     let { data } = $props();
+
+    const i18n = useI18n();
     const ad = $derived(data.ad);
     const lp = $derived(data.ad.landing ?? {});
     const totals = $derived(data.stats.totals);
     const days = $derived(data.stats.days);
 
-    const sv = $derived(statusView(ad.status as AdStatusKind, ad.expiresAt));
+    const sv = $derived(statusView(ad.status as AdStatusKind, ad.expiresAt, false, i18n.locale));
     const left = $derived(daysLeft(ad.expiresAt));
     const renew = $derived(
         needsRenewal(ad.status as AdStatusKind, ad.expiresAt) ||
@@ -37,7 +41,7 @@
         Math.max(1, ...days.map((d: { impressions: number }) => d.impressions))
     );
     function dayLabel(date: string): string {
-        return new Date(date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+        return i18n.date(date, i18n.locale === 'he' ? { day: '2-digit', month: '2-digit' } : { day: 'numeric', month: 'short' });
     }
 
     // ===== העברה לבונה לעריכה מחדש =====
@@ -88,7 +92,7 @@
             localStorage.setItem(EDIT_KEY, ad.id);
         } catch {
             // מקום אחסון מלא (תמונות data-URI כבדות) — לא נשלח לבונה חצי-טיוטה
-            editError = 'לא הצלחנו לפתוח את הפרסומת לעריכה בדפדפן הזה. נסו לפנות מקום (היסטוריה/אחסון) או להשתמש בדפדפן אחר.';
+            editError = i18n.t('detail.editFailed');
             return;
         }
         void goto('/about/advertise/builder');
@@ -97,15 +101,15 @@
     const WA_NUMBER = '972587448061';
     const renewWa = $derived(
         `https://wa.me/${WA_NUMBER}?text=` +
-        encodeURIComponent(`שלום! אני רוצה לחדש את הפרסום של "${ad.title}" במומחים של העם 🙂`)
+        encodeURIComponent(i18n.t('detail.renewWaText', { title: ad.title }))
     );
 </script>
 
-<svelte:head><title>ניהול הפרסומת {ad.title} | המומחים של העם</title></svelte:head>
+<svelte:head><title>{i18n.t('detail.pageTitle', { title: ad.title })} | {i18n.t('site.name')}</title></svelte:head>
 
-<section class="mx-auto max-w-3xl px-3 py-6 md:px-4" dir="rtl">
+<section class="mx-auto max-w-3xl px-3 py-6 md:px-4">
     <a href="/about/advertise/manage" class="inline-block rounded-full border border-[#3b5794] bg-[#1e293b] px-3.5 py-1.5 text-sm font-bold text-gray-100 shadow-md transition-colors hover:bg-[#334155] hover:text-white">
-        → לכל הנכסים שלי
+        {i18n.back} {i18n.t('detail.allMine')}
     </a>
 
     <!-- כרטיס הנכס: תצוגה מקדימה + מצב הפרסום -->
@@ -122,31 +126,31 @@
                 <p class="mt-1.5 text-xs text-gray-400">{sv.hint}</p>
 
                 <dl class="mt-3.5 grid grid-cols-1 gap-x-6 gap-y-1.5 border-t border-[#3b5794] pt-3.5 text-sm sm:grid-cols-2">
-                    <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">מסלול:</dt><dd class="font-bold text-white">{data.plan.label} ({data.plan.price} ₪)</dd></div>
+                    <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">{i18n.t('detail.plan')}</dt><dd class="font-bold text-white">{planShortLabel(data.plan, i18n.locale)} ({data.plan.price} ₪)</dd></div>
                     {#if ad.expiresAt}
-                        <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">בתוקף עד:</dt><dd class="font-bold text-white">{fmtDate(ad.expiresAt)}</dd></div>
+                        <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">{i18n.t('detail.validUntil')}</dt><dd class="font-bold text-white">{fmtDate(ad.expiresAt, i18n.locale)}</dd></div>
                     {/if}
-                    <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">נשלחה:</dt><dd class="font-bold text-white">{fmtDate(ad.submittedAt)}</dd></div>
+                    <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">{i18n.t('detail.submitted')}</dt><dd class="font-bold text-white">{fmtDate(ad.submittedAt, i18n.locale)}</dd></div>
                     {#if ad.editedAt}
-                        <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">עודכנה:</dt><dd class="font-bold text-white">{fmtDate(ad.editedAt)}</dd></div>
+                        <div class="flex gap-1.5"><dt class="flex-shrink-0 text-gray-400">{i18n.t('detail.updated')}</dt><dd class="font-bold text-white">{fmtDate(ad.editedAt, i18n.locale)}</dd></div>
                     {/if}
                 </dl>
 
                 {#if ad.status === 'rejected' && ad.rejectionReason}
                     <p class="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
-                        <span class="font-bold">סיבת הדחייה:</span> {ad.rejectionReason}
+                        <span class="font-bold">{i18n.t('detail.rejectionReason')}</span> {ad.rejectionReason}
                     </p>
                 {/if}
 
                 <div class="mt-4 flex flex-wrap gap-2">
                     <button type="button" onclick={editInBuilder}
                         class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-pink-600 px-4 py-2 text-sm font-bold text-white transition hover:opacity-90">
-                        ✏️ ערוך את הפרסומת
+                        ✏️ {i18n.t('detail.edit')}
                     </button>
                     {#if ad.status === 'approved'}
                         <a href="/ads/{ad.id}" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-2 rounded-xl bg-[#1e293b] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#334155]">
-                            🔗 לדף הנחיתה
+                            🔗 {i18n.t('detail.toLanding')}
                         </a>
                     {/if}
                 </div>
@@ -178,22 +182,22 @@
         <div class="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 md:p-5">
             <p class="text-base font-black text-amber-100">
                 {#if isExpired(ad.status as AdStatusKind, ad.expiresAt)}
-                    ⏳ הפרסום הסתיים — המודעה ירדה מהאתר
+                    ⏳ {i18n.t('detail.ended')}
                 {:else}
-                    ⏳ הפרסום מסתיים בעוד {left} ימים
+                    ⏳ {i18n.tn('detail.endsIn', left ?? 0)}
                 {/if}
             </p>
             <p class="mt-1 text-sm leading-relaxed text-amber-100/80">
-                חידוש שומר על אותה מודעה ואותם נתונים — בלי לבנות מחדש.
+                {i18n.t('detail.renewNote')}
             </p>
             <div class="mt-3 flex flex-wrap gap-2">
                 <a href={renewWa} target="_blank" rel="noopener noreferrer"
                     class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-bold text-white transition hover:opacity-90">
-                    💬 לחידוש בוואטסאפ
+                    💬 {i18n.t('detail.renewWa')}
                 </a>
                 <a href="/about/advertise#plans"
                     class="inline-flex items-center gap-2 rounded-xl bg-[#1e293b] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#334155]">
-                    המחירון והמסלולים
+                    {i18n.t('detail.plansLink')}
                 </a>
             </div>
         </div>
@@ -201,9 +205,9 @@
 
     <!-- מדדים -->
     <section class="mt-4 rounded-2xl border border-[#3b5794] bg-[#16264d] p-4 md:p-5">
-        <h2 class="text-lg font-black text-white">📊 הביצועים שלך</h2>
+        <h2 class="text-lg font-black text-white">📊 {i18n.t('detail.performance')}</h2>
         <p class="mt-1 text-xs text-gray-400">
-            נמדד מרגע העלאת המודעה. צפייה נספרת פעם אחת לכל מבקר.
+            {i18n.t('detail.perfNote')}
         </p>
 
         <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -214,17 +218,17 @@
                     <p class="mt-0.5 text-[11px] leading-tight text-gray-400">{hint}</p>
                 </div>
             {/snippet}
-            {@render stat('צפיות', totals.impressions, 'המודעה נראתה', 'text-white')}
-            {@render stat('הקלקות', totals.clicks, `אחוז הקלקה ${ctr(totals.clicks, totals.impressions)}`, 'text-blue-300')}
-            {@render stat('דף הנחיתה', totals.landing, 'נכנסו לדף שלך', 'text-purple-300')}
-            {@render stat('פניות', totals.leads, 'טלפון · וואטסאפ · אתר', 'text-emerald-300')}
+            {@render stat(i18n.t('manage.views'), totals.impressions, i18n.t('detail.viewsHint'), 'text-white')}
+            {@render stat(i18n.t('manage.clicks'), totals.clicks, i18n.t('detail.ctrHint', { ctr: ctr(totals.clicks, totals.impressions) }), 'text-blue-300')}
+            {@render stat(i18n.t('manage.landing'), totals.landing, i18n.t('detail.landingHint'), 'text-purple-300')}
+            {@render stat(i18n.t('manage.leads'), totals.leads, i18n.t('detail.leadsHint'), 'text-emerald-300')}
         </div>
 
         {#if days.length > 0}
-            <h3 class="mt-5 text-sm font-bold text-gray-200">צפיות ב-{data.statsDays} הימים האחרונים</h3>
+            <h3 class="mt-5 text-sm font-bold text-gray-200">{i18n.t('detail.viewsLastDays', { n: data.statsDays })}</h3>
             <div class="mt-2 flex items-end justify-between gap-1" style="height: 96px">
                 {#each days as d (d.date)}
-                    <div class="flex h-full flex-1 flex-col justify-end" title="{dayLabel(d.date)}: {d.impressions} צפיות · {d.clicks} הקלקות">
+                    <div class="flex h-full flex-1 flex-col justify-end" title={i18n.t('detail.dayTitle', { date: dayLabel(d.date), views: d.impressions, clicks: d.clicks })}>
                         <div class="rounded-t bg-gradient-to-t from-blue-700 to-blue-400"
                              style="height: {Math.round((d.impressions / maxDay) * 100)}%; min-height: {d.impressions > 0 ? '3px' : '2px'}"
                              class:opacity-25={d.impressions === 0}></div>
@@ -240,9 +244,9 @@
         {#if totals.impressions === 0}
             <p class="mt-4 rounded-xl border border-[#3b5794] bg-[#0f1c3d] px-3 py-2.5 text-sm text-gray-300">
                 {#if ad.status === 'approved'}
-                    עדיין לא נאספו נתונים — המספרים מתחילים לזוז ברגע שגולשים נחשפים למודעה.
+                    {i18n.t('detail.noDataYet')}
                 {:else}
-                    המדידה מתחילה כשהמודעה מאושרת ועולה לאתר.
+                    {i18n.t('detail.measureStarts')}
                 {/if}
             </p>
         {/if}
@@ -250,21 +254,20 @@
 
     <!-- התראות — בסיס להודעות האוטומטיות (חידוש / מבצעים) -->
     <section class="mt-4 rounded-2xl border border-[#3b5794] bg-[#16264d] p-4 md:p-5">
-        <h2 class="text-lg font-black text-white">🔔 התראות ועדכונים</h2>
+        <h2 class="text-lg font-black text-white">🔔 {i18n.t('detail.notifications')}</h2>
         <p class="mt-1.5 text-sm leading-relaxed text-gray-300">
-            עדכונים על הנכס נשלחים לכתובת <span class="font-bold text-white" dir="ltr">{data.notifyEmail}</span>.
+            {i18n.t('detail.notifyA')} <span class="font-bold text-white" dir="ltr">{data.notifyEmail}</span>.
         </p>
         <ul class="mt-3 flex flex-col gap-2 text-sm text-gray-300">
             <li class="rounded-xl border border-[#3b5794] bg-[#0f1c3d] px-3 py-2">
-                ⏳ <span class="font-bold text-white">תזכורת חידוש</span> — {RENEW_WARNING_DAYS} ימים לפני סוף התקופה,
-                וגם כאן בדף (הקריאה לחידוש מופיעה למעלה).
+                ⏳ <span class="font-bold text-white">{i18n.t('detail.reminder')}</span> — {i18n.t('detail.reminderBody', { n: RENEW_WARNING_DAYS })}
             </li>
             <li class="rounded-xl border border-[#3b5794] bg-[#0f1c3d] px-3 py-2">
-                🎁 <span class="font-bold text-white">מבצעים למפרסמים קיימים</span> — הטבות ותוספות פרסום שכדאי לך להכיר.
+                🎁 <span class="font-bold text-white">{i18n.t('detail.promos')}</span> — {i18n.t('detail.promosBody')}
             </li>
         </ul>
         <p class="mt-2 text-[11px] text-gray-400">
-            השליחה האוטומטית במייל בהקמה — בשלב הזה התזכורות מוצגות בדף הזה.
+            {i18n.t('detail.emailSoon')}
         </p>
     </section>
 </section>

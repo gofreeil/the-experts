@@ -1,10 +1,10 @@
 <script lang="ts">
     import { headerHeight } from '$lib/actions/headerHeight';
-    import { t, locale } from 'svelte-i18n';
-	import { get } from 'svelte/store';
-    import { goto } from "$app/navigation";
+    import { goto, invalidateAll } from "$app/navigation";
     import { onMount } from "svelte";
     import { page } from '$app/state';
+    import { useI18n } from '$lib/i18n/context';
+    import { LOCALES, LOCALE_META, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, type Locale } from '$lib/i18n';
 
     // פרטי המשתמש המחובר. רק username מגיע היום מה-layout; שאר השדות
     // הם שדות הפרופיל האופציונליים שמזינים את מעגל השלמת-הפרופיל בהדר.
@@ -39,11 +39,10 @@
     // תמונת הפרופיל לא נטענה (קישור שפג / חסום) → חוזרים לאות הראשונה
     let avatarBroken = $state(false);
 
-    let languages = [
-        { name: "עברית", code: "he", flag: "il" },
-        { name: "English", code: "en", flag: "us" },
-        { name: "русский", code: "ru", flag: "ru" },
-    ];
+    const i18n = useI18n();
+
+    const languages = LOCALES.map((code) => ({ code, name: LOCALE_META[code].name, flag: LOCALE_META[code].flag }));
+    const currentLang = $derived(LOCALE_META[i18n.locale]);
 
     let showLangDropdown = $state(false);
     let onlineUsers = $state(1);
@@ -107,18 +106,15 @@
         if (e.key === 'Escape') { showMobileSearch = false; searchQuery = ''; }
     }
 
-    function changeLang(language: { name: string; code: string }) {
-        locale.set(language.code);
-        try { localStorage.setItem('lang', language.code); } catch {}
+    // השפה נשמרת בעוגייה (השרת קורא אותה ב-hooks), ואז כל נתוני ה-layout נטענים מחדש —
+    // ה-<html lang dir> והטקסטים מתחלפים בלי רענון מלא של הדף.
+    async function changeLang(language: { code: Locale }) {
+        if (language.code === i18n.locale) return;
+        document.cookie = `${LOCALE_COOKIE}=${language.code}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE}; samesite=lax`;
+        await invalidateAll();
     }
 
     onMount(() => {
-        // שחזר שפה שמורה
-        try {
-            const saved = localStorage.getItem('lang');
-            if (saved) locale.set(saved);
-        } catch {}
-
         pingServer();
         const usersInterval = setInterval(pingServer, 30000);
 
@@ -179,11 +175,6 @@
             options[options.length - 1].focus();
         }
     }
-	// tFn: תרגום reactive - $t אסור ב-Svelte 5
-	let _loc = $state(get(locale));
-	$effect(() => locale.subscribe(l => (_loc = l)));
-	const tFn = (k: string) => { void _loc; return get(t)(k); };
-
 </script>
 
 <header use:headerHeight
@@ -204,7 +195,7 @@
                             <div class="h-[38px] w-[38px] flex-shrink-0">
                                 <img
                                     src="/images/experts-logo.webp"
-                                    alt="לוגו המומחים של העם – לדף הבית"
+                                    alt={i18n.t('site.logoAltHome')}
                                     width="400"
                                     height="344"
                                     fetchpriority="high"
@@ -220,7 +211,7 @@
                             <h1
                                 class="mobile-title bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text font-black text-transparent leading-tight truncate"
                             >
-                                {tFn("welcome")}
+                                {i18n.t("site.name")}
                             </h1>
                         </div>
                     </a>
@@ -233,7 +224,7 @@
                         <button
                             onclick={() => goto("/about/revenue")}
                             class="flex items-center justify-center w-[38px] h-[38px] rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
-                            aria-label="אודות קהילה"
+                            aria-label={i18n.t('header.aboutCommunity')}
                         >
                             <span class="text-xl font-bold text-white leading-none">ℹ</span>
                         </button>
@@ -244,29 +235,29 @@
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
                                 onkeydown={handleLangKeydown}
                                 class="flex items-center justify-center w-[38px] h-[38px] rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
-                                aria-label="בחר שפה"
+                                aria-label={i18n.t('header.chooseLanguage')}
                                 aria-haspopup="listbox"
                                 aria-expanded={showLangDropdown}
                             >
                                 <span
-                                    class="fi fi-{languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.flag || 'il'}"
+                                    class="fi fi-{currentLang.flag}"
                                     style="font-size: 1.2rem;"
                                     aria-hidden="true"
                                 ></span>
                             </button>
                             {#if showLangDropdown}
                                 <div
-                                    class="absolute left-0 z-[160] mt-2 w-36 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
+                                    class="absolute end-0 z-[160] mt-2 w-36 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
                                     role="listbox"
-                                    aria-label="בחר שפה"
+                                    aria-label={i18n.t('header.chooseLanguage')}
                                 >
                                     {#each languages as langOption}
                                         <button
-                                            class="flex w-full items-center gap-3 px-3 py-2 text-right text-white hover:bg-white/10 transition-colors"
+                                            class="flex w-full items-center gap-3 px-3 py-2 text-start text-white hover:bg-white/10 transition-colors"
                                             onclick={() => { changeLang(langOption); showLangDropdown = false; }}
                                             onkeydown={handleLangKeydown}
                                             role="option"
-                                            aria-selected={$locale === langOption.code || $locale?.startsWith(langOption.code)}
+                                            aria-selected={i18n.locale === langOption.code}
                                         >
                                             <span class="fi fi-{langOption.flag}" style="font-size: 1.2rem;" aria-hidden="true"></span>
                                             <span class="text-sm">{langOption.name}</span>
@@ -277,7 +268,7 @@
                         </div>
 
                         {#if currentUser}
-                            <a href="/profile" class="relative group flex-shrink-0" aria-label="לאזור האישי – {currentUser.username ?? 'משתמש'}">
+                            <a href="/profile" class="relative group flex-shrink-0" aria-label={i18n.t('header.toPersonalArea', { name: currentUser.username ?? i18n.t('header.user') })}>
                                 {#if currentUser.avatar_url && !avatarBroken}
                                     <img
                                         src={currentUser.avatar_url}
@@ -296,7 +287,7 @@
                             <a
                                 href="/login?redirect=/profile"
                                 class="relative group flex-shrink-0"
-                                aria-label="התחברות"
+                                aria-label={i18n.t('header.login')}
                             >
                                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[38px] w-[38px] rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                     <circle cx="20" cy="20" r="20" fill="#374151"/>
@@ -306,7 +297,7 @@
                                 <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
                                              bg-gray-900 text-white text-[10px] font-bold rounded-lg px-2 py-1
                                              whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
-                                    האזור האישי
+                                    {i18n.t('header.personalArea')}
                                 </span>
                             </a>
                         {/if}
@@ -327,7 +318,7 @@
                         <div class="h-20 w-20 flex items-center justify-center">
                             <img
                                 src="/images/experts-logo.webp"
-                                alt="לוגו המומחים של העם – לדף הבית"
+                                alt={i18n.t('site.logoAltHome')}
                                 width="400"
                                 height="344"
                                 fetchpriority="high"
@@ -343,7 +334,7 @@
                         <div
                             class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap"
                         >
-                            {tFn("back_home")}
+                            {i18n.t("header.backHome")}
                             <div
                                 class="absolute bottom-full left-1/2 -translate-x-1/2 border-8 border-transparent border-b-gray-900"
                             ></div>
@@ -354,9 +345,9 @@
                     <h1
                         class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-3xl font-bold text-transparent group-hover:opacity-80 transition-opacity"
                     >
-                        {tFn("welcome")}
+                        {i18n.t("site.name")}
                     </h1>
-                    <p class="text-lg text-gray-100 font-extrabold group-hover:opacity-80 transition-opacity">{tFn("app_description")}</p>
+                    <p class="text-lg text-gray-100 font-extrabold group-hover:opacity-80 transition-opacity">{i18n.t("site.tagline")}</p>
                 </a>
             </div>
 <div class="flex items-center gap-2">
@@ -372,7 +363,7 @@
                         onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
                         onclick={() => goto("/about/revenue")}
                     >
-                        {tFn("about")}
+                        {i18n.t("header.about")}
                     </button>
                 </div>
                 <!-- Language Dropdown -->
@@ -381,21 +372,18 @@
                         class="flex items-center rounded-lg bg-white/10 hover:bg-white/20 px-3 py-2 text-sm text-white transition-colors"
                         onclick={() => (showLangDropdown = !showLangDropdown)}
                         onkeydown={handleLangKeydown}
-                        aria-label="בחר שפה"
+                        aria-label={i18n.t('header.chooseLanguage')}
                         aria-haspopup="listbox"
                         aria-expanded={showLangDropdown}
                     >
                         <span
-                            class="fi fi-{languages.find(
-                                (l) => l.code === $locale || $locale?.startsWith(l.code),
-                            )?.flag || 'il'} ml-2"
-                            style="font-size: 1.5rem; margin-left: 0.75rem;"
+                            class="fi fi-{currentLang.flag}"
+                            style="font-size: 1.5rem; margin-inline-end: 0.75rem;"
                             aria-hidden="true"
                         ></span>
-                        {languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.name ||
-                            'עברית'}
+                        {currentLang.name}
                         <svg
-                            class="mr-1 h-4 w-4"
+                            class="ms-1 h-4 w-4"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -411,20 +399,20 @@
                     </button>
                     {#if showLangDropdown}
                         <div
-                            class="absolute right-0 z-[160] mt-2 w-44 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
+                            class="absolute start-0 z-[160] mt-2 w-44 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
                             role="listbox"
-                            aria-label="בחר שפה"
+                            aria-label={i18n.t('header.chooseLanguage')}
                         >
                             {#each languages as langOption}
                                 <button
-                                    class="flex w-full items-center gap-4 px-4 py-2 text-right text-white hover:bg-white/10 transition-colors"
+                                    class="flex w-full items-center gap-4 px-4 py-2 text-start text-white hover:bg-white/10 transition-colors"
                                     onclick={() => {
                                         changeLang(langOption);
                                         showLangDropdown = false;
                                     }}
                                     onkeydown={handleLangKeydown}
                                     role="option"
-                                    aria-selected={$locale === langOption.code || $locale?.startsWith(langOption.code)}
+                                    aria-selected={i18n.locale === langOption.code}
                                 >
                                     <span class="text-sm">{langOption.name}</span>
                                     <span
@@ -443,12 +431,12 @@
                     <!-- מספר גולשים -->
                     <div
                         class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter"
-                        aria-label="{onlineUsers} משתמשים מחוברים כעת"
+                        aria-label={i18n.t('header.onlineNow', { n: onlineUsers })}
                         role="status"
                     >
                         <span class="text-green-400 text-xl" aria-hidden="true">●</span>
                         <span class="text-white text-sm font-bold" aria-hidden="true">{onlineUsers}</span>
-                        <span class="text-gray-300 text-sm" aria-hidden="true">{tFn("connected")}</span>
+                        <span class="text-gray-300 text-sm" aria-hidden="true">{i18n.t("header.connected")}</span>
                     </div>
 
                     {#if currentUser}
@@ -458,7 +446,7 @@
                             <a
                                 href="/profile"
                                 class="relative flex-shrink-0"
-                                aria-label="לאזור האישי – {userName}"
+                                aria-label={i18n.t('header.toPersonalArea', { name: userName })}
                                 onmouseenter={() => showProfileTooltip = true}
                                 onmouseleave={() => showProfileTooltip = false}
                                 onmousemove={handleProfileMouseMove}
@@ -486,7 +474,7 @@
                         <a
                             href="/login?redirect=/profile"
                             class="relative group flex-shrink-0"
-                            aria-label="התחברות"
+                            aria-label={i18n.t('header.login')}
                         >
                             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                 <circle cx="20" cy="20" r="20" fill="#374151"/>
@@ -496,7 +484,7 @@
                             <span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
                                          bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
                                          whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-                                האזור האישי
+                                {i18n.t('header.personalArea')}
                             </span>
                         </a>
                     {/if}
@@ -513,7 +501,7 @@
         style="left: {tooltipX}px; top: {tooltipY}px;"
     >
         <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-            👤 לפרופיל שלי
+            👤 {i18n.t('header.myProfile')}
         </div>
     </div>
 {/if}

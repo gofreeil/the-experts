@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { useI18n } from '$lib/i18n/context';
 
 	let { data, form } = $props();
+
+	const i18n = useI18n();
 
 	let email = $state(data.email || '');
 	let loading = $state(false);
@@ -26,36 +29,38 @@
 	});
 
 	/** קיצור "פתח את תיבת המייל" לספקים נפוצים, לפי הדומיין של הכתובת. */
-	const MAIL_APPS: Record<string, [string, string]> = {
+	const MAIL_APPS: Record<string, ['walla' | string, string]> = {
 		'gmail.com': ['Gmail', 'https://mail.google.com/'],
 		'googlemail.com': ['Gmail', 'https://mail.google.com/'],
 		'outlook.com': ['Outlook', 'https://outlook.live.com/mail/'],
 		'hotmail.com': ['Outlook', 'https://outlook.live.com/mail/'],
 		'live.com': ['Outlook', 'https://outlook.live.com/mail/'],
 		'yahoo.com': ['Yahoo Mail', 'https://mail.yahoo.com/'],
-		'walla.co.il': ['וואלה מייל', 'https://mail.walla.co.il/'],
-		'walla.com': ['וואלה מייל', 'https://mail.walla.co.il/']
+		'walla.co.il': ['walla', 'https://mail.walla.co.il/'],
+		'walla.com': ['walla', 'https://mail.walla.co.il/']
 	};
-	const mailApp = $derived(MAIL_APPS[(sentTo.split('@')[1] || '').toLowerCase()] ?? null);
+	const mailApp = $derived.by(() => {
+		const hit = MAIL_APPS[(sentTo.split('@')[1] || '').toLowerCase()];
+		return hit ? ([hit[0] === 'walla' ? i18n.t('forgot.walla') : hit[0], hit[1]] as [string, string]) : null;
+	});
 </script>
 
 <svelte:head>
-	<title>שחזור גישה לחשבון | המומחים של העם</title>
+	<title>{i18n.t('forgot.pageTitle')} | {i18n.t('site.name')}</title>
 	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 
-<div class="flex min-h-[70vh] items-center justify-center px-4 py-12" dir="rtl">
+<div class="flex min-h-[70vh] items-center justify-center px-4 py-12">
 	<div class="w-full max-w-md">
-		<div class="rounded-3xl border border-white/10 bg-[#0f172a] p-8 text-right shadow-2xl">
+		<div class="rounded-3xl border border-white/10 bg-[#0f172a] p-8 text-start shadow-2xl">
 			{#if sent}
 				<div class="mb-5 text-center">
 					<div class="mb-3 text-5xl">📬</div>
-					<h1 class="text-2xl font-black text-white">הקישור בדרך אליכם</h1>
+					<h1 class="text-2xl font-black text-white">{i18n.t('forgot.sentTitle')}</h1>
 				</div>
 
 				<p class="mb-5 text-center text-sm leading-relaxed text-gray-300">
-					אם הכתובת <strong class="break-all text-amber-200" dir="ltr">{sentTo}</strong> רשומה אצלנו, שלחנו אליה עכשיו מייל
-					עם קישור לבחירת סיסמה חדשה. הקישור תקף לשעתיים.
+					{i18n.t('forgot.sentA')} <strong class="break-all text-amber-200" dir="ltr">{sentTo}</strong> {i18n.t('forgot.sentB')}
 				</p>
 
 				{#if mailApp}
@@ -65,14 +70,14 @@
 						rel="noopener noreferrer"
 						class="mb-4 block w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-4 py-3.5 text-center font-bold text-white transition"
 					>
-						פתיחת {mailApp[0]} ↗
+						{i18n.t('forgot.openMail', { app: mailApp[0] })}
 					</a>
 				{/if}
 
-				<ul class="mb-5 list-disc space-y-1 rounded-xl bg-white/5 py-3 pr-8 pl-4 text-xs leading-relaxed text-gray-400">
-					<li>המייל מגיע בדרך כלל תוך דקה.</li>
-					<li>לא רואים אותו? בדקו בתיקיית <strong>ספאם</strong> או <strong>קידומי מכירות</strong>.</li>
-					<li>הקלקה על הקישור במייל מחברת אתכם מיד, בלי להתחבר שוב.</li>
+				<ul class="mb-5 list-disc space-y-1 rounded-xl bg-white/5 py-3 ps-8 pe-4 text-xs leading-relaxed text-gray-400">
+					<li>{i18n.t('forgot.tip1')}</li>
+					<li>{@html i18n.t('forgot.tip2')}</li>
+					<li>{i18n.t('forgot.tip3')}</li>
 				</ul>
 
 				<form
@@ -92,7 +97,7 @@
 						disabled={loading || cooldown > 0}
 						class="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-gray-200 transition hover:bg-white/10 disabled:cursor-default disabled:text-gray-500 disabled:hover:bg-white/5"
 					>
-						{#if loading}שולח…{:else if cooldown > 0}שליחה חוזרת בעוד {cooldown} שנ'{:else}לא הגיע? שלחו שוב{/if}
+						{#if loading}{i18n.t('forgot.sending')}{:else if cooldown > 0}{i18n.t('forgot.resendIn', { n: cooldown })}{:else}{i18n.t('forgot.resend')}{/if}
 					</button>
 				</form>
 
@@ -103,15 +108,15 @@
 				{/if}
 
 				<p class="mt-5 text-center text-sm text-gray-400">
-					טעות בכתובת?
-					<a href="/forgot-password?email={encodeURIComponent(sentTo)}" data-sveltekit-reload class="font-bold text-purple-400 hover:text-purple-300">תקנו והקלידו מחדש</a>
+					{i18n.t('forgot.wrongAddr')}
+					<a href="/forgot-password?email={encodeURIComponent(sentTo)}" data-sveltekit-reload class="font-bold text-purple-400 hover:text-purple-300">{i18n.t('forgot.retype')}</a>
 				</p>
 			{:else}
 				<div class="mb-6 text-center">
 					<div class="mb-3 text-5xl">🔑</div>
-					<h1 class="text-2xl font-black text-white">שכחתם סיסמה?</h1>
+					<h1 class="text-2xl font-black text-white">{i18n.t('forgot.askTitle')}</h1>
 					<p class="mt-2 text-sm leading-relaxed text-gray-400">
-						לא נורא. הקלידו את האימייל ונשלח קישור לבחירת סיסמה חדשה — ותהיו מחוברים מיד.
+						{i18n.t('forgot.askBody')}
 					</p>
 				</div>
 
@@ -128,7 +133,7 @@
 					}}
 				>
 					<label class="block">
-						<span class="mb-1.5 block text-sm text-gray-300">האימייל שלכם</span>
+						<span class="mb-1.5 block text-sm text-gray-300">{i18n.t('forgot.yourEmail')}</span>
 						<!-- svelte-ignore a11y_autofocus -->
 						<input
 							type="email"
@@ -155,18 +160,18 @@
 						disabled={loading}
 						class="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-4 py-3.5 font-bold text-white transition disabled:cursor-wait disabled:opacity-60"
 					>
-						{loading ? 'שולח…' : 'שלחו לי קישור'}
+						{loading ? i18n.t('forgot.sending') : i18n.t('forgot.sendLink')}
 					</button>
 				</form>
 
-				<p class="mt-5 text-center text-sm"><a href="/login" class="text-purple-400 hover:text-purple-300">← חזרה להתחברות</a></p>
+				<p class="mt-5 text-center text-sm"><a href="/login" class="text-purple-400 hover:text-purple-300">{i18n.t('forgot.backToLogin')}</a></p>
 			{/if}
 		</div>
 
 		<div class="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-center text-sm leading-relaxed text-gray-400">
-			<strong class="text-gray-200">נרשמתם עם Google או Facebook?</strong>
-			אז אין לכם סיסמה ואין צורך בה — פשוט
-			<a href="/login" class="font-bold text-purple-400 hover:text-purple-300">היכנסו בלחיצה בדף ההתחברות</a>.
+			<strong class="text-gray-200">{i18n.t('forgot.oauthQ')}</strong>
+			{i18n.t('forgot.oauthBody')}
+			<a href="/login" class="font-bold text-purple-400 hover:text-purple-300">{i18n.t('forgot.oauthLink')}</a>.
 		</div>
 	</div>
 </div>

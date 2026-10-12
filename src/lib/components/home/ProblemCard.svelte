@@ -3,8 +3,12 @@
     import { formatTimeAgo } from '$lib/problemsStore.svelte';
     import { NEED_PREFIX, catColor, catShort, fmt, handsOf, backersOf, tierOf, PLEDGE_AMOUNTS } from '$lib/homeData';
     import { adThenGo } from './nav';
+    import { useI18n } from '$lib/i18n/context';
 
     let { p, flash = false, onpledge }: { p: Problem; flash?: boolean; onpledge?: (id: string, amount: number) => void } = $props();
+
+    const i18n = useI18n();
+    const needPrefix = $derived(i18n.l(NEED_PREFIX));
 
     let menuOpen = $state(false);
     let root: HTMLElement | undefined = $state();
@@ -13,7 +17,7 @@
     const tier = $derived(tierOf(p.bounty));
     const hands = $derived(handsOf(p));
     const avatarColors = ['var(--c-law)', 'var(--c-technology)', 'var(--c-agriculture)'];
-    const initials = ['רכ', 'יש', 'של'];
+    const initials = $derived(i18n.l([{ he: 'רכ', en: 'RC' }, { he: 'יש', en: 'YS' }, { he: 'של', en: 'SL' }]));
 
     function pledge(amount: number) {
         onpledge?.(p.id, amount);
@@ -27,19 +31,19 @@
     <article class="pcard" class:flash id="p-{p.id}" style="--c:{catColor(p.category)}" bind:this={root}>
         <div class="p-main">
             <div class="p-tags">
-                <span class="tag-c"><span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category)}</span>
+                <span class="tag-c"><span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category, i18n.locale)}</span>
                 <span class="tag-t" class:prv={isPrivate}>
                     {#if isPrivate}
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" /><path d="M5 7V5a3 3 0 0 1 6 0v2" /></svg>פרטית
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" /><path d="M5 7V5a3 3 0 0 1 6 0v2" /></svg>{i18n.t('problem.private')}
                     {:else}
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12" /></svg>ציבורית
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12" /></svg>{i18n.t('problem.public')}
                     {/if}
                 </span>
-                <span class="tag-age">{formatTimeAgo(p.createdAt)}</span>
+                <span class="tag-age">{formatTimeAgo(p.createdAt, i18n.locale)}</span>
             </div>
 
-            <h3><a href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}><span class="need">{NEED_PREFIX}</span> {p.title}</a></h3>
-            <p>{isPrivate ? `הפרטים גלויים רק למומחים מאומתים בתחום ${catShort(p.category)}.` : p.description}</p>
+            <h3><a href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}><span class="need">{needPrefix}</span> {p.title}</a></h3>
+            <p>{isPrivate ? i18n.t('problem.privateDetails', { cat: catShort(p.category, i18n.locale) }) : p.description}</p>
 
             <div class="p-foot">
                 <span class="hands">
@@ -48,21 +52,21 @@
                             <span class="mini-av" style="--c2:{avatarColors[i]}">{initials[i]}</span>
                         {/each}
                     </span>
-                    <span><b class="num">{hands}</b> מומחים הרימו יד</span>
+                    <span><b class="num">{hands}</b> {i18n.tn('problem.handsRaised', hands)}</span>
                 </span>
 
                 <a class="btn btn-sm btn-ghost" href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8" /><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></svg>
-                    אני יכול לפתור
+                    {i18n.t('problem.canSolve')}
                 </a>
 
                 {#if !isPrivate}
                     <span class="pledge" class:open={menuOpen}>
                         <button class="btn btn-sm btn-ghost" type="button" aria-expanded={menuOpen} onclick={() => (menuOpen = !menuOpen)}>
                             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
-                            הוסיפו לפרס
+                            {i18n.t('problem.addToReward')}
                         </button>
-                        <span class="pledge-menu" role="group" aria-label="סכום להוספה">
+                        <span class="pledge-menu" role="group" aria-label={i18n.t('problem.amountToAdd')}>
                             {#each PLEDGE_AMOUNTS as amt}
                                 <button type="button" onclick={() => pledge(amt)}>+{amt}</button>
                             {/each}
@@ -74,13 +78,13 @@
 
         <div class="p-stub">
             <div class="stub-main">
-                <span class="stub-l">הפרס</span>
+                <span class="stub-l">{i18n.t('problem.reward')}</span>
                 <div class="stub-amt"><span class="num">{fmt(p.bounty)}</span></div>
-                <span class="pips" role="img" aria-label="גודל הבעיה {tier} מתוך 5">
+                <span class="pips" role="img" aria-label={i18n.t('problem.sizeAria', { tier })}>
                     {#each Array(5) as _, i}<i class:on={i < tier}></i>{/each}
                 </span>
             </div>
-            <span class="stub-s">{isPrivate ? 'מבקש יחיד' : `${backersOf(p)} תורמים`}</span>
+            <span class="stub-s">{isPrivate ? i18n.t('problem.singleRequester') : i18n.tn('problem.backers', backersOf(p))}</span>
         </div>
     </article>
 </div>
@@ -127,10 +131,13 @@
 
     @container (max-width: 470px) {
         .pcard { grid-template-columns: minmax(0, 1fr); }
-        .p-stub { border-inline-start: 0; border-top: 2px dashed var(--line); flex-direction: row; justify-content: space-between; padding: 12px 20px; text-align: right; }
+        .p-stub { border-inline-start: 0; border-top: 2px dashed var(--line); flex-direction: row; justify-content: space-between; padding: 12px 20px; text-align: start; }
         .p-stub::before, .p-stub::after { top: -11px; bottom: auto; }
         .p-stub::before { inset-inline-start: -11px; clip-path: inset(0 50% 0 0); }
         .p-stub::after { inset-inline-start: auto; inset-inline-end: -11px; clip-path: inset(0 0 0 50%); }
+        /* החריצים הם חצאי עיגול שנחתכים לפי הצד הפיזי; באנגלית הצדדים מתחלפים */
+        :global(html[dir='ltr']) .p-stub::before { clip-path: inset(0 0 0 50%); }
+        :global(html[dir='ltr']) .p-stub::after { clip-path: inset(0 50% 0 0); }
         .stub-amt { font-size: 28px; }
         .stub-main { align-items: flex-start; }
     }

@@ -1,9 +1,13 @@
 <script lang="ts">
-    import { problemsStore, formatTimeAgo, formatBounty, type ProblemType } from '$lib/problemsStore.svelte';
-    import { teams, teamBySlug } from '$lib/teamsData';
+    import { problemsStore, formatTimeAgo, formatBounty, localizeProblems, type ProblemType } from '$lib/problemsStore.svelte';
+    import { teamSources, teamsFor, teamBySlug } from '$lib/teamsData';
     import { triggerAdPopup } from '$lib/adPopupStore';
     import { onMount } from 'svelte';
     import { page } from '$app/state';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
+    const teams = $derived(teamsFor(i18n.locale));
 
     onMount(() => problemsStore.refresh());
 
@@ -18,11 +22,11 @@
     }
 
     let typeFilter = $state<'all' | ProblemType>('all');
-    let categoryFilter = $state<string>(catFromUrl && teams.some((t) => t.slug === catFromUrl) ? catFromUrl : 'all');
+    let categoryFilter = $state<string>(catFromUrl && teamSources.some((t) => t.slug === catFromUrl) ? catFromUrl : 'all');
     let sortBy = $state<'newest' | 'bounty'>('newest');
 
     let filtered = $derived(() => {
-        let list = [...problemsStore.items];
+        let list = [...localizeProblems(problemsStore.items, i18n.locale)];
         if (typeFilter !== 'all') list = list.filter((p) => p.type === typeFilter);
         if (categoryFilter !== 'all') list = list.filter((p) => p.category === categoryFilter);
         if (sortBy === 'bounty') list.sort((a, b) => b.bounty - a.bounty);
@@ -42,19 +46,19 @@
     let shown = $derived(filtered().slice(0, limit));
 </script>
 
-<svelte:head><title>בעיות לפתרון - לוח התקציבים</title></svelte:head>
+<svelte:head><title>{i18n.t('board.pageTitle')}</title></svelte:head>
 
-<section dir="rtl" class="page">
+<section class="page">
     <div class="hero">
-        <h1 class="title">בעיות לפתרון</h1>
-        <p class="subtitle">לוח בעיות פתוחות עם תקציב - מציעים פתרון, מרוויחים</p>
+        <h1 class="title">{i18n.t('board.title')}</h1>
+        <p class="subtitle">{i18n.t('board.subtitle')}</p>
 
         <div class="cta-row">
             <a href="/problems/new" class="btn btn-primary">
-                ➕ העלאת בעיה חדשה
+                ➕ {i18n.t('board.newProblem')}
             </a>
             <a href="/" class="btn btn-ghost">
-                לכוורת המומחים →
+                {i18n.t('board.toHive')}
             </a>
         </div>
     </div>
@@ -62,32 +66,32 @@
     <div class="stats">
         <div class="stat">
             <div class="stat-num">{filtered().length}</div>
-            <div class="stat-label">בעיות פעילות</div>
+            <div class="stat-label">{i18n.t('board.statActive')}</div>
         </div>
         <div class="stat">
-            <div class="stat-num">{formatBounty(totalBounty)}</div>
-            <div class="stat-label">סה״כ תקציב פנוי</div>
+            <div class="stat-num">{formatBounty(totalBounty, i18n.locale)}</div>
+            <div class="stat-label">{i18n.t('board.statBudget')}</div>
         </div>
         <div class="stat">
             <div class="stat-num">{filtered().reduce((s,p)=>s+p.solutions.length,0)}</div>
-            <div class="stat-label">הצעות פתרון שהוגשו</div>
+            <div class="stat-label">{i18n.t('board.statProposals')}</div>
         </div>
     </div>
 
     <div class="filters">
         <div class="filter-group">
-            <span class="filter-label">סוג מעלה:</span>
+            <span class="filter-label">{i18n.t('board.filterPostedBy')}</span>
             <div class="chips">
-                <button class:active={typeFilter==='all'} onclick={()=>typeFilter='all'}>הכל</button>
-                <button class:active={typeFilter==='individual'} onclick={()=>typeFilter='individual'}>👤 פרטי</button>
-                <button class:active={typeFilter==='community'} onclick={()=>typeFilter='community'}>🏘️ קהילה</button>
+                <button class:active={typeFilter==='all'} onclick={()=>typeFilter='all'}>{i18n.t('common.all')}</button>
+                <button class:active={typeFilter==='individual'} onclick={()=>typeFilter='individual'}>👤 {i18n.t('board.individual')}</button>
+                <button class:active={typeFilter==='community'} onclick={()=>typeFilter='community'}>🏘️ {i18n.t('board.community')}</button>
             </div>
         </div>
 
         <div class="filter-group">
-            <label for="catFilter" class="filter-label">תחום:</label>
+            <label for="catFilter" class="filter-label">{i18n.t('board.filterField')}</label>
             <select id="catFilter" bind:value={categoryFilter} class="select">
-                <option value="all">כל התחומים</option>
+                <option value="all">{i18n.t('board.allFields')}</option>
                 {#each teams as t}
                     <option value={t.slug}>{t.name}</option>
                 {/each}
@@ -95,10 +99,10 @@
         </div>
 
         <div class="filter-group">
-            <label for="sortBy" class="filter-label">מיון:</label>
+            <label for="sortBy" class="filter-label">{i18n.t('board.filterSort')}</label>
             <select id="sortBy" bind:value={sortBy} class="select">
-                <option value="newest">חדשות קודם</option>
-                <option value="bounty">תקציב גבוה קודם</option>
+                <option value="newest">{i18n.t('board.sortNewest')}</option>
+                <option value="bounty">{i18n.t('board.sortBudget')}</option>
             </select>
         </div>
     </div>
@@ -106,19 +110,19 @@
     {#if filtered().length === 0}
         <div class="empty">
             <div class="empty-emoji">📭</div>
-            <p>אין בעיות פתוחות במסננים האלה</p>
-            <a href="/problems/new" class="btn btn-primary">העלאת בעיה ראשונה</a>
+            <p>{i18n.t('board.empty')}</p>
+            <a href="/problems/new" class="btn btn-primary">{i18n.t('board.postFirst')}</a>
         </div>
     {:else}
         <div class="cards">
             {#each shown as p (p.id)}
-                {@const team = teamBySlug(p.category)}
+                {@const team = teamBySlug(p.category, i18n.locale)}
                 <a class="card" href="/problems/{p.id}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)} style="--c:{team?.color ?? '#f59e0b'}">
                     <div class="card-head">
                         <span class="badge badge-{p.type}">
-                            {p.type === 'community' ? '🏘️ קהילה' : '👤 פרטי'}
+                            {p.type === 'community' ? `🏘️ ${i18n.t('board.community')}` : `👤 ${i18n.t('board.individual')}`}
                         </span>
-                        <span class="bounty">{formatBounty(p.bounty)}</span>
+                        <span class="bounty">{formatBounty(p.bounty, i18n.locale)}</span>
                     </div>
 
                     <h3 class="card-title">{p.title}</h3>
@@ -130,9 +134,9 @@
                             <span>{team?.name ?? p.category}</span>
                         </div>
                         <div class="meta">
-                            <span>{p.solutions.length} הצעות</span>
+                            <span>{i18n.tn('board.proposals', p.solutions.length)}</span>
                             <span>•</span>
-                            <span>{formatTimeAgo(p.createdAt)}</span>
+                            <span>{formatTimeAgo(p.createdAt, i18n.locale)}</span>
                         </div>
                     </div>
                 </a>
@@ -140,7 +144,7 @@
         </div>
         {#if filtered().length > shown.length}
             <button class="more" type="button" onclick={() => (limit += PAGE_SIZE)}>
-                הצג עוד ({filtered().length - shown.length})
+                {i18n.t('board.showMore', { n: filtered().length - shown.length })}
             </button>
         {/if}
     {/if}
@@ -249,7 +253,7 @@
         display: block;
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7));
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-right: 4px solid var(--c, #f59e0b);
+        border-inline-start: 4px solid var(--c, #f59e0b);
         border-radius: 0.85rem;
         padding: 1.1rem;
         color: inherit;

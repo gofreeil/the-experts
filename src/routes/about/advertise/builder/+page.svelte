@@ -1,9 +1,17 @@
+<script module>
+    // מילון הבילדר נטען רק בדפי הבילדר ולא בכל האתר (ראו registerMessages ב-translate.ts)
+    import * as builderMessages from "$lib/i18n/messages/builder";
+    import { registerMessages } from "$lib/i18n/translate";
+    registerMessages(builderMessages);
+</script>
+
 <script>
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
     import { normalizePlanDays } from "$lib/adPlans";
+    import { useI18n } from "$lib/i18n/context";
     import {
         AD_EFFECTIVE_LIMIT, MAIN_IMAGE_MAX_BYTES,
         bodyBytes, fmtWeight, approxDataUrlBytes, compressImageToFit, compressLogoFile,
@@ -14,6 +22,8 @@
     // עברית בלבד, CSS רגיל (בלי Tailwind), גרדיאנטים כמחרוזות CSS.
 
     let { data } = $props();
+
+    const i18n = useI18n();
 
     // ===== שמירה מקומית =====
     const LS_KEY = "exp_ad_builder_draft_v1";
@@ -59,7 +69,7 @@
     }
     /** @param {Date} d */
     function fmtDateShort(d) {
-        return d.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" });
+        return i18n.date(d, i18n.locale === "he" ? { day: "2-digit", month: "2-digit" } : { day: "numeric", month: "short" });
     }
 
     // ===== שדות הטופס =====
@@ -272,7 +282,7 @@
     let titleOffsetY = $state(0);
     let subtitle = $state("");
     let hoverText = $state("");
-    let cta = $state("הקלק לפרטים והזמנות");
+    let cta = $state(i18n.t('b.defaultCta'));
     // גרדיאנט כמחרוזת CSS - תואם לשדה color של adsData.js באתר הזה
     let gradient = $state("linear-gradient(135deg, #f59e0b, #ea580c)");
     let diagHeight = $state(12);
@@ -501,7 +511,7 @@
     async function processImageFile(file, target) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
-            alert("נא להעלות קובץ תמונה");
+            alert(i18n.t('b.notImage'));
             return;
         }
         uploadIssue = { zone: "", msg: "" };
@@ -518,8 +528,7 @@
         if (!fit.ok) {
             uploadIssue = {
                 zone: target,
-                msg: `אין מקום לתמונה הזו — המודעה כולה מוגבלת במשקל, וגם אחרי דחיסה היא חורגת. `
-                    + `הסירו או החליפו תמונה אחרת (הכבדה ביותר: ${heaviestImageLabel(candidate) || "—"}) ונסו שוב.`,
+                msg: i18n.t('b.noRoom', { heaviest: heaviestImageLabel(candidate, i18n.locale) || "—" }),
             };
             return; // המצב הקיים לא נגעו בו — אפשר להמשיך לעבוד
         }
@@ -629,43 +638,43 @@
     }
 
     // ===== פלטת צבעים - גרדיאנטים כמחרוזות CSS =====
-    const palettes = [
-        { id: "amber",    label: "ענבר",       cls: "linear-gradient(135deg, #f59e0b, #ea580c)" },
-        { id: "orange",   label: "כתום",       cls: "linear-gradient(135deg, #f97316, #ef4444)" },
-        { id: "yellow",   label: "צהוב",       cls: "linear-gradient(135deg, #facc15, #f59e0b)" },
-        { id: "red",      label: "אדום",       cls: "linear-gradient(135deg, #dc2626, #db2777)" },
-        { id: "rose",     label: "ורוד עז",    cls: "linear-gradient(135deg, #f43f5e, #c026d3)" },
-        { id: "crimson",  label: "בורדו",      cls: "linear-gradient(135deg, #be123c, #7f1d1d)" },
-        { id: "fuchsia",  label: "פוקסיה",     cls: "linear-gradient(135deg, #d946ef, #9333ea)" },
-        { id: "purple",   label: "סגול",       cls: "linear-gradient(135deg, #9333ea, #db2777)" },
-        { id: "violet",   label: "סגול כהה",   cls: "linear-gradient(135deg, #7c3aed, #4338ca)" },
-        { id: "indigo",   label: "אינדיגו",    cls: "linear-gradient(135deg, #4f46e5, #2563eb)" },
-        { id: "blue",     label: "כחול",       cls: "linear-gradient(135deg, #2563eb, #0891b2)" },
-        { id: "sky",      label: "תכלת",       cls: "linear-gradient(135deg, #38bdf8, #3b82f6)" },
-        { id: "teal",     label: "טורקיז",     cls: "linear-gradient(135deg, #14b8a6, #0891b2)" },
-        { id: "emerald",  label: "אזמרגד",     cls: "linear-gradient(135deg, #10b981, #0f766e)" },
-        { id: "green",    label: "ירוק",       cls: "linear-gradient(135deg, #16a34a, #059669)" },
-        { id: "lime",     label: "ליים",       cls: "linear-gradient(135deg, #a3e635, #22c55e)" },
-        { id: "slate",    label: "אפור",       cls: "linear-gradient(135deg, #64748b, #374151)" },
-        { id: "dark",     label: "כהה",        cls: "linear-gradient(135deg, #1f2937, #0f172a)" },
-        { id: "peach",    label: "אפרסק",      cls: "linear-gradient(135deg, #fdba74, #f472b6)" },
-        { id: "mint",     label: "מנטה",       cls: "linear-gradient(135deg, #6ee7b7, #2dd4bf)" },
-        { id: "gold",     label: "זהב",        cls: "linear-gradient(135deg, #eab308, #b45309)" },
-        { id: "midnight", label: "חצות",       cls: "linear-gradient(135deg, #334155, #1e3a8a)" },
-    ];
+    const palettes = $derived([
+        { id: "amber",    label: i18n.t('b.pal.amber'),       cls: "linear-gradient(135deg, #f59e0b, #ea580c)" },
+        { id: "orange",   label: i18n.t('b.pal.orange'),       cls: "linear-gradient(135deg, #f97316, #ef4444)" },
+        { id: "yellow",   label: i18n.t('b.pal.yellow'),       cls: "linear-gradient(135deg, #facc15, #f59e0b)" },
+        { id: "red",      label: i18n.t('b.pal.red'),       cls: "linear-gradient(135deg, #dc2626, #db2777)" },
+        { id: "rose",     label: i18n.t('b.pal.rose'),    cls: "linear-gradient(135deg, #f43f5e, #c026d3)" },
+        { id: "crimson",  label: i18n.t('b.pal.crimson'),      cls: "linear-gradient(135deg, #be123c, #7f1d1d)" },
+        { id: "fuchsia",  label: i18n.t('b.pal.fuchsia'),     cls: "linear-gradient(135deg, #d946ef, #9333ea)" },
+        { id: "purple",   label: i18n.t('b.pal.purple'),       cls: "linear-gradient(135deg, #9333ea, #db2777)" },
+        { id: "violet",   label: i18n.t('b.pal.violet'),   cls: "linear-gradient(135deg, #7c3aed, #4338ca)" },
+        { id: "indigo",   label: i18n.t('b.pal.indigo'),    cls: "linear-gradient(135deg, #4f46e5, #2563eb)" },
+        { id: "blue",     label: i18n.t('b.pal.blue'),       cls: "linear-gradient(135deg, #2563eb, #0891b2)" },
+        { id: "sky",      label: i18n.t('b.pal.sky'),       cls: "linear-gradient(135deg, #38bdf8, #3b82f6)" },
+        { id: "teal",     label: i18n.t('b.pal.teal'),     cls: "linear-gradient(135deg, #14b8a6, #0891b2)" },
+        { id: "emerald",  label: i18n.t('b.pal.emerald'),     cls: "linear-gradient(135deg, #10b981, #0f766e)" },
+        { id: "green",    label: i18n.t('b.pal.green'),       cls: "linear-gradient(135deg, #16a34a, #059669)" },
+        { id: "lime",     label: i18n.t('b.pal.lime'),       cls: "linear-gradient(135deg, #a3e635, #22c55e)" },
+        { id: "slate",    label: i18n.t('b.pal.slate'),       cls: "linear-gradient(135deg, #64748b, #374151)" },
+        { id: "dark",     label: i18n.t('b.pal.dark'),        cls: "linear-gradient(135deg, #1f2937, #0f172a)" },
+        { id: "peach",    label: i18n.t('b.pal.peach'),      cls: "linear-gradient(135deg, #fdba74, #f472b6)" },
+        { id: "mint",     label: i18n.t('b.pal.mint'),       cls: "linear-gradient(135deg, #6ee7b7, #2dd4bf)" },
+        { id: "gold",     label: i18n.t('b.pal.gold'),        cls: "linear-gradient(135deg, #eab308, #b45309)" },
+        { id: "midnight", label: i18n.t('b.pal.midnight'),       cls: "linear-gradient(135deg, #334155, #1e3a8a)" },
+    ]);
 
-    const titleColors = [
-        { c: "#ffffff", label: "לבן" },
-        { c: "#fbbf24", label: "זהב" },
-        { c: "#fde047", label: "צהוב" },
-        { c: "#fb923c", label: "כתום" },
-        { c: "#f87171", label: "אדום" },
-        { c: "#f9a8d4", label: "ורוד" },
-        { c: "#c4b5fd", label: "סגול" },
-        { c: "#67e8f9", label: "תכלת" },
-        { c: "#86efac", label: "ירוק" },
-        { c: "#0f172a", label: "שחור" },
-    ];
+    const titleColors = $derived([
+        { c: "#ffffff", label: i18n.t('b.pal.white') },
+        { c: "#fbbf24", label: i18n.t('b.pal.gold') },
+        { c: "#fde047", label: i18n.t('b.pal.yellow') },
+        { c: "#fb923c", label: i18n.t('b.pal.orange') },
+        { c: "#f87171", label: i18n.t('b.pal.red') },
+        { c: "#f9a8d4", label: i18n.t('b.pal.pink') },
+        { c: "#c4b5fd", label: i18n.t('b.pal.purple') },
+        { c: "#67e8f9", label: i18n.t('b.pal.sky') },
+        { c: "#86efac", label: i18n.t('b.pal.green') },
+        { c: "#0f172a", label: i18n.t('b.pal.black') },
+    ]);
 
     // ===== תצוגה מקדימה =====
     let previewMode = $state(/** @type {'mobile' | 'desktop'} */ ("mobile"));
@@ -744,7 +753,7 @@
                     titleOffsetY = typeof d.titleOffsetY === "number" ? d.titleOffsetY : 0;
                     subtitle = d.subtitle ?? "";
                     hoverText = d.hoverText ?? "";
-                    cta = d.cta || "הקלק לפרטים והזמנות";
+                    cta = d.cta || i18n.t('b.defaultCta');
                     gradient = d.gradient ?? gradient;
                     diagHeight = typeof d.diagHeight === "number" ? d.diagHeight : 12;
                     landingHeadline = d.landingHeadline ?? "";
@@ -811,7 +820,7 @@
     });
 
     function resetDraft() {
-        if (!confirm("לאפס את הטיוטה ולהתחיל מחדש?")) return;
+        if (!confirm(i18n.t('b.confirmReset'))) return;
         try { localStorage.removeItem(LS_KEY); } catch {}
         location.reload();
     }
@@ -821,14 +830,14 @@
     // נבדק כאן, וגם משקל המודעה — במקום שדף הנחיתה יחזיר את המשתמש אחורה.
     let adWeightBytes = $derived.by(() => bodyBytes(buildPayloadSnapshot()));
     let overweight = $derived(adWeightBytes > AD_EFFECTIVE_LIMIT);
-    let heaviestLabel = $derived.by(() => heaviestImageLabel(buildPayloadSnapshot()));
+    let heaviestLabel = $derived.by(() => heaviestImageLabel(buildPayloadSnapshot(), i18n.locale));
     let cardMissing = $derived.by(() => {
         /** @type {string[]} */
         const out = [];
-        if (!mainImage) out.push("התמונה הראשית (שלב 1)");
-        if (!title.trim()) out.push("הכותרת (שלב 3)");
-        if (!subtitle.trim()) out.push("הסלוגן (שלב 5)");
-        if (!hoverText.trim()) out.push("הטקסט בריחוף (שלב 6)");
+        if (!mainImage) out.push(i18n.t('b.missing.image'));
+        if (!title.trim()) out.push(i18n.t('b.missing.title'));
+        if (!subtitle.trim()) out.push(i18n.t('b.missing.subtitle'));
+        if (!hoverText.trim()) out.push(i18n.t('b.missing.hover'));
         return out;
     });
     let canLeaveToLanding = $derived(cardMissing.length === 0 && !overweight);
@@ -876,33 +885,31 @@
     function buildDraftSummary() {
         /** @type {string[]} */
         const parts = [];
-        if (title) parts.push(`כותרת: "${title}"`);
-        if (subtitle) parts.push(`סלוגן: "${subtitle}"`);
-        if (mainImage) parts.push("יש תמונה ראשית");
-        if (logo) parts.push("יש לוגו");
-        if (hoverText) parts.push(`טקסט ריחוף: "${hoverText.slice(0, 60)}${hoverText.length > 60 ? "…" : ""}"`);
+        if (title) parts.push(i18n.t('b.sumTitle', { v: title }));
+        if (subtitle) parts.push(i18n.t('b.sumSubtitle', { v: subtitle }));
+        if (mainImage) parts.push(i18n.t('b.sumImage'));
+        if (logo) parts.push(i18n.t('b.sumLogo'));
+        if (hoverText) parts.push(i18n.t('b.sumHover', { v: `${hoverText.slice(0, 60)}${hoverText.length > 60 ? "…" : ""}` }));
         return parts.join(" · ");
     }
     function submitHelp() {
         const problem = helpProblem.trim();
         const contact = helpContact.trim();
         if (problem.length < 5) {
-            helpError = "נא לתאר את הבעיה (לפחות כמה מילים)";
+            helpError = i18n.t('b.helpNeedProblem');
             return;
         }
         const isLoggedIn = Boolean(data?.layoutUser?.email || data?.layoutUser?.name);
         if (!isLoggedIn && !contact) {
-            helpError = "נא להשאיר דרך ליצירת קשר";
+            helpError = i18n.t('b.helpNeedContact');
             return;
         }
         helpError = "";
-        const identity = contact || data?.layoutUser?.email || data?.layoutUser?.name || "אנונימי";
+        const identity = contact || data?.layoutUser?.email || data?.layoutUser?.name || i18n.t('b.anonymous');
         const draftSummary = buildDraftSummary();
         const waText =
-            `שלום! אני צריך/ה עזרה בעיצוב הפרסומת באתר המומחים של העם 🆘\n\n` +
-            `🧑 ${identity}\n\n` +
-            `הבעיה:\n"${problem}"` +
-            (draftSummary ? `\n\nמצב הטיוטה: ${draftSummary}` : "");
+            i18n.t('b.helpWa', { identity, problem }) +
+            (draftSummary ? i18n.t('b.helpWaDraft', { summary: draftSummary }) : "");
         const waUrl = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(waText)}`;
         window.open(waUrl, "_blank", "noopener,noreferrer");
         helpOpen = false;
@@ -910,27 +917,24 @@
 </script>
 
 <svelte:head>
-    <title>בניית הפרסומת שלי | המומחים של העם</title>
+    <title>{i18n.t('b.pageTitle')} | {i18n.t('site.name')}</title>
 </svelte:head>
 
 {#if !accessChecked}
     <div style="min-height: 40vh;" aria-hidden="true"></div>
 {:else}
-    <div class="ad-builder" dir="rtl">
+    <div class="ad-builder">
 
         <!-- הודעה צפה: תמונה נדחסה אוטומטית -->
         {#if compressNotice.visible}
             <div class="compress-toast" role="status" aria-live="polite">
-                <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label="סגור הודעה">✕</button>
+                <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label={i18n.t('b.closeNotice')}>✕</button>
                 <div class="compress-toast-body">
                     <span class="compress-toast-icon">🪄</span>
                     <div>
-                        <p class="ct-title">התמונה כווצה אוטומטית</p>
+                        <p class="ct-title">{i18n.t('b.compressedTitle')}</p>
                         <p class="ct-text">
-                            כדי שהמודעה כולה תעמוד במשקל שהשרת מקבל, התמונה
-                            ({fmtWeight(compressNotice.originalBytes)}) כווצה
-                            ל-<strong>{fmtWeight(compressNotice.finalBytes)}</strong>.
-                            <br />אם האיכות לא מספיקה - נסו תמונה קלה או פשוטה יותר.
+                            {@html i18n.t('b.compressText', { from: fmtWeight(compressNotice.originalBytes), to: fmtWeight(compressNotice.finalBytes) })}
                         </p>
                     </div>
                 </div>
@@ -940,10 +944,10 @@
         <!-- כותרת -->
         <div class="b-hero">
             <div class="b-hero-icon">🎨</div>
-            <h1 class="b-hero-title">{editId ? "עריכת הפרסומת שלי" : "בונה הפרסומות"}</h1>
+            <h1 class="b-hero-title">{editId ? i18n.t('b.editTitle') : i18n.t('b.builderTitle')}</h1>
             <p class="b-hero-sub">
-                מעצבים את הפרסומת שלכם צעד-צעד - בדיוק כפי שתיראה באתר.
-                <br />כל שינוי נשמר אוטומטית.
+                {i18n.t('b.heroSub1')}
+                <br />{i18n.t('b.heroSub2')}
             </p>
 
             <!-- נפתח מדשבורד הנכס: בסיום מחליפים את המודעה הקיימת, בלי תשלום -->
@@ -951,10 +955,10 @@
                 <div class="b-edit-mode">
                     <span class="b-cd-icon">✏️</span>
                     <div>
-                        <p class="b-cd-title">עריכה של מודעה קיימת</p>
+                        <p class="b-cd-title">{i18n.t('b.editExistingTitle')}</p>
                         <p class="b-cd-text">
-                            השינויים יחליפו את המודעה שכבר באתר — התקופה והתשלום נשארים כמו שהם.
-                            <a href="/about/advertise/manage/{editId}">חזרה לדשבורד הנכס</a>
+                            {i18n.t('b.editExistingText')}
+                            <a href="/about/advertise/manage/{editId}">{i18n.t('b.backToDashboard')}</a>
                         </p>
                     </div>
                 </div>
@@ -965,11 +969,9 @@
                 <div class="b-countdown">
                     <span class="b-cd-icon">⏰</span>
                     <div>
-                        <p class="b-cd-title">יום העריכה החינמי פעיל</p>
+                        <p class="b-cd-title">{i18n.t('b.freeDayTitle')}</p>
                         <p class="b-cd-text">
-                            נותרו <strong>{fmtCountdown(freeMsRemaining)}</strong>
-                            שעות לסיום העריכה בחינם. <strong>כדאי לסיים היום!</strong>
-                            הפרסום ירוץ עד {fmtDateShort(new Date(paidAt.getTime() + planDays * 24 * 60 * 60 * 1000))}.
+                            {@html i18n.t('b.countdownText', { time: fmtCountdown(freeMsRemaining), date: fmtDateShort(new Date(paidAt.getTime() + planDays * 24 * 60 * 60 * 1000)) })}
                         </p>
                     </div>
                 </div>
@@ -977,8 +979,8 @@
                 <div class="b-expired">
                     <span class="b-cd-icon">⌛</span>
                     <div>
-                        <p class="b-cd-title red">יום העריכה החינמי הסתיים</p>
-                        <p class="b-cd-text">אפשר עדיין לערוך ולשלוח - צרו קשר אם צריך עזרה.</p>
+                        <p class="b-cd-title red">{i18n.t('b.freeDayEnded')}</p>
+                        <p class="b-cd-text">{i18n.t('b.freeDayEndedText')}</p>
                     </div>
                 </div>
             {/if}
@@ -987,15 +989,15 @@
             <div class="b-autosave">
                 <span class="b-cd-icon">💾</span>
                 <div>
-                    <p class="b-as-title">הטיוטה נשמרת אוטומטית</p>
+                    <p class="b-as-title">{i18n.t('b.autosaveTitle')}</p>
                     <p class="b-cd-text">
-                        אפשר לצאת מהדף ולחזור - כל מה שהזנתם מחכה לכם כאן.
+                        {i18n.t('b.autosaveText')}
                     </p>
                 </div>
             </div>
 
             <div class="b-reset-row">
-                <button type="button" onclick={resetDraft} class="b-reset">🗑 איפוס הטיוטה והתחלה מחדש</button>
+                <button type="button" onclick={resetDraft} class="b-reset">{i18n.t('b.resetDraft')}</button>
             </div>
         </div>
 
@@ -1007,22 +1009,22 @@
                 <section bind:this={stepRefs.image} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.image.title}>
                         <span class="step-num" class:step-num-light={litFlags.image.num}>1</span>
-                        <h2>העלו את התמונה הראשית</h2>
+                        <h2>{i18n.t('b.s1Title')}</h2>
                         {#if activeStep === "image"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
                     </div>
-                    <p class="step-help">זו התמונה הגדולה שממלאת את הפרסומת. בחרו תמונה איכותית שמייצגת את העסק.</p>
+                    <p class="step-help">{i18n.t('b.s1Help')}</p>
 
                     <div class="step1-grid">
                         <div class="tips-box">
-                            <p class="tips-title">💡 טיפים לתמונה מנצחת</p>
+                            <p class="tips-title">{i18n.t('b.tipsTitle')}</p>
                             <ul>
-                                <li>📸 תמונה חדה ומוארת היטב</li>
-                                <li>🎯 מוקד אחד ברור - מוצר, מנה או חזית העסק</li>
-                                <li>🌈 צבעים חיים בולטים יותר בפיד</li>
-                                <li>📐 המודעה נחתכת לגובה בדסקטופ ולרוחב בנייד - עדיף תמונה מרובעת והעיקר במרכז</li>
-                                <li>🚫 בלי טקסט על התמונה - הטקסט מתווסף בהמשך</li>
+                                <li>{i18n.t('b.tip1')}</li>
+                                <li>{i18n.t('b.tip2')}</li>
+                                <li>{i18n.t('b.tip3')}</li>
+                                <li>{i18n.t('b.tip4')}</li>
+                                <li>{i18n.t('b.tip5')}</li>
                             </ul>
                         </div>
 
@@ -1035,20 +1037,20 @@
                             ondrop={(e) => handleDrop(e, "main", (v) => (isDraggingMain = v))}
                         >
                             {#if mainImage}
-                                <img src={mainImage} alt="התמונה הראשית" style:object-fit="cover" style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
-                                <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label="הסר תמונה">✕</button>
-                                <button type="button" class="crop-arrow up" onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }} aria-label="הזז למעלה">▲</button>
-                                <button type="button" class="crop-arrow down" onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }} aria-label="הזז למטה">▼</button>
-                                <button type="button" class="crop-arrow left" onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }} aria-label="הזז שמאלה">◀</button>
-                                <button type="button" class="crop-arrow right" onclick={(e) => { e.preventDefault(); nudgeMainImage("right"); }} aria-label="הזז ימינה">▶</button>
-                                <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; mainImageZoom = 1; }} aria-label="איפוס מיקום וזום">⊙</button>
-                                <button type="button" class="crop-zoom zoom-in" onclick={(e) => { e.preventDefault(); zoomMainImage("in"); }} aria-label="זום פנימה">＋</button>
-                                <button type="button" class="crop-zoom zoom-out" onclick={(e) => { e.preventDefault(); zoomMainImage("out"); }} aria-label="זום החוצה">－</button>
+                                <img src={mainImage} alt={i18n.t('b.mainImage')} style:object-fit="cover" style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
+                                <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label={i18n.t('b.removeImage')}>✕</button>
+                                <button type="button" class="crop-arrow up" onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }} aria-label={i18n.t('b.moveUp')}>▲</button>
+                                <button type="button" class="crop-arrow down" onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }} aria-label={i18n.t('b.moveDown')}>▼</button>
+                                <button type="button" class="crop-arrow left" onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }} aria-label={i18n.t('b.moveLeft')}>◀</button>
+                                <button type="button" class="crop-arrow right" onclick={(e) => { e.preventDefault(); nudgeMainImage("right"); }} aria-label={i18n.t('b.moveRight')}>▶</button>
+                                <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; mainImageZoom = 1; }} aria-label={i18n.t('b.resetPos')}>⊙</button>
+                                <button type="button" class="crop-zoom zoom-in" onclick={(e) => { e.preventDefault(); zoomMainImage("in"); }} aria-label={i18n.t('b.zoomIn')}>＋</button>
+                                <button type="button" class="crop-zoom zoom-out" onclick={(e) => { e.preventDefault(); zoomMainImage("out"); }} aria-label={i18n.t('b.zoomOut')}>－</button>
                             {:else}
                                 <div class="upload-empty">
                                     <div class="upload-emoji">📸</div>
-                                    <p class="upload-main">{isDraggingMain ? "שחררו כאן! ✨" : "לחצו או גררו תמונה לכאן"}</p>
-                                    <p class="upload-note">תמונות גדולות יכווצו אוטומטית</p>
+                                    <p class="upload-main">{isDraggingMain ? i18n.t('b.dropHere') : i18n.t('b.clickOrDrag')}</p>
+                                    <p class="upload-note">{i18n.t('b.bigCompressed')}</p>
                                 </div>
                             {/if}
                             <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden-input" />
@@ -1058,9 +1060,9 @@
                         <p class="upload-issue" role="alert">⛔ {uploadIssue.msg}</p>
                     {/if}
                     {#if mainImage}
-                        <p class="crop-hint">אפשר למרכז עם החיצים ולהתקרב/להתרחק עם ＋/－ - התוצאה מוצגת בדמו החי</p>
+                        <p class="crop-hint">{i18n.t('b.cropHint')}</p>
                         <div class="step-nav-row">
-                            <button type="button" class="step-nav-btn" onclick={() => advance("logo")}>סיימתי למרכז - לשלב הבא ←</button>
+                            <button type="button" class="step-nav-btn" onclick={() => advance("logo")}>{i18n.t('b.doneCentering')}</button>
                         </div>
                     {/if}
                 </section>
@@ -1069,12 +1071,12 @@
                 <section bind:this={stepRefs.logo} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.logo.title}>
                         <span class="step-num" class:step-num-light={litFlags.logo.num}>2</span>
-                        <h2>לוגו העסק (לא חובה)</h2>
+                        <h2>{i18n.t('b.s2Title')}</h2>
                         {#if activeStep === "logo"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
                     </div>
-                    <p class="step-help">הלוגו מופיע בפינת הפרסומת - <strong class="amber-strong">מומלץ</strong> אך אפשר לדלג.</p>
+                    <p class="step-help">{i18n.t('b.s2HelpA')} <strong class="amber-strong">{i18n.t('b.s2HelpB')}</strong> {i18n.t('b.s2HelpC')}</p>
 
                     <div class="logo-row">
                         <div class="logo-upload-col">
@@ -1087,46 +1089,46 @@
                                 ondrop={(e) => handleDrop(e, "logo", (v) => (isDraggingLogo = v))}
                             >
                                 {#if logo}
-                                    <img src={logo} alt="לוגו" />
-                                    <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label="הסר לוגו">✕</button>
+                                    <img src={logo} alt={i18n.t('b.logo')} />
+                                    <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label={i18n.t('b.removeLogo')}>✕</button>
                                 {:else}
                                     <div class="upload-sm-empty">
                                         <div class="upload-sm-emoji">{isDraggingLogo ? "✨" : "🏷️"}</div>
-                                        <p>{isDraggingLogo ? "שחררו!" : "העלו לוגו"}</p>
+                                        <p>{isDraggingLogo ? i18n.t('b.dropLogo') : i18n.t('b.uploadLogo')}</p>
                                     </div>
                                 {/if}
                                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden-input" />
                             </label>
                             {#if logo && logoShape === "circle" && hasCircleCrop}
-                                <button type="button" onclick={openCropper} class="edit-crop-link">עריכת החיתוך</button>
+                                <button type="button" onclick={openCropper} class="edit-crop-link">{i18n.t('b.editCrop')}</button>
                             {/if}
                         </div>
 
                         {#if logo}
                             <div class="logo-controls">
                                 <div>
-                                    <p class="control-label">צורת החיתוך</p>
+                                    <p class="control-label">{i18n.t('b.cropShape')}</p>
                                     <div class="seg-group">
-                                        <button type="button" onclick={chooseSquare} class="seg-btn" class:active={logoShape === "square"}>⬜ מרובע</button>
-                                        <button type="button" onclick={chooseCircle} class="seg-btn" class:active={logoShape === "circle"}>⚪ עגול</button>
+                                        <button type="button" onclick={chooseSquare} class="seg-btn" class:active={logoShape === "square"}>{i18n.t('b.square')}</button>
+                                        <button type="button" onclick={chooseCircle} class="seg-btn" class:active={logoShape === "circle"}>{i18n.t('b.circle')}</button>
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="control-label">מיקום הלוגו</p>
+                                    <p class="control-label">{i18n.t('b.logoPosition')}</p>
                                     <div class="seg-group">
-                                        <button type="button" onclick={() => setLogoAnchor("right")} class="seg-btn" class:active={!logoFree && logoPosition === "right"}>ימין</button>
-                                        <button type="button" onclick={() => setLogoAnchor("left")} class="seg-btn" class:active={!logoFree && logoPosition === "left"}>שמאל</button>
-                                        <button type="button" onclick={() => setLogoAnchor("cta")} class="seg-btn" class:active={!logoFree && logoPosition === "cta"}>למטה</button>
+                                        <button type="button" onclick={() => setLogoAnchor("right")} class="seg-btn" class:active={!logoFree && logoPosition === "right"}>{i18n.t('b.right')}</button>
+                                        <button type="button" onclick={() => setLogoAnchor("left")} class="seg-btn" class:active={!logoFree && logoPosition === "left"}>{i18n.t('b.left')}</button>
+                                        <button type="button" onclick={() => setLogoAnchor("cta")} class="seg-btn" class:active={!logoFree && logoPosition === "cta"}>{i18n.t('b.bottom')}</button>
                                     </div>
                                 </div>
                             </div>
                             <!-- מיקום חופשי: גוררים את הלוגו על התצוגה החיה לכל מקום -->
                             <div class="logo-drag-row">
-                                <p class="logo-drag-hint">🖐️ אפשר גם לגרור את הלוגו בתצוגה החיה לכל מקום במודעה</p>
+                                <p class="logo-drag-hint">{i18n.t('b.logoDragHint')}</p>
                                 {#if logoFree}
                                     <span class="logo-drag-pos">
                                         <span class="logo-drag-badge">{logoFreeX}% · {logoFreeY}%</span>
-                                        <button type="button" class="logo-drag-reset" onclick={resetLogoPosition}>למיקום ברירת המחדל</button>
+                                        <button type="button" class="logo-drag-reset" onclick={resetLogoPosition}>{i18n.t('b.logoDragReset')}</button>
                                     </span>
                                 {/if}
                             </div>
@@ -1138,21 +1140,21 @@
                     {/if}
 
                     <div class="step-nav-row">
-                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("logo"))}>→ שלב אחורה</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("logo"))}>{i18n.t('b.prevStep')}</button>
                         <button type="button" class="step-nav-btn" onclick={() => advance("title")}>
-                            {logo ? "לשלב הבא ←" : "דילוג על הלוגו ←"}
+                            {logo ? i18n.t('b.nextStep') : i18n.t('b.skipLogo')}
                         </button>
                     </div>
 
                     <!-- ===== מודל חיתוך עגול ===== -->
                     {#if cropOpen}
-                        <div class="crop-modal-bg" role="dialog" aria-modal="true" aria-label="חיתוך הלוגו לעיגול">
+                        <div class="crop-modal-bg" role="dialog" aria-modal="true" aria-label={i18n.t('b.cropLogoLabel')}>
                             <div class="crop-modal">
                                 <div class="crop-modal-head">
-                                    <h3>חיתוך עגול ללוגו</h3>
-                                    <button type="button" class="crop-modal-x" onclick={cancelCrop} aria-label="סגור">✕</button>
+                                    <h3>{i18n.t('b.cropLogoTitle')}</h3>
+                                    <button type="button" class="crop-modal-x" onclick={cancelCrop} aria-label={i18n.t('common.close')}>✕</button>
                                 </div>
-                                <p class="crop-help">גררו את התמונה למיקום הרצוי, והשתמשו בגלגלת או במחוון לזום.</p>
+                                <p class="crop-help">{i18n.t('b.cropHelp')}</p>
                                 <div
                                     class="crop-stage"
                                     onpointerdown={cropPointerDown}
@@ -1163,7 +1165,7 @@
                                 >
                                     <img
                                         src={logoOriginal}
-                                        alt="לוגו"
+                                        alt={i18n.t('b.logo')}
                                         class="crop-img"
                                         draggable="false"
                                         style:transform="translate({cropOffsetX}px, {cropOffsetY}px) scale({cropZoom})"
@@ -1171,13 +1173,13 @@
                                     <div class="crop-circle-mask"></div>
                                 </div>
                                 <div class="crop-controls">
-                                    <span class="crop-zoom-label">זום</span>
-                                    <input type="range" min="0.3" max="4" step="0.01" bind:value={cropZoom} class="crop-zoom-slider" aria-label="רמת הזום" />
+                                    <span class="crop-zoom-label">{i18n.t('b.zoom')}</span>
+                                    <input type="range" min="0.3" max="4" step="0.01" bind:value={cropZoom} class="crop-zoom-slider" aria-label={i18n.t('b.zoomLevel')} />
                                     <span class="crop-zoom-val">{Math.round(cropZoom * 100)}%</span>
                                 </div>
                                 <div class="crop-actions">
-                                    <button type="button" class="crop-btn-cancel" onclick={cancelCrop}>ביטול</button>
-                                    <button type="button" class="crop-btn-confirm" onclick={confirmCrop}>אישור החיתוך ✓</button>
+                                    <button type="button" class="crop-btn-cancel" onclick={cancelCrop}>{i18n.t('common.cancel')}</button>
+                                    <button type="button" class="crop-btn-confirm" onclick={confirmCrop}>{i18n.t('b.confirmCrop')}</button>
                                 </div>
                             </div>
                         </div>
@@ -1188,13 +1190,13 @@
                 <section bind:this={stepRefs.title} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.title.title}>
                         <span class="step-num" class:step-num-light={litFlags.title.num}>3</span>
-                        <h2>כותרת הפרסומת</h2>
+                        <h2>{i18n.t('b.s3Title')}</h2>
                         {#if activeStep === "title"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
 
-                        <div class="title-color-rail" aria-label="בחירת צבע הכותרת">
-                            <span class="title-color-label">צבע:</span>
+                        <div class="title-color-rail" aria-label={i18n.t('b.pickTitleColor')}>
+                            <span class="title-color-label">{i18n.t('b.colorLabel')}</span>
                             {#each titleColors as p}
                                 <button
                                     type="button"
@@ -1207,13 +1209,13 @@
                                     aria-pressed={titleColor === p.c}
                                 ></button>
                             {/each}
-                            <label class="title-color-custom" title="צבע מותאם אישית">
-                                <input type="color" bind:value={titleColor} aria-label="בחירת צבע מותאם" />
+                            <label class="title-color-custom" title={i18n.t('b.customColor')}>
+                                <input type="color" bind:value={titleColor} aria-label={i18n.t('b.pickCustomColor')} />
                                 <span>🎨</span>
                             </label>
                         </div>
                     </div>
-                    <p class="step-help">שם העסק או המסר המרכזי - קצר וקליט (עד 40 תווים).</p>
+                    <p class="step-help">{i18n.t('b.s3Help')}</p>
 
                     <input
                         type="text"
@@ -1221,24 +1223,24 @@
                         maxlength="40"
                         onfocus={() => activeStep === "title" || (activeStep = "title")}
                         onblur={() => title.trim() && commitField("title")}
-                        placeholder="למשל: פיצה של אמא"
+                        placeholder={i18n.t('b.s3Placeholder')}
                         class="text-input"
                     />
                     <div class="char-count">{title.length}/40</div>
 
                     <div class="slider-block">
                         <div class="slider-head">
-                            <p>מיקום הכותרת <span class="amber-strong">{titleOffsetY > 0 ? `+${titleOffsetY}` : titleOffsetY}px</span></p>
-                            <button type="button" onclick={() => (titleOffsetY = 0)} class="slider-reset">איפוס</button>
+                            <p>{i18n.t('b.titlePosition')} <span class="amber-strong">{titleOffsetY > 0 ? `+${titleOffsetY}` : titleOffsetY}px</span></p>
+                            <button type="button" onclick={() => (titleOffsetY = 0)} class="slider-reset">{i18n.t('b.reset')}</button>
                         </div>
-                        <input type="range" min="-20" max="60" step="1" bind:value={titleOffsetY} class="range-input" aria-label="מיקום אנכי של הכותרת" />
-                        <div class="slider-labels"><span>למעלה</span><span>למטה</span></div>
+                        <input type="range" min="-20" max="60" step="1" bind:value={titleOffsetY} class="range-input" aria-label={i18n.t('b.titleVerticalPos')} />
+                        <div class="slider-labels"><span>{i18n.t('b.top')}</span><span>{i18n.t('b.bottom')}</span></div>
                     </div>
 
                     <div class="step-nav-row">
-                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("title"))}>→ שלב אחורה</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("title"))}>{i18n.t('b.prevStep')}</button>
                         {#if title}
-                            <button type="button" class="step-nav-btn" onclick={() => commitField("title")}>לשלב הבא ←</button>
+                            <button type="button" class="step-nav-btn" onclick={() => commitField("title")}>{i18n.t('b.nextStep')}</button>
                         {/if}
                     </div>
                 </section>
@@ -1247,15 +1249,15 @@
                 <section bind:this={stepRefs.gradient} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.gradient.title}>
                         <span class="step-num" class:step-num-light={litFlags.gradient.num}>4</span>
-                        <h2>צבע הפס והכפתור</h2>
+                        <h2>{i18n.t('b.s4Title')}</h2>
                         {#if activeStep === "gradient"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
                     </div>
-                    <p class="step-help">הצבע של הפס האלכסוני על התמונה ושל כפתור הקריאה לפעולה.</p>
+                    <p class="step-help">{i18n.t('b.s4Help')}</p>
 
-                    <p class="control-label">צבע הפס</p>
-                    <div class="color-rail" aria-label="בחירת צבע הפס">
+                    <p class="control-label">{i18n.t('b.stripeColor')}</p>
+                    <div class="color-rail" aria-label={i18n.t('b.pickStripeColor')}>
                         {#each palettes as p}
                             <button
                                 type="button"
@@ -1272,15 +1274,15 @@
 
                     <div class="slider-block">
                         <div class="slider-head">
-                            <p>גובה הפס <span class="amber-strong">{diagHeight}%</span> מהתמונה</p>
+                            <p>{i18n.t('b.stripeHeight')} <span class="amber-strong">{diagHeight}%</span> {i18n.t('b.ofImage')}</p>
                         </div>
-                        <input type="range" min="5" max="50" step="1" bind:value={diagHeight} class="range-input" aria-label="גובה הפס האלכסוני" />
-                        <div class="slider-labels"><span>נמוך</span><span>גבוה</span></div>
+                        <input type="range" min="5" max="50" step="1" bind:value={diagHeight} class="range-input" aria-label={i18n.t('b.stripeHeightLabel')} />
+                        <div class="slider-labels"><span>{i18n.t('b.low')}</span><span>{i18n.t('b.high')}</span></div>
                     </div>
 
                     <div class="step-nav-row">
-                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("gradient"))}>→ שלב אחורה</button>
-                        <button type="button" class="step-nav-btn" onclick={() => advance("subtitle")}>ממשיכים לשלב הבא ←</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("gradient"))}>{i18n.t('b.prevStep')}</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance("subtitle")}>{i18n.t('b.continueNext')}</button>
                     </div>
                 </section>
 
@@ -1288,12 +1290,12 @@
                 <section bind:this={stepRefs.subtitle} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
                         <span class="step-num" class:step-num-light={litFlags.subtitle.num}>5</span>
-                        <h2>משפט קצר / סלוגן</h2>
+                        <h2>{i18n.t('b.s5Title')}</h2>
                         {#if activeStep === "subtitle"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
                     </div>
-                    <p class="step-help">מופיע על הפס הצבעוני בתחתית הפרסומת (עד 70 תווים).</p>
+                    <p class="step-help">{i18n.t('b.s5Help')}</p>
 
                     <input
                         type="text"
@@ -1301,15 +1303,15 @@
                         maxlength="70"
                         onfocus={() => activeStep === "subtitle" || (activeStep = "subtitle")}
                         onblur={() => subtitle.trim() && commitField("subtitle")}
-                        placeholder="למשל: משלוחים חינם עד הבית בכל הארץ"
+                        placeholder={i18n.t('b.s5Placeholder')}
                         class="text-input"
                     />
                     <div class="char-count">{subtitle.length}/70</div>
 
                     <div class="step-nav-row">
-                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("subtitle"))}>→ שלב אחורה</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("subtitle"))}>{i18n.t('b.prevStep')}</button>
                         {#if subtitle}
-                            <button type="button" class="step-nav-btn" onclick={() => commitField("subtitle")}>לשלב הבא ←</button>
+                            <button type="button" class="step-nav-btn" onclick={() => commitField("subtitle")}>{i18n.t('b.nextStep')}</button>
                         {/if}
                     </div>
                 </section>
@@ -1318,14 +1320,14 @@
                 <section bind:this={stepRefs.hover} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.hover.title}>
                         <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
-                        <h2>טקסט בריחוף העכבר</h2>
+                        <h2>{i18n.t('b.s6Title')}</h2>
                         {#if activeStep === "hover"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
                     </div>
                     <p class="step-help">
-                        כשגולש מרחף עם העכבר מעל הפרסומת - התמונה מתחלפת בטקסט הזה.
-                        <br /><strong class="amber-strong">זה המקום למכור:</strong> מה מקבלים, למה דווקא אתם (עד 90 תווים).
+                        {i18n.t('b.s6HelpA')}
+                        <br /><strong class="amber-strong">{i18n.t('b.s6HelpB')}</strong> {i18n.t('b.s6HelpC')}
                     </p>
 
                     <!-- התיבה גדלה לפי התוכן (autoGrow): גובה קבוע חתך את השורות
@@ -1337,15 +1339,15 @@
                         rows="3"
                         onfocus={() => activeStep === "hover" || (activeStep = "hover")}
                         onblur={() => hoverText.trim() && commitField("hover")}
-                        placeholder="למשל: 20% הנחה לחברי הקבוצה על כל התפריט!"
+                        placeholder={i18n.t('b.s6Placeholder')}
                         class="text-input"
                     ></textarea>
                     <div class="char-count">{hoverText.length}/90</div>
 
                     <div class="step-nav-row">
-                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("hover"))}>→ שלב אחורה</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("hover"))}>{i18n.t('b.prevStep')}</button>
                         {#if hoverText}
-                            <button type="button" class="step-nav-btn" onclick={() => commitField("hover")}>לשלב הבא ←</button>
+                            <button type="button" class="step-nav-btn" onclick={() => commitField("hover")}>{i18n.t('b.nextStep')}</button>
                         {/if}
                     </div>
                 </section>
@@ -1354,17 +1356,17 @@
                 <section bind:this={stepRefs.preview} class="step-card">
                     <div class="step-head" class:step-title-light={litFlags.preview.title}>
                         <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
-                        <h2>תצוגה מקדימה</h2>
+                        <h2>{i18n.t('b.previewTitle')}</h2>
                         {#if activeStep === "preview"}
                             <span class="tutorial-finger" aria-hidden="true">👇</span>
                         {/if}
                     </div>
-                    <p class="step-help">כך תיראה הפרסומת שלכם באתר. עברו עם העכבר על הכרטיס כדי לראות את צד הריחוף.</p>
+                    <p class="step-help">{i18n.t('b.previewHelp')}</p>
 
                     <div class="preview-toggle-row">
                         <div class="seg-group">
-                            <button type="button" onclick={() => (previewMode = "mobile")} class="seg-btn" class:active={previewMode === "mobile"}>📱 נייד</button>
-                            <button type="button" onclick={() => (previewMode = "desktop")} class="seg-btn" class:active={previewMode === "desktop"}>💻 מחשב</button>
+                            <button type="button" onclick={() => (previewMode = "mobile")} class="seg-btn" class:active={previewMode === "mobile"}>{i18n.t('b.mobile')}</button>
+                            <button type="button" onclick={() => (previewMode = "desktop")} class="seg-btn" class:active={previewMode === "desktop"}>{i18n.t('b.desktop')}</button>
                         </div>
                     </div>
 
@@ -1376,19 +1378,19 @@
                                     <div class="mobile-popup">
                                         <div class="popup-title-row">
                                             {#if logo}
-                                                <img src={logo} alt="לוגו" class="popup-logo-above" class:circle={logoShape === "circle"} />
+                                                <img src={logo} alt={i18n.t('b.logo')} class="popup-logo-above" class:circle={logoShape === "circle"} />
                                             {/if}
-                                            <h3 class="popup-title-above" style:color={titleColor}>{title || "כותרת הפרסומת"}</h3>
+                                            <h3 class="popup-title-above" style:color={titleColor}>{title || i18n.t('b.s3Title')}</h3>
                                         </div>
                                         <div class="popup-img pro-img-wrap">
                                             {#if mainImage}
                                                 <img src={mainImage} alt={title} style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
                                             {:else}
-                                                <div class="img-placeholder">התמונה הראשית</div>
+                                                <div class="img-placeholder">{i18n.t('b.mainImage')}</div>
                                             {/if}
                                             <div class="pro-diag" style:background={gradient}></div>
                                             <div class="pro-title-wrap mobile">
-                                                <p class="pro-sub">{subtitle || "משפט קצר / סלוגן"}</p>
+                                                <p class="pro-sub">{subtitle || i18n.t('b.s5Title')}</p>
                                             </div>
                                             <div class="close-countdown">5</div>
                                         </div>
@@ -1398,7 +1400,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="preview-caption">כך תיראה הפרסומת בנייד - חלונית שנפתחת לגולש</p>
+                            <p class="preview-caption">{i18n.t('b.mobileCaption')}</p>
                         </div>
                     {:else}
                         <div class="preview-frame">
@@ -1415,18 +1417,18 @@
                                     {#if mainImage}
                                         <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
                                     {:else}
-                                        <div class="img-placeholder">התמונה שלך</div>
+                                        <div class="img-placeholder">{i18n.t('b.yourImage')}</div>
                                     {/if}
                                     <div class="pro-diag" style:background={gradient} style:opacity={showHover ? 0 : 1}></div>
                                     <div class="pro-title-top" style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
-                                        <h3 class="pro-title" style:color={titleColor}>{title || "כותרת הפרסומת"}</h3>
+                                        <h3 class="pro-title" style:color={titleColor}>{title || i18n.t('b.s3Title')}</h3>
                                     </div>
                                     <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
-                                        <p class="pro-sub">{subtitle || "משפט קצר / סלוגן"}</p>
+                                        <p class="pro-sub">{subtitle || i18n.t('b.s5Title')}</p>
                                     </div>
                                     <div class="hover-overlay" style:opacity={showHover ? 1 : 0}>
-                                        <h3 class="hover-title">{title || "הכותרת"}</h3>
-                                        <p class="hover-text">{hoverText || "הטקסט שמופיע בריחוף העכבר"}</p>
+                                        <h3 class="hover-title">{title || i18n.t('b.theTitle')}</h3>
+                                        <p class="hover-text">{hoverText || i18n.t('b.hoverPh')}</p>
                                     </div>
                                     {#if logo}
                                         <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
@@ -1434,7 +1436,7 @@
                                              לו מקבילת מקלדת מלאה (חיצים מזיזים אותו) ולכן זה תקין נגישותית -->
                                         <img
                                             src={logo}
-                                            alt="לוגו"
+                                            alt={i18n.t('b.logo')}
                                             class="ad-logo ad-logo-draggable"
                                             class:circle={logoShape === "circle"}
                                             class:pos-left={!logoFree && logoPosition === "left"}
@@ -1445,7 +1447,7 @@
                                             draggable="false"
                                             role="button"
                                             tabindex="0"
-                                            aria-label="לוגו — אפשר לגרור אותו למקום אחר במודעה"
+                                            aria-label={i18n.t('b.dragLogoLabel')}
                                             onpointerdown={logoPointerDown}
                                             onpointermove={logoPointerMove}
                                             onpointerup={logoPointerUp}
@@ -1458,24 +1460,24 @@
                                     <p>{cta}</p>
                                 </div>
                             </div>
-                            <p class="preview-caption">כך תיראה הפרסומת במחשב - בעמודת הפרסומות שלצד התוכן</p>
+                            <p class="preview-caption">{i18n.t('b.desktopCaption')}</p>
                         </div>
                     {/if}
 
                     <div class="step-nav-row">
-                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>→ שלב אחורה</button>
+                        <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>{i18n.t('b.prevStep')}</button>
                         <div class="help-wrap">
-                            <button type="button" onclick={openHelp} class="help-btn" aria-label="בקשת עזרה בעיצוב">
+                            <button type="button" onclick={openHelp} class="help-btn" aria-label={i18n.t('b.helpBtnLabel')}>
                                 <span aria-hidden="true">😩</span>
-                                <span>אני מסתבך! צריך עזרה</span>
+                                <span>{i18n.t('b.helpBtnText')}</span>
                                 <span aria-hidden="true">🆘</span>
                             </button>
                         </div>
                         <button type="button" class="step-nav-btn" onclick={goToLandingEditor} disabled={movingToLanding || !canLeaveToLanding}>
                             {#if movingToLanding}
-                                ⏳ עוברים לדף הנחיתה...
+                                {i18n.t('b.goingToLanding')}
                             {:else}
-                                נראה מעולה 👍 לשלב הבא ←
+                                {i18n.t('b.looksGreat')}
                             {/if}
                         </button>
                     </div>
@@ -1484,27 +1486,26 @@
                     {#if !canLeaveToLanding}
                         <div class="step-block-note" role="alert">
                             {#if cardMissing.length > 0}
-                                <p>⛔ אי אפשר להמשיך עדיין — חסר: <strong>{cardMissing.join(", ")}</strong>.</p>
+                                <p>⛔ {i18n.t('b.cannotContinue')} <strong>{cardMissing.join(", ")}</strong>.</p>
                             {/if}
                             {#if overweight}
                                 <p>
-                                    ⚖️ המודעה כבדה מדי ({fmtWeight(adWeightBytes)} מתוך {fmtWeight(AD_EFFECTIVE_LIMIT)} מותרים) —
-                                    הקטינו או הסירו תמונה{#if heaviestLabel}&nbsp;(הכבדה ביותר: <strong>{heaviestLabel}</strong>){/if}.
+                                    ⚖️ {i18n.t('b.tooHeavy', { used: fmtWeight(adWeightBytes), max: fmtWeight(AD_EFFECTIVE_LIMIT) })}{#if heaviestLabel}&nbsp;({i18n.t('b.heaviest')} <strong>{heaviestLabel}</strong>){/if}.
                                 </p>
                             {/if}
                         </div>
                     {:else if adWeightBytes > AD_EFFECTIVE_LIMIT * 0.7}
-                        <p class="weight-pill">⚖️ משקל המודעה: {fmtWeight(adWeightBytes)} מתוך {fmtWeight(AD_EFFECTIVE_LIMIT)} מותרים</p>
+                        <p class="weight-pill">⚖️ {i18n.t('b.weightPill', { used: fmtWeight(adWeightBytes), max: fmtWeight(AD_EFFECTIVE_LIMIT) })}</p>
                     {/if}
                 </section>
 
             </div><!-- /.builder-steps -->
 
             <!-- ========== דמו חי - קופץ להתיישר עם השלב הפעיל ========== -->
-            <aside class="builder-demo" aria-label="דמו חי של הפרסומת" style:top="{demoTop}px">
+            <aside class="builder-demo" aria-label={i18n.t('b.demoLabel')} style:top="{demoTop}px">
                 <div class="live-demo-card">
-                    <p class="live-demo-label">👁 דמו חי</p>
-                    <div class="live-demo-frame" dir="rtl">
+                    <p class="live-demo-label">{i18n.t('b.demoTitle')}</p>
+                    <div class="live-demo-frame">
                         <div class="pro-img-wrap live-demo-img-wrap">
                             {#if mainImage}
                                 <img
@@ -1518,8 +1519,8 @@
                             {:else}
                                 <div class="placeholder-dashed placeholder-img" style:opacity={activeStep === "hover" ? 0 : 1}>
                                     <div class="placeholder-icon">📸</div>
-                                    <p>התמונה הראשית</p>
-                                    <p class="placeholder-hint">שלב 1</p>
+                                    <p>{i18n.t('b.mainImage')}</p>
+                                    <p class="placeholder-hint">{i18n.t('b.step1')}</p>
                                 </div>
                             {/if}
                             <div class="pro-diag" style:background={gradient} style:opacity={activeStep === "hover" ? 0 : 1}></div>
@@ -1527,21 +1528,21 @@
                                 {#if title}
                                     <h3 class="pro-title" style:color={titleColor}>{title}</h3>
                                 {:else}
-                                    <div class="placeholder-dashed placeholder-line">הכותרת - שלב 3</div>
+                                    <div class="placeholder-dashed placeholder-line">{i18n.t('b.titleStep3')}</div>
                                 {/if}
                             </div>
                             <div class="pro-title-wrap" style:opacity={activeStep === "hover" ? 0 : 1}>
                                 {#if subtitle}
                                     <p class="pro-sub">{subtitle}</p>
                                 {:else}
-                                    <div class="placeholder-dashed placeholder-line small">הסלוגן - שלב 5</div>
+                                    <div class="placeholder-dashed placeholder-line small">{i18n.t('b.subtitleStep5')}</div>
                                 {/if}
                             </div>
                             {#if logo}
                                 <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
                                 <img
                                     src={logo}
-                                    alt="לוגו"
+                                    alt={i18n.t('b.logo')}
                                     class="ad-logo ad-logo-draggable"
                                     class:circle={logoShape === "circle"}
                                     class:pos-left={!logoFree && logoPosition === "left"}
@@ -1552,7 +1553,7 @@
                                     draggable="false"
                                     role="button"
                                     tabindex="0"
-                                    aria-label="לוגו — אפשר לגרור אותו למקום אחר במודעה"
+                                    aria-label={i18n.t('b.dragLogoLabel')}
                                     onpointerdown={logoPointerDown}
                                     onpointermove={logoPointerMove}
                                     onpointerup={logoPointerUp}
@@ -1565,11 +1566,11 @@
                                     class:pos-left={logoPosition === "left"}
                                     class:pos-cta={logoPosition === "cta"}
                                     style:opacity={activeStep === "hover" ? 0 : 1}
-                                >לוגו<br />שלב 2</div>
+                                >{i18n.t('b.logo')}<br />{i18n.t('b.step2')}</div>
                             {/if}
                             <div class="hover-overlay" style:opacity={activeStep === "hover" ? 1 : 0}>
-                                <h3 class="hover-title">{title || "הכותרת"}</h3>
-                                <p class="hover-text">{hoverText || "הטקסט שמופיע בריחוף"}</p>
+                                <h3 class="hover-title">{title || i18n.t('b.theTitle')}</h3>
+                                <p class="hover-text">{hoverText || i18n.t('b.hoverPhShort')}</p>
                             </div>
                         </div>
                         <div class="promo-cta" style:background={gradient}>
@@ -1586,8 +1587,8 @@
 
 <!-- תג אדמין -->
 {#if accessGranted && isAdmin}
-    <div class="admin-badge" dir="rtl">
-        <p>🛡️ מצב אדמין - גישה חופשית לבונה</p>
+    <div class="admin-badge">
+        <p>{i18n.t('b.adminMode')}</p>
     </div>
 {/if}
 
@@ -1602,23 +1603,23 @@
         onkeydown={(e) => { if (e.key === "Escape") closeHelp(); }}
         tabindex="-1"
     >
-        <div class="help-modal" dir="rtl">
+        <div class="help-modal">
             <div class="help-modal-head">
                 <span class="help-modal-icon" aria-hidden="true">🆘</span>
-                <h2 id="help-modal-title">עזרה בעיצוב הפרסומת</h2>
-                <button type="button" class="help-close" onclick={closeHelp} aria-label="סגור">×</button>
+                <h2 id="help-modal-title">{i18n.t('b.helpTitle')}</h2>
+                <button type="button" class="help-close" onclick={closeHelp} aria-label={i18n.t('common.close')}>×</button>
             </div>
 
-            <p class="help-intro">ספרו לנו מה מסתבך - נחזור אליכם ונעזור לסיים את העיצוב יחד.</p>
+            <p class="help-intro">{i18n.t('b.helpIntro')}</p>
 
             <label class="help-field">
-                <span class="help-label">מה הבעיה? <span class="help-required">*</span></span>
+                <span class="help-label">{i18n.t('b.helpProblem')} <span class="help-required">*</span></span>
                 <textarea
                     id="help-problem-input"
                     bind:value={helpProblem}
                     maxlength="2000"
                     rows="5"
-                    placeholder="למשל: התמונה לא מסתדרת לי במרכז, או שאני לא בטוח איזה צבע לבחור..."
+                    placeholder={i18n.t('b.helpProblemPh')}
                     class="help-textarea"
                 ></textarea>
                 <span class="help-counter">{helpProblem.length}/2000</span>
@@ -1626,13 +1627,13 @@
 
             {#if !data?.layoutUser?.email && !data?.layoutUser?.name}
                 <label class="help-field">
-                    <span class="help-label">איך ניצור איתך קשר? <span class="help-required">*</span></span>
-                    <input type="text" bind:value={helpContact} maxlength="200" placeholder="טלפון או אימייל" class="help-input" />
+                    <span class="help-label">{i18n.t('b.helpContact')} <span class="help-required">*</span></span>
+                    <input type="text" bind:value={helpContact} maxlength="200" placeholder={i18n.t('newProblem.contactPh')} class="help-input" />
                 </label>
             {:else}
                 <p class="help-identity">
                     <span aria-hidden="true">🧑</span>
-                    מזוהה כ-<strong>{data?.layoutUser?.name || data?.layoutUser?.email}</strong>
+                    {i18n.t('b.identifiedAs')}<strong>{data?.layoutUser?.name || data?.layoutUser?.email}</strong>
                 </p>
             {/if}
 
@@ -1641,10 +1642,10 @@
             {/if}
 
             <div class="help-actions">
-                <button type="button" class="help-btn-secondary" onclick={closeHelp}>ביטול</button>
+                <button type="button" class="help-btn-secondary" onclick={closeHelp}>{i18n.t('common.cancel')}</button>
                 <button type="button" class="help-btn-primary" onclick={submitHelp}>
                     <span aria-hidden="true">💬</span>
-                    שליחה ופתיחת וואטסאפ
+                    {i18n.t('b.helpSend')}
                 </button>
             </div>
         </div>
@@ -1698,7 +1699,7 @@
         display: flex;
         align-items: flex-start;
         gap: 0.75rem;
-        text-align: right;
+        text-align: start;
     }
     .compress-toast-icon { font-size: 1.85rem; flex-shrink: 0; }
     .ct-title {
@@ -1713,7 +1714,7 @@
         line-height: 1.5;
         margin: 0;
     }
-    .ct-text strong { color: #fde68a; }
+    .ct-text :global(strong) { color: #fde68a; }
     @keyframes compressToastIn {
         from { opacity: 0; transform: translate(-50%, -8px); }
         to { opacity: 1; transform: translate(-50%, 0); }
@@ -1749,7 +1750,7 @@
         max-width: 42rem;
         border-radius: 1rem;
         padding: 0.9rem 1.1rem;
-        text-align: right;
+        text-align: start;
         display: flex;
         align-items: flex-start;
         gap: 0.75rem;
@@ -1796,7 +1797,8 @@
         line-height: 1.5;
         margin: 0;
     }
-    .b-cd-text strong { color: #fde68a; }
+    /* ה-<strong> מגיע מתוך הודעת התרגום ({@html}), ולכן :global */
+    .b-cd-text :global(strong) { color: #fde68a; }
     .b-reset-row {
         margin-top: 0.75rem;
         display: flex;
@@ -1817,18 +1819,18 @@
     /* ============== שתי עמודות + דמו קופץ ============== */
     .builder-cols {
         position: relative;
-        padding-left: 156px; /* מקום לדמו (140px) + רווח */
+        padding-inline-end: 156px; /* מקום לדמו (140px) + רווח */
     }
     .builder-steps { width: 100%; }
     .builder-demo {
         position: absolute;
         top: 0;
-        left: 0;
+        inset-inline-end: 0;
         width: 140px;
         transition: top 700ms cubic-bezier(0.4, 0, 0.2, 1);
     }
     @media (max-width: 768px) {
-        .builder-cols { padding-left: 0; }
+        .builder-cols { padding-inline-end: 0; }
         .builder-demo {
             position: static;
             width: 100%;
@@ -1843,7 +1845,7 @@
         position: absolute;
         top: 0.5rem;
         bottom: 0.5rem;
-        left: -156px;
+        inset-inline-end: -156px;
         width: 140px;
         border: 2px dashed rgba(251, 191, 36, 0.22);
         border-radius: 0.85rem;
@@ -2063,7 +2065,7 @@
         font-size: 0.75rem;
         color: #6b7280;
         margin-top: 0.5rem;
-        text-align: left;
+        text-align: end;
     }
 
     .slider-block { margin-top: 1rem; }
@@ -2380,7 +2382,6 @@
         max-width: 95vw;
         width: 380px;
         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-        direction: rtl;
     }
     .crop-modal-head {
         display: flex;
@@ -2455,7 +2456,7 @@
         color: rgba(255, 255, 255, 0.7);
         font-size: 0.78rem;
         min-width: 3rem;
-        text-align: left;
+        text-align: end;
     }
     .crop-actions {
         display: flex;
@@ -2795,7 +2796,7 @@
         bottom: 0;
         padding: 0.55rem 0.7rem 1.1rem;
         z-index: 4;
-        text-align: right;
+        text-align: start;
         transition: opacity 1500ms ease;
     }
     .pro-title-wrap.mobile { padding: 0.65rem 0.85rem 1.25rem; }
@@ -3110,7 +3111,7 @@
         font-size: 0.7rem;
         color: #6b7280;
         margin-top: 0.25rem;
-        text-align: left;
+        text-align: end;
     }
     .help-identity {
         color: #d1d5db;

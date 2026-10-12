@@ -1,8 +1,12 @@
 <script lang="ts">
     import { problemsStore, type ProblemType } from '$lib/problemsStore.svelte';
-    import { teams } from '$lib/teamsData';
+    import { teamSources, teamsFor } from '$lib/teamsData';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
+    const teams = $derived(teamsFor(i18n.locale));
 
     // הטופס המהיר בדף הבית מעביר לכאן כותרת, תחום, סוג ותקציב ב-query string
     const q = page.url.searchParams;
@@ -12,7 +16,7 @@
 
     let title = $state((q.get('title') ?? '').slice(0, 120));
     let description = $state('');
-    let category = $state(teams.some((t) => t.slug === qCategory) ? (qCategory as string) : 'law');
+    let category = $state(teamSources.some((t) => t.slug === qCategory) ? (qCategory as string) : 'law');
     let type = $state<ProblemType>(qType === 'community' ? 'community' : 'individual');
     let posterName = $state('');
     let contact = $state('');
@@ -31,7 +35,7 @@
 
     function submit() {
         if (!isValid) {
-            error = 'אנא מלא את כל השדות. תיאור לפחות 20 תווים, תקציב חיובי.';
+            error = i18n.t('newProblem.invalid');
             return;
         }
         error = '';
@@ -49,49 +53,49 @@
     }
 </script>
 
-<svelte:head><title>העלאת בעיה חדשה</title></svelte:head>
+<svelte:head><title>{i18n.t('newProblem.title')}</title></svelte:head>
 
-<section dir="rtl" class="page">
-    <a href="/problems" class="back">← חזרה ללוח הבעיות</a>
+<section class="page">
+    <a href="/problems" class="back">{i18n.t('board.back')}</a>
 
-    <h1 class="title">העלאת בעיה חדשה</h1>
-    <p class="subtitle">תאר את הבעיה, הצע תקציב, וקבל הצעות פתרון ממומחים</p>
+    <h1 class="title">{i18n.t('newProblem.title')}</h1>
+    <p class="subtitle">{i18n.t('newProblem.subtitle')}</p>
 
     <form class="form" onsubmit={(e) => { e.preventDefault(); submit(); }}>
         <div class="field">
-            <label for="type">מי מעלה את הבעיה?</label>
+            <label for="type">{i18n.t('newProblem.who')}</label>
             <div class="type-chips">
                 <button type="button" class:active={type==='individual'} onclick={()=>type='individual'}>
                     <span class="big-emoji">👤</span>
-                    <span class="chip-label">אדם פרטי</span>
-                    <span class="chip-desc">בעיה אישית שלי</span>
+                    <span class="chip-label">{i18n.t('newProblem.private')}</span>
+                    <span class="chip-desc">{i18n.t('newProblem.privateDesc')}</span>
                 </button>
                 <button type="button" class:active={type==='community'} onclick={()=>type='community'}>
                     <span class="big-emoji">🏘️</span>
-                    <span class="chip-label">קהילה / ועד</span>
-                    <span class="chip-desc">בעיה ציבורית</span>
+                    <span class="chip-label">{i18n.t('newProblem.community')}</span>
+                    <span class="chip-desc">{i18n.t('newProblem.communityDesc')}</span>
                 </button>
             </div>
         </div>
 
         <div class="field">
-            <label for="title">כותרת הבעיה</label>
+            <label for="title">{i18n.t('newProblem.problemTitle')}</label>
             <input id="title" type="text" bind:value={title}
-                   placeholder="לדוגמה: ייעוץ משפטי לוועד מול עירייה"
+                   placeholder={i18n.t('newProblem.titlePh')}
                    maxlength="120" />
         </div>
 
         <div class="field">
-            <label for="description">תיאור מפורט</label>
+            <label for="description">{i18n.t('newProblem.description')}</label>
             <textarea id="description" bind:value={description}
-                      placeholder="הסבר את הבעיה, מה ניסית, מה הציפייה. ככל שתפרט יותר - תקבל הצעות איכותיות יותר."
+                      placeholder={i18n.t('newProblem.descriptionPh')}
                       rows="5" maxlength="2000"></textarea>
             <small>{description.length} / 2000</small>
         </div>
 
         <div class="row">
             <div class="field">
-                <label for="category">תחום</label>
+                <label for="category">{i18n.t('board.filterFieldPlain')}</label>
                 <select id="category" bind:value={category}>
                     {#each teams as t}
                         <option value={t.slug}>{t.emoji} {t.name}</option>
@@ -100,23 +104,23 @@
             </div>
 
             <div class="field">
-                <label for="bounty">תקציב מוצע (₪)</label>
+                <label for="bounty">{i18n.t('newProblem.budget')}</label>
                 <input id="bounty" type="number" bind:value={bounty} min="1" step="50"
-                       placeholder="לדוגמה: 1500" />
+                       placeholder={i18n.t('newProblem.budgetPh')} />
             </div>
         </div>
 
         <div class="row">
             <div class="field">
-                <label for="posterName">שם להצגה</label>
+                <label for="posterName">{i18n.t('newProblem.displayName')}</label>
                 <input id="posterName" type="text" bind:value={posterName}
-                       placeholder="שמך הפרטי או שם הקהילה" />
+                       placeholder={i18n.t('newProblem.displayNamePh')} />
             </div>
 
             <div class="field">
-                <label for="contact">פרטי קשר</label>
+                <label for="contact">{i18n.t('newProblem.contact')}</label>
                 <input id="contact" type="text" bind:value={contact}
-                       placeholder="טלפון או אימייל" />
+                       placeholder={i18n.t('newProblem.contactPh')} />
             </div>
         </div>
 
@@ -126,9 +130,9 @@
 
         <div class="actions">
             <button type="submit" class="btn-primary" disabled={!isValid || submitting}>
-                {submitting ? 'מעלה...' : '🚀 פרסם בעיה'}
+                {submitting ? i18n.t('newProblem.posting') : `🚀 ${i18n.t('newProblem.publish')}`}
             </button>
-            <a href="/problems" class="btn-ghost">ביטול</a>
+            <a href="/problems" class="btn-ghost">{i18n.t('common.cancel')}</a>
         </div>
     </form>
 </section>

@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requestPasswordReset, RecoveryError } from '$lib/server/recovery';
+import { createTranslator } from '$lib/i18n/translate';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -15,20 +16,21 @@ export const load: PageServerLoad = ({ url, setHeaders }) => {
 const reply = (sent: boolean, email: string, error = '') => ({ sent, email, error, at: sent ? Date.now() : 0 });
 
 export const actions: Actions = {
-	send: async ({ request, url, fetch }) => {
+	send: async ({ request, url, fetch, locals }) => {
+		const { t } = createTranslator(locals.locale);
 		const form = await request.formData();
 		const email = String(form.get('email') || '').trim();
 		if (!EMAIL_RE.test(email)) {
-			return fail(400, reply(false, email, 'כתובת האימייל לא נראית תקינה. בדקו שהקלדתם אותה נכון.'));
+			return fail(400, reply(false, email, t('forgot.invalidEmail')));
 		}
 		try {
 			await requestPasswordReset(email, url.origin, fetch);
 		} catch (err) {
 			if (err instanceof RecoveryError && err.kind === 'rate') {
-				return fail(429, reply(false, email, 'ביקשתם יותר מדי פעמים. נסו שוב בעוד כמה דקות.'));
+				return fail(429, reply(false, email, t('forgot.tooMany')));
 			}
 			console.warn('forgot-password failed:', err instanceof Error ? err.message : err);
-			return fail(503, reply(false, email, 'תקלה זמנית בשליחת המייל. נסו שוב בעוד רגע.'));
+			return fail(503, reply(false, email, t('forgot.tempFail')));
 		}
 		return reply(true, email);
 	}

@@ -16,7 +16,8 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
-import type { Ad } from './adsData';
+import type { AdSource } from './adsData';
+import type { L10n } from './i18n';
 import { rightAds } from './rightAdsData';
 import { approvedAds, loadApprovedAds } from './adSlots';
 
@@ -32,11 +33,14 @@ export const INTERSTITIAL_SECONDS = 5;
  *  שחזר למודעה בתשלום. בטור הימני 12 המשבצות הן מלאי למכירה; בנייד
  *  מוצגת פרסומת אחת בכל פעם, ולכן די בהזמנה אחת אחרי המודעות המלאות.
  *  image ריק ⇒ AdInterstitial מציג 📢 במקום תמונה. */
-const inviteAd: Ad = {
+// הטקסטים נשארים דו-לשוניים ב-store; AdInterstitial מתרגם אותם בעת התצוגה
+const DETAILS: L10n = { he: 'לפרטים', en: 'Details' };
+
+const inviteAd: AdSource = {
     id: 1,
     title: rightAds[0].text,
     description: rightAds[0].description,
-    cta: 'לפרטים',
+    cta: DETAILS,
     href: rightAds[0].href,
     image: '',
     color: rightAds[0].interstitialColor,
@@ -44,14 +48,14 @@ const inviteAd: Ad = {
 
 /** מאגר הקריאייטיבים כרגע: המודעות בתשלום לפי סדר המשבצות, ואחריהן
  *  ההזמנה לפרסם. הסבב חוזר להתחלה מיד אחריה. */
-function currentInterstitialAds(): Ad[] {
-    const real: Ad[] = get(approvedAds).map((a, i) => ({
+function currentInterstitialAds(): AdSource[] {
+    const real: AdSource[] = get(approvedAds).map((a, i) => ({
         id: 1000 + i,
         adId: a.id,   // המזהה האמיתי ב-Strapi — למדידת חשיפות/קליקים
         title: a.title,
         description: a.subtitle,
         // כרטיס מוצר מהחנות - בלי כפתור המחיר
-        cta: a.shop ? '' : (a.cta || 'לפרטים'),
+        cta: a.shop ? '' : (a.cta || DETAILS),
         hover: a.hover || undefined,
         href: `/ads/${a.id}`,
         image: a.mainImage,
@@ -73,7 +77,7 @@ export function adsReady(): boolean {
 
 export interface InterstitialState {
     open: boolean;
-    ad: Ad | null;
+    ad: AdSource | null;
     total: number;      // סך השניות
     remaining: number;  // שניות שנותרו (מעוגל כלפי מעלה) — ל"עוד X שניות"
     progress: number;   // 0..1 — חלק הזמן שחלף, לפס ההתקדמות

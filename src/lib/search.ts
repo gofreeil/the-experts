@@ -40,8 +40,21 @@ export function loosen(s: string): string {
 }
 
 const CLITICS = 'הובלמשכ';
+
+/** שורש גס לאנגלית: רבים וסיומות נפוצות. lawyers -> lawyer, gardens -> garden, planting -> plant. */
+function stemEn(t: string): string {
+    let s = t;
+    if (s.length >= 5 && s.endsWith('ies')) return s.slice(0, -3) + 'y';
+    if (s.length >= 5 && /(ches|shes|sses|xes|zes)$/.test(s)) s = s.slice(0, -2);
+    else if (s.length >= 4 && s.endsWith('s') && !/(ss|us|is)$/.test(s)) s = s.slice(0, -1);
+    if (s.length >= 6 && s.endsWith('ing')) s = s.slice(0, -3);
+    else if (s.length >= 5 && s.endsWith('ed')) s = s.slice(0, -2);
+    return s;
+}
+
 /** שורש גס: בלי אותיות שימוש בתחילה (עד שתיים) ובלי ים/ות בסוף. חוגים -> חוג, לגמח -> גמח. */
 export function stem(t: string): string {
+    if (/^[a-z]+$/.test(t)) return stemEn(t);
     let s = t;
     if (s.length >= 4 && CLITICS.includes(s[0])) {
         s = s.slice(1);
@@ -53,7 +66,13 @@ export function stem(t: string): string {
 }
 
 // מילים שלא מוסיפות משמעות לחיפוש
-const STOP = new Set(['של', 'את', 'עמ', 'על', 'אל', 'או', 'גמ', 'כי', 'זה', 'זו', 'אני', 'לי', 'יש', 'אינ', 'לא', 'מה', 'איכ', 'איפ', 'צריכ', 'רוצה', 'מחפש', 'מחפשת', 'דרוש', 'דרושה', 'דרושימ'].map(foldFinals));
+const STOP = new Set(
+    [
+        'של', 'את', 'עמ', 'על', 'אל', 'או', 'גמ', 'כי', 'זה', 'זו', 'אני', 'לי', 'יש', 'אינ', 'לא', 'מה', 'איכ', 'איפ', 'צריכ', 'רוצה', 'מחפש', 'מחפשת', 'דרוש', 'דרושה', 'דרושימ',
+        // אנגלית
+        'the', 'a', 'an', 'of', 'for', 'to', 'in', 'on', 'at', 'and', 'or', 'with', 'is', 'are', 'i', 'my', 'we', 'our', 'need', 'needs', 'needed', 'want', 'looking', 'find', 'how', 'what', 'where', 'who', 'any', 'some'
+    ].map(foldFinals)
+);
 
 // ───── מרחק עריכה ─────
 

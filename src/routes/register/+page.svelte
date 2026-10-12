@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { enhance } from '$app/forms';
+	import { useI18n } from '$lib/i18n/context';
 
 	let { data, form } = $props();
+
+	const i18n = useI18n();
 
 	let name = $state('');
 	let email = $state('');
@@ -20,14 +23,14 @@
 	}
 </script>
 
-<svelte:head><title>הרשמה</title></svelte:head>
+<svelte:head><title>{i18n.t('register.title')}</title></svelte:head>
 
-<div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
 	<div class="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f172a] p-8 shadow-2xl">
 		<div class="mb-6 text-center">
 			<div class="mb-3 text-4xl">🕊️</div>
-			<h1 class="text-2xl font-black text-white">הרשמה</h1>
-			<p class="mt-1 text-sm text-gray-400">הצטרפו למערכת המאוחדת של יוצאים לחירות</p>
+			<h1 class="text-2xl font-black text-white">{i18n.t('register.title')}</h1>
+			<p class="mt-1 text-sm text-gray-400">{i18n.t('register.subtitle')}</p>
 		</div>
 
 		{#if form?.error}
@@ -59,22 +62,22 @@
 			}}
 			class="space-y-4"
 		>
-			<input name="name" bind:value={name} placeholder="שם מלא"
+			<input name="name" bind:value={name} placeholder={i18n.t('register.fullName')}
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none" />
-			<input name="email" type="email" required bind:value={email} placeholder="אימייל" autocomplete="email"
+			<input name="email" type="email" required bind:value={email} placeholder={i18n.t('login.email')} autocomplete="email"
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none" />
-			<input name="password" type="password" required bind:value={password} placeholder="סיסמה (לפחות 6 תווים)" autocomplete="new-password"
+			<input name="password" type="password" required bind:value={password} placeholder={i18n.t('register.passwordPh')} autocomplete="new-password"
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none" />
 			<button type="submit" disabled={loading}
 				class="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3.5 font-bold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60">
-				{loading ? 'נרשם...' : 'הרשמה'}
+				{loading ? i18n.t('register.submitting') : i18n.t('register.title')}
 			</button>
 		</form>
 
 		{#if data.oauth?.google || data.oauth?.facebook}
 		<div class="my-5 flex items-center gap-3">
 			<div class="h-px flex-1 bg-white/10"></div>
-			<span class="text-xs text-gray-500">או</span>
+			<span class="text-xs text-gray-500">{i18n.t('login.or')}</span>
 			<div class="h-px flex-1 bg-white/10"></div>
 		</div>
 		{/if}
@@ -92,7 +95,7 @@
 				<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
 				<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 			</svg>
-			המשך עם Google
+			{i18n.t('login.withGoogle')}
 		</button>
 		{/if}
 		{#if data.oauth?.facebook}
@@ -105,13 +108,13 @@
 			<svg class="h-5 w-5" fill="white" viewBox="0 0 24 24" aria-hidden="true">
 				<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
 			</svg>
-			המשך עם Facebook
+			{i18n.t('login.withFacebook')}
 		</button>
 		{/if}
 
 		<p class="mt-6 text-center text-sm text-gray-400">
-			כבר יש לכם חשבון?
-			<a href="/login?redirect={encodeURIComponent(data.redirectTo || '/')}" class="font-bold text-purple-400 hover:text-purple-300">התחברות</a>
+			{i18n.t('register.haveAccount')}
+			<a href="/login?redirect={encodeURIComponent(data.redirectTo || '/')}" class="font-bold text-purple-400 hover:text-purple-300">{i18n.t('register.login')}</a>
 		</p>
 	</div>
 </div>

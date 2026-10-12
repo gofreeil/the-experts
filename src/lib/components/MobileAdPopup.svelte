@@ -2,8 +2,14 @@
     import { adPopup, closeAdPopup } from '$lib/adPopupStore';
     import { goto } from '$app/navigation';
     import { onDestroy } from 'svelte';
+    import type { AdSource } from '$lib/adsData';
+    import { useI18n } from '$lib/i18n/context';
 
-    let popup = $state<{ ad: any; pendingHref?: string } | null>(null);
+    const i18n = useI18n();
+
+    let popup = $state<{ ad: AdSource; pendingHref?: string } | null>(null);
+    // הטקסטים של המודעה בשפה הנוכחית (המאגר עצמו דו-לשוני)
+    const ad = $derived(popup ? i18n.l(popup.ad) : null);
     let countdown = $state(5);
     let timer: ReturnType<typeof setInterval> | null = null;
 
@@ -35,15 +41,15 @@
     });
 </script>
 
-{#if popup}
+{#if popup && ad}
 <!-- מוצג רק במובייל -->
-<div class="lg:hidden" dir="rtl">
+<div class="lg:hidden">
     <!-- Overlay -->
     <button
         class="fixed inset-0 bg-black/70 z-[2000] cursor-pointer"
         style="border: none; padding: 0;"
         onclick={handleClose}
-        aria-label="סגור פרסומת"
+        aria-label={i18n.t('ads.closeAd')}
     ></button>
 
     <!-- Popup -->
@@ -61,7 +67,7 @@
         <button
             onclick={handleClose}
             class="close-countdown"
-            aria-label="סגור"
+            aria-label={i18n.t('common.close')}
         >
             {countdown}
         </button>
@@ -69,8 +75,8 @@
         <!-- Ad image -->
         <div class="relative h-44 w-full">
             <img
-                src={popup.ad.image}
-                alt={popup.ad.title}
+                src={ad.image}
+                alt={ad.title}
                 decoding="async"
                 class="w-full h-full object-cover"
             />
@@ -79,19 +85,19 @@
 
         <!-- Ad content -->
         <div class="bg-[#0f172a] p-4">
-            <h3 class="text-lg font-black bg-gradient-to-r {popup.ad.color} bg-clip-text text-transparent mb-1 leading-tight">
-                {popup.ad.title}
+            <h3 class="text-lg font-black bg-gradient-to-r {ad.color} bg-clip-text text-transparent mb-1 leading-tight">
+                {ad.title}
             </h3>
-            <p class="text-gray-300 text-sm mb-3 leading-snug">{popup.ad.description}</p>
+            <p class="text-gray-300 text-sm mb-3 leading-snug">{ad.description}</p>
             <a
-                href={popup.ad.href}
+                href={ad.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="{popup.ad.cta} – {popup.ad.title} (נפתח בחלון חדש)"
+                aria-label={i18n.t('ads.newWindowLabel', { cta: ad.cta, title: ad.title })}
                 onclick={() => closeAdPopup()}
                 class="block w-full text-center py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold hover:from-purple-500 hover:to-indigo-500 transition-all"
             >
-                ← {popup.ad.cta}
+                {#if i18n.rtl}← {ad.cta}{:else}{ad.cta} →{/if}
             </a>
         </div>
     </div>

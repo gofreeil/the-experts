@@ -1,9 +1,11 @@
 import type { LayoutServerLoad } from './$types';
 
-// חושף את הסשן (אם יש) לכל הדפים — כדי שההאדר יציג מצב מחובר/כפתור התחברות.
+// חושף את הסשן (אם יש) ואת שפת הגולש (נקבעה ב-hooks.server.ts) לכל הדפים —
+// כדי שההאדר יציג מצב מחובר/כפתור התחברות, וכל האתר יתרגם לפי locale.
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const session = await locals.auth();
 	return {
+		locale: locals.locale,
 		user: session?.user
 			? {
 					id: session.user.id,

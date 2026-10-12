@@ -4,6 +4,9 @@
 // (רשימת הנכסים ודף הנכס הבודד).
 // ============================================================
 
+import { LOCALE_META, DEFAULT_LOCALE, type Locale } from './i18n';
+import { createTranslator } from './i18n/translate';
+
 export type AdStatusKind = 'pending' | 'approved' | 'rejected';
 
 /** מתחת לזה מוצגת קריאה לחידוש הפרסום */
@@ -34,34 +37,39 @@ export function needsRenewal(status: AdStatusKind, expiresAt: string | null | un
     return status === 'approved' && left !== null && left > 0 && left <= RENEW_WARNING_DAYS;
 }
 
-export function statusView(status: AdStatusKind, expiresAt?: string | null, paused = false): StatusView {
+export function statusView(status: AdStatusKind, expiresAt?: string | null, paused = false, locale: Locale = DEFAULT_LOCALE): StatusView {
+    const { t, tn } = createTranslator(locale);
     if (status === 'rejected') {
-        return { label: 'נדחתה', hint: 'המודעה לא אושרה לפרסום', tone: 'rose' };
+        return { label: t('owner.rejected'), hint: t('owner.rejectedHint'), tone: 'rose' };
     }
     if (status === 'pending') {
-        return { label: 'ממתינה לאישור', hint: 'נבדקת אצלנו — בדרך כלל תוך יום', tone: 'amber' };
+        return { label: t('owner.pending'), hint: t('owner.pendingHint'), tone: 'amber' };
     }
     // מושהית בידי המנהל — לא באוויר, אבל הימים שנותרו לה שמורים
     if (paused) {
-        return { label: 'מושהית', hint: 'הפרסום מושהה והימים שנותרו שמורים לה', tone: 'slate' };
+        return { label: t('owner.paused'), hint: t('owner.pausedHint'), tone: 'slate' };
     }
     if (isExpired('approved', expiresAt)) {
-        return { label: 'פג תוקף', hint: 'הפרסום הסתיים והמודעה ירדה מהאתר', tone: 'slate' };
+        return { label: t('owner.expired'), hint: t('owner.expiredHint'), tone: 'slate' };
     }
     const left = daysLeft(expiresAt);
     return {
-        label: 'באוויר',
-        hint: left === null ? 'המודעה מוצגת באתר' : `נותרו ${left} ימי פרסום`,
+        label: t('owner.live'),
+        hint: left === null ? t('owner.liveHint') : tn('owner.daysLeft', left),
         tone: 'emerald',
     };
 }
 
-/** "28.07.2026" — ריק אם אין תאריך */
-export function fmtDate(iso: string | null | undefined): string {
+/** "28.07.2026" / "Jul 28, 2026" — ריק אם אין תאריך.
+ *  באנגלית החודש במילים: תאריך מספרי כמו 03/04 נקרא אחרת בארה"ב ובשאר העולם. */
+export function fmtDate(iso: string | null | undefined, locale: Locale = DEFAULT_LOCALE): string {
     if (!iso) return '';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return d.toLocaleDateString(
+        LOCALE_META[locale].bcp47,
+        locale === 'he' ? { day: '2-digit', month: '2-digit', year: 'numeric' } : { day: 'numeric', month: 'short', year: 'numeric' }
+    );
 }
 
 /** אחוז ההקלקה — "4.2%" (ריק כשאין חשיפות בכלל) */

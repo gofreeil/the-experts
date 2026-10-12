@@ -1,109 +1,104 @@
 <script lang="ts">
     // תנאי הפרסום — מקושרים מדף "פרסם אצלנו", לפני בחירת מסלול ותשלום.
     // זהה בתוכן לדף התנאים בשאר אתרי הרשת.
-    import { adPlans } from "$lib/adPlans";
+    import { adPlans, planTitle } from "$lib/adPlans";
+    import { useI18n } from "$lib/i18n/context";
+
+    const i18n = useI18n();
 
     const contactUrl = "https://freedom.gofreeil.com";
     const email = "freedomhasbegun@gmail.com";
 </script>
 
 <svelte:head>
-    <title>תנאי פרסום | המומחים של העם</title>
-    <meta name="description" content="תנאי הפרסום באתר המומחים של העם — מה מותר ומה אסור לפרסם, תשלום מראש לפי מסלול, אישור מנהל, ותנאי ההסרה." />
+    <title>{i18n.t("terms.title")} | {i18n.t("site.name")}</title>
+    <meta name="description" content={i18n.t("terms.metaDesc")} />
 </svelte:head>
 
-<div class="mx-auto max-w-3xl px-4 py-8 md:py-12" dir="rtl">
+<div class="mx-auto max-w-3xl px-4 py-8 md:py-12">
     <div class="rounded-3xl border border-[#3b5794] bg-[#16264d] shadow-2xl overflow-hidden">
 
         <!-- כותרת -->
         <div class="p-6 md:p-10 text-center">
             <div class="text-5xl mb-4">📜</div>
             <h1 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-3">
-                תנאי פרסום
+                {i18n.t("terms.title")}
             </h1>
             <p class="text-gray-300 text-base leading-relaxed max-w-xl mx-auto">
-                לפני בחירת מסלול ותשלום — כדאי לקרוא. הזמנת פרסום מהווה הסכמה
-                לתנאים שלהלן.
+                {i18n.t("terms.intro")}
             </p>
         </div>
 
         <!-- מה אסור לפרסם -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8">
-            <h2 class="text-xl font-black text-white mb-3">1. מה אסור לפרסם</h2>
-            <p class="text-gray-200 text-sm md:text-base leading-relaxed mb-3">אין לפרסם:</p>
+            <h2 class="text-xl font-black text-white mb-3">{i18n.t("terms.s1Title")}</h2>
+            <p class="text-gray-200 text-sm md:text-base leading-relaxed mb-3">{i18n.t("terms.s1Lead")}</p>
             <ul class="space-y-2 mb-4">
                 <li class="text-sm md:text-base text-gray-200 flex items-start gap-2 leading-relaxed">
-                    <span class="text-red-400 flex-shrink-0">✗</span> דברים שאינם חוקיים.
+                    <span class="text-red-400 flex-shrink-0">✗</span> {i18n.t("terms.s1a")}
                 </li>
                 <li class="text-sm md:text-base text-gray-200 flex items-start gap-2 leading-relaxed">
-                    <span class="text-red-400 flex-shrink-0">✗</span> מסרים פוליטיים.
+                    <span class="text-red-400 flex-shrink-0">✗</span> {i18n.t("terms.s1b")}
                 </li>
                 <li class="text-sm md:text-base text-gray-200 flex items-start gap-2 leading-relaxed">
-                    <span class="text-red-400 flex-shrink-0">✗</span> או כל תוכן מסית ומפלג.
+                    <span class="text-red-400 flex-shrink-0">✗</span> {i18n.t("terms.s1c")}
                 </li>
             </ul>
-            <p class="text-amber-300 font-black text-sm md:text-base">פרסום כזה לא יאושר!</p>
+            <p class="text-amber-300 font-black text-sm md:text-base">{i18n.t("terms.s1Rejected")}</p>
             <p class="text-gray-300 text-sm leading-relaxed mt-3">
-                בנוסף, לא יאושרו תוכן פוגעני או מבזה, תוכן שאינו הולם אתר משפחתי,
-                הצגה מטעה של מוצר או שירות, ופרסום שאינו שלכם או שאין לכם זכות
-                להשתמש בו (תמונות, לוגו, שם מסחרי).
+                {i18n.t("terms.s1More")}
             </p>
         </section>
 
         <!-- אישור המודעה -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8">
-            <h2 class="text-xl font-black text-white mb-3">2. אישור המודעה</h2>
+            <h2 class="text-xl font-black text-white mb-3">{i18n.t("terms.s2Title")}</h2>
             <p class="text-gray-200 text-sm md:text-base leading-relaxed">
-                כל פרסומת עוברת אישור ידני של מנהל לפני שהיא עולה לאוויר. ההחלטה
-                נתונה לשיקול דעת המערכת, ואין חובה לנמק דחייה. מודעה שנדחתה בגלל
-                תוכן — אפשר לתקן ולשלוח מחדש. אם מודעה נדחתה ולא ניתן לתקנה,
-                התשלום שהתקבל עבורה יוחזר במלואו.
+                {i18n.t("terms.s2Body")}
             </p>
             <p class="text-gray-300 text-sm leading-relaxed mt-3">
-                תקופת הפרסום נספרת מרגע האישור ועליית המודעה לאוויר — לא מרגע
-                ההזמנה או התשלום.
+                {i18n.t("terms.s2Period")}
             </p>
         </section>
 
         <!-- תשלום ותקופת פרסום -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8">
-            <h2 class="text-xl font-black text-white mb-3">3. תשלום ותקופת פרסום</h2>
+            <h2 class="text-xl font-black text-white mb-3">{i18n.t("terms.s3Title")}</h2>
             <p class="text-gray-200 text-sm md:text-base leading-relaxed mb-4">
-                בוחרים מסלול ומשלמים מראש עבור כל התקופה:
+                {i18n.t("terms.s3Lead")}
             </p>
             <ul class="space-y-1.5 mb-4">
                 {#each adPlans as plan (plan.days)}
                     <li class="flex items-baseline justify-between gap-3 rounded-xl bg-[#0f1c3d] border border-[#3b5794] px-4 py-2">
-                        <span class="text-gray-200 text-sm md:text-base">{plan.title}</span>
+                        <span class="text-gray-200 text-sm md:text-base">{planTitle(plan, i18n.locale)}</span>
                         <span class="text-amber-300 font-black text-sm md:text-base whitespace-nowrap">{plan.price} ₪</span>
                     </li>
                 {/each}
             </ul>
             <p class="text-gray-200 text-sm md:text-base leading-relaxed">
-                לא ניתן לקצר את תקופת הפירסום שנבחרה ושולמה מראש, אלא אם מדובר
-                בסיבות כח עליון חריגות - אז ניתן לפנות למערכת יוצאים לחירות.
+                {i18n.t("terms.s3NoShorten")}
             </p>
         </section>
 
         <!-- אחריות המפרסם -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8">
-            <h2 class="text-xl font-black text-white mb-3">4. אחריות המפרסם לתוכן</h2>
+            <h2 class="text-xl font-black text-white mb-3">{i18n.t("terms.s4Title")}</h2>
             <ul class="space-y-2">
                 <li class="text-sm md:text-base text-gray-200 flex items-start gap-2 leading-relaxed">
                     <span class="text-green-400 flex-shrink-0">✓</span>
-                    התוכן, התמונות והמחירים שבמודעה הם באחריותכם המלאה — נכונותם, עדכניותם וזכויות השימוש בהם.
+                    {i18n.t("terms.s4a")}
                 </li>
                 <li class="text-sm md:text-base text-gray-200 flex items-start gap-2 leading-relaxed">
                     <span class="text-green-400 flex-shrink-0">✓</span>
-                    האתר אינו צד לעסקה בינכם לבין הגולשים, ואינו אחראי למוצר, לשירות או לתוצאותיהם.
+                    {i18n.t("terms.s4b")}
                 </li>
                 <li class="text-sm md:text-base text-gray-200 flex items-start gap-2 leading-relaxed">
                     <span class="text-green-400 flex-shrink-0">✓</span>
-                    פרסום מודעה אינו המלצה של האתר על העסק המפרסם.
+                    {i18n.t("terms.s4c")}
                 </li>
             </ul>
         </section>
@@ -111,44 +106,36 @@
         <!-- מיקום והצגה -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8">
-            <h2 class="text-xl font-black text-white mb-3">5. מיקום והצגה</h2>
+            <h2 class="text-xl font-black text-white mb-3">{i18n.t("terms.s5Title")}</h2>
             <p class="text-gray-200 text-sm md:text-base leading-relaxed">
-                באתר יש פרסומת אחת: בדסקטופ היא מוצגת בטור הימני, ובנייד היא
-                מוצגת במסך מלא למשך 5 שניות אחרי לחיצה על פריט. המודעות
-                מתחלפות במחזור. המערכת אינה מתחייבת למספר חשיפות, לסדר הצגה או
-                למיקום קבוע, ורשאית לשנות את עיצוב האתר ואת מיקום הפרסום. תקלה טכנית
-                קצרה אינה נחשבת הפסקת פרסום; הפסקה ממושכת תזכה בהארכה מקבילה של
-                התקופה.
+                {i18n.t("terms.s5Body")}
             </p>
         </section>
 
         <!-- שינויים והסרה -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8">
-            <h2 class="text-xl font-black text-white mb-3">6. שינויים והסרה</h2>
+            <h2 class="text-xl font-black text-white mb-3">{i18n.t("terms.s6Title")}</h2>
             <p class="text-gray-200 text-sm md:text-base leading-relaxed">
-                עדכון פרטים במודעה פעילה (טלפון, שעות, קישור) — פונים למערכת
-                והשינוי ייכנס אחרי אישור. מודעה שמפרה את התנאים תוסר גם באמצע
-                התקופה וללא החזר, ובמקרה של הפרה חמורה נשמרת הזכות לסרב לפרסום
-                נוסף.
+                {i18n.t("terms.s6Body")}
             </p>
         </section>
 
         <!-- יצירת קשר -->
         <div class="mx-8 md:mx-12 border-t border-[#3b5794]"></div>
         <section class="p-6 md:p-8 text-center">
-            <p class="text-amber-300 font-black text-lg mb-4">בהצלחה 🍀</p>
+            <p class="text-amber-300 font-black text-lg mb-4">{i18n.t("terms.goodLuck")}</p>
             <p class="text-sm text-gray-300 leading-relaxed">
-                לשאלות, שינויים או פנייה בסיבות כח עליון:
+                {i18n.t("terms.contactLead")}
                 <a href={"mailto:" + email} class="underline hover:text-white transition-colors" dir="ltr">{email}</a>
                 <br />
-                מערכת <a href={contactUrl} target="_blank" rel="noopener noreferrer" class="underline hover:text-white transition-colors">יוצאים לחירות</a>
+                {i18n.t("terms.team")} <a href={contactUrl} target="_blank" rel="noopener noreferrer" class="underline hover:text-white transition-colors">{i18n.t("footer.movement")}</a>{i18n.t("terms.teamAfter")}
             </p>
             <a
                 href="/about/advertise"
                 class="mt-6 inline-block rounded-2xl bg-gradient-to-r from-amber-500 to-pink-600 px-8 py-4 font-black text-white text-lg shadow-xl transition hover:opacity-90 hover:scale-[1.02]"
             >
-                📢 חזרה למחירון
+                📢 {i18n.t("terms.backToPrices")}
             </a>
         </section>
 

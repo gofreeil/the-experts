@@ -3,13 +3,16 @@
     import { page } from '$app/state';
     import { formatTimeAgo, type Problem } from '$lib/problemsStore.svelte';
     import { catColor, catShort, fmt, handsOf } from '$lib/homeData';
-    import { teamBySlug } from '$lib/teamsData';
     import { smartSearch, type SmartResult } from '$lib/smartSearch';
     import { adThenGo } from './nav';
+    import { useI18n } from '$lib/i18n/context';
 
     // חיפוש חכם אחד לבעיות, מומחים ותחומים. מבין סכומים וסינונים בשפה חופשית,
     // מתקן טעויות הקלדה ופריסת מקלדת, ומכיר מילים נרדפות לכל תחום (ראו smartSearch.ts).
+    // problems = הבעיות כפי שמוצגות בשפה הנוכחית, כך שהחיפוש רץ על מה שהגולש רואה.
     let { problems }: { problems: Problem[] } = $props();
+
+    const i18n = useI18n();
 
     let q = $state('');
     // /?q=... פותח את הדף עם חיפוש מוכן (קישורים, בדיקות)
@@ -19,7 +22,7 @@
     let root: HTMLElement | undefined = $state();
 
     const trimmed = $derived(q.trim());
-    const res = $derived(trimmed ? smartSearch(trimmed, problems) : null);
+    const res = $derived(trimmed ? smartSearch(trimmed, problems, i18n.locale) : null);
 
     function links(): HTMLAnchorElement[] {
         return root ? Array.from(root.querySelectorAll<HTMLAnchorElement>('.hit')) : [];
@@ -54,23 +57,23 @@
 {#snippet problemsBlock(res: SmartResult)}
     {#if res.problems.length}
         <div class="grp">
-            <h3>בעיות <span class="n">{res.totalProblems}</span></h3>
+            <h3>{i18n.t('search.problems')} <span class="n">{res.totalProblems}</span></h3>
             {#each res.problems as { p, related } (p.id)}
                 <a class="hit" href="/problems/{p.id}" style="--c:{catColor(p.category)}" onclick={(e) => adThenGo(e, `/problems/${p.id}`)} onkeydown={onHitKey}>
                     <span class="h-main">
                         <b>{p.title}</b>
                         <small>
-                            <span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category)}
-                            <span>· {handsOf(p)} ידיים</span>
-                            <span>· {formatTimeAgo(p.createdAt)}</span>
-                            {#if related}<span class="rel">קשור לתחום</span>{/if}
+                            <span class="dot" style="--c:{catColor(p.category)}"></span>{catShort(p.category, i18n.locale)}
+                            <span>· {i18n.tn('search.hands', handsOf(p))}</span>
+                            <span>· {formatTimeAgo(p.createdAt, i18n.locale)}</span>
+                            {#if related}<span class="rel">{i18n.t('search.related')}</span>{/if}
                         </small>
                     </span>
                     <span class="h-amt"><span class="num">{fmt(p.bounty)}</span></span>
                 </a>
             {/each}
             {#if res.totalProblems > res.problems.length}
-                <a class="more" href="/problems">ועוד {res.totalProblems - res.problems.length} בלוח הבעיות</a>
+                <a class="more" href="/problems">{i18n.t('search.moreProblems', { n: res.totalProblems - res.problems.length })}</a>
             {/if}
         </div>
     {/if}
@@ -79,19 +82,19 @@
 {#snippet expertsBlock(res: SmartResult)}
     {#if res.experts.length}
         <div class="grp">
-            <h3>מומחים <span class="n">{res.totalExperts}</span></h3>
+            <h3>{i18n.t('search.experts')} <span class="n">{res.totalExperts}</span></h3>
             {#each res.experts as { e, related } (e.slug)}
                 <a class="hit" href="/experts/{e.slug}" style="--c:{catColor(e.c)}" onkeydown={onHitKey}>
                     <span class="av" style="--c:{catColor(e.c)}">{e.ini}</span>
                     <span class="h-main">
                         <b>{e.n}</b>
-                        <small>{e.role}{#if related} <span class="rel">קשור לתחום</span>{/if}</small>
+                        <small>{e.role}{#if related} <span class="rel">{i18n.t('search.related')}</span>{/if}</small>
                     </span>
-                    <span class="h-amt sm">{e.solved} נפתרו</span>
+                    <span class="h-amt sm">{i18n.t('search.solved', { n: e.solved })}</span>
                 </a>
             {/each}
             {#if res.totalExperts > res.experts.length}
-                <a class="more" href="/experts">ועוד {res.totalExperts - res.experts.length} ברשימת המומחים</a>
+                <a class="more" href="/experts">{i18n.t('search.moreExperts', { n: res.totalExperts - res.experts.length })}</a>
             {/if}
         </div>
     {/if}
@@ -101,27 +104,27 @@
     <div class="inner">
         <form class="box" role="search" onsubmit={(e) => e.preventDefault()}>
             <svg class="mag" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="M13 13l4 4" /></svg>
-            <label class="sr" for="smartQ">חיפוש חכם</label>
-            <input id="smartQ" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="חפשו בעיה, מומחה או תחום. למשל: עורך דין מעל 5000" bind:value={q} onkeydown={onKey} />
-            {#if q}<button class="clear" type="button" aria-label="נקו חיפוש" onclick={() => (q = '')}>×</button>{/if}
+            <label class="sr" for="smartQ">{i18n.t('search.label')}</label>
+            <input id="smartQ" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder={i18n.t('search.placeholder')} bind:value={q} onkeydown={onKey} />
+            {#if q}<button class="clear" type="button" aria-label={i18n.t('search.clear')} onclick={() => (q = '')}>×</button>{/if}
         </form>
 
         {#if res}
             <div class="panel" aria-live="polite">
                 {#if res.parsed.chips.length || res.concepts.length}
                     <div class="understood">
-                        <span class="lbl">הבנתי:</span>
+                        <span class="lbl">{i18n.t('search.understood')}</span>
                         {#each res.parsed.chips as c}<span class="tag">{c}</span>{/each}
-                        {#each res.concepts as t}<span class="tag" style="--c:{catColor(t.slug)}"><span class="dot" style="--c:{catColor(t.slug)}"></span>תחום: {catShort(t.slug)}</span>{/each}
+                        {#each res.concepts as t}<span class="tag" style="--c:{catColor(t.slug)}"><span class="dot" style="--c:{catColor(t.slug)}"></span>{i18n.t('search.field', { name: catShort(t.slug, i18n.locale) })}</span>{/each}
                     </div>
                 {/if}
 
                 {#if res.corrected}
                     <p class="fix">
                         {#if res.usedCorrection}
-                            מציג תוצאות עבור <b>{res.corrected}</b>. <button type="button" onclick={() => (q = trimmed)}>לחפשו כפי שהוקלד</button>
+                            {i18n.t('search.showingFor')} <b>{res.corrected}</b>. <button type="button" onclick={() => (q = trimmed)}>{i18n.t('search.asTyped')}</button>
                         {:else}
-                            האם התכוונת ל: <button type="button" onclick={() => (q = res.corrected ?? '')}>{res.corrected}</button>
+                            {i18n.t('search.didYouMean')} <button type="button" onclick={() => (q = res.corrected ?? '')}>{res.corrected}</button>
                         {/if}
                     </p>
                 {/if}
@@ -136,17 +139,17 @@
 
                 {#if res.teams.length}
                     <div class="teams">
-                        <span class="lbl">תחומים:</span>
+                        <span class="lbl">{i18n.t('search.fields')}</span>
                         {#each res.teams as t (t.slug)}
-                            <a class="chip" href="/categories/{t.slug}" style="--c:{catColor(t.slug)}"><span class="dot" style="--c:{catColor(t.slug)}"></span>{teamBySlug(t.slug)?.name}</a>
+                            <a class="chip" href="/categories/{t.slug}" style="--c:{catColor(t.slug)}"><span class="dot" style="--c:{catColor(t.slug)}"></span>{t.name}</a>
                         {/each}
                     </div>
                 {/if}
 
                 {#if res.empty}
                     <div class="none">
-                        לא נמצא כלום עבור <b>{trimmed}</b>.
-                        <a href="#compose">אולי זו בעיה חדשה? אפשר להעלות אותה ולהציב עליה פרס.</a>
+                        {i18n.t('search.nothingFor')} <b>{trimmed}</b>.
+                        <a href="#compose">{i18n.t('search.newProblem')}</a>
                     </div>
                 {/if}
             </div>

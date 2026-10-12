@@ -2,10 +2,14 @@
     import { onMount } from 'svelte';
     import { MEETUP, DEMO_DATA, catColor } from '$lib/homeData';
     import SectionHead from './SectionHead.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // headTitle = כותרת נושא בדף הבית (בעיצוב חכמי העדה). בדף המלא אין כותרת כזו, כי יש כותרת עמוד.
     // preview = גרסת דף הבית: בלי סדר המפגש המפורט, שנמצא רק בדף המלא.
     let { headTitle = '', preview = false }: { headTitle?: string; preview?: boolean } = $props();
+
+    const i18n = useI18n();
+    const meetup = $derived(i18n.l(MEETUP));
 
     // מרחק בין עכשיו ליעד, בחודשי לוח + ימים + שעות + דקות + שניות
     function diffParts(now: Date, target: Date) {
@@ -26,7 +30,6 @@
             s: Math.floor((rest % 6e4) / 1e3)
         };
     }
-    const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
     const two = (n: number) => String(n).padStart(2, '0');
 
     let target = $state(new Date(MEETUP.first));
@@ -34,7 +37,7 @@
     let registered = $state(false);
 
     const whenLabel = $derived(
-        target.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jerusalem' }) + ' · 20:00 · בזום, 90 דקות'
+        i18n.date(target, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + i18n.t('meetup.timeAndPlace')
     );
 
     onMount(() => {
@@ -48,22 +51,13 @@
         return () => clearInterval(id);
     });
 
+    const UNIT_KEYS = ['meetup.unitMonth', 'meetup.unitDay', 'meetup.unitHour', 'meetup.unitMinute', 'meetup.unitSecond'] as const;
     const cells = $derived(
-        parts
-            ? [
-                  { v: parts.m, one: 'חודש', many: 'חודשים' },
-                  { v: parts.d, one: 'יום', many: 'ימים' },
-                  { v: parts.h, one: 'שעה', many: 'שעות' },
-                  { v: parts.i, one: 'דקה', many: 'דקות' },
-                  { v: parts.s, one: 'שנייה', many: 'שניות' }
-              ]
-            : [
-                  { v: null, one: 'חודש', many: 'חודשים' },
-                  { v: null, one: 'יום', many: 'ימים' },
-                  { v: null, one: 'שעה', many: 'שעות' },
-                  { v: null, one: 'דקה', many: 'דקות' },
-                  { v: null, one: 'שנייה', many: 'שניות' }
-              ]
+        UNIT_KEYS.map((key, k) => {
+            const v = parts ? [parts.m, parts.d, parts.h, parts.i, parts.s][k] : null;
+            // לפני הטעינה (v ריק) מציגים את צורת הרבים
+            return { v, label: i18n.tn(key, v ?? 2) };
+        })
     );
 </script>
 
@@ -72,18 +66,18 @@
         {#if headTitle}<SectionHead title={headTitle} />{/if}
         <div class="meet" class:solo={preview}>
             <div class="meet-main">
-                <span class="live-pill"><i></i>המפגש הוירטואלי הבא · מפגש {MEETUP.number}{#if DEMO_DATA}<span class="demo-tag">נתוני הדגמה</span>{/if}</span>
+                <span class="live-pill"><i></i>{i18n.t('meetup.nextVirtual', { n: MEETUP.number })}{#if DEMO_DATA}<span class="demo-tag">{i18n.t('common.demoData')}</span>{/if}</span>
                 <div class="titleline">
-                    <h2>מפגש המומחים הקרוב</h2>
-                    <p class="tagline">הצטרפו כקהל בשידור חי</p>
+                    <h2>{i18n.t('meetup.title')}</h2>
+                    <p class="tagline">{i18n.t('meetup.tagline')}</p>
                 </div>
                 <p class="when">{whenLabel}</p>
 
-                <div class="count" role="timer" aria-label="הזמן שנותר למפגש">
+                <div class="count" role="timer" aria-label={i18n.t('meetup.timeLeft')}>
                     {#each cells as c}
                         <div>
                             <b>{c.v === null ? '--' : two(c.v)}</b>
-                            <span>{c.v === null ? c.many : plural(c.v, c.one, c.many)}</span>
+                            <span>{c.label}</span>
                         </div>
                     {/each}
                 </div>
@@ -91,16 +85,16 @@
                 <div class="meet-foot">
                     <div class="meet-cta">
                         <button class="btn btn-primary" type="button" aria-pressed={registered} onclick={() => (registered = !registered)}>
-                            {registered ? 'נרשמתם, נשלח תזכורת' : 'שריינו לי מקום'}
+                            {registered ? i18n.t('meetup.registered') : i18n.t('meetup.reserve')}
                         </button>
-                        <span class="reg-note"><b class="num">{MEETUP.registered + (registered ? 1 : 0)}</b> נרשמו, ויש מקום ל-{MEETUP.capacity}</span>
+                        <span class="reg-note"><b class="num">{MEETUP.registered + (registered ? 1 : 0)}</b> {i18n.t('meetup.regNote', { cap: MEETUP.capacity })}</span>
                     </div>
 
                     <div class="speakers">
-                        {#each MEETUP.speakers as s}
+                        {#each meetup.speakers as s}
                             <div class="spk">
                                 <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
-                                <div><b>{s.name}</b><small>מרצה במפגש</small></div>
+                                <div><b>{s.name}</b><small>{i18n.t('meetup.speaker')}</small></div>
                             </div>
                         {/each}
                     </div>
@@ -109,10 +103,10 @@
 
             {#if !preview}
             <div class="agenda">
-                <h3>סדר המפגש</h3>
-                <div class="sub">90 דקות בזום. הבעיות לדיון נבחרו לפי גובה הפרס והצבעת הקהילה.</div>
+                <h3>{i18n.t('meetup.agendaTitle')}</h3>
+                <div class="sub">{i18n.t('meetup.agendaSub')}</div>
                 <ol>
-                    {#each MEETUP.agenda as a}
+                    {#each meetup.agenda as a}
                         <li>
                             <time>{a.time}</time>
                             <span>{a.t}<small>{a.s}</small></span>

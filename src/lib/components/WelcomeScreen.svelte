@@ -12,8 +12,12 @@
 	 */
 	import { onMount } from 'svelte';
 	import { networkSites } from '$lib/networkSites';
+	import { useI18n } from '$lib/i18n/context';
 
 	let { userName = '' }: { userName?: string } = $props();
+
+	const i18n = useI18n();
+	const sites = $derived(i18n.l(networkSites));
 
 	const WELCOME_MS = 7000;
 	// לוגו האתר — המשתנה היחיד שמשתנה בין אתרי הרשת
@@ -59,7 +63,7 @@
 	<div
 		role="dialog"
 		aria-modal="true"
-		dir="rtl"
+		aria-label={i18n.t('site.name')}
 		class="fixed inset-0 z-[1300] overflow-y-auto
 			{kind === 'new'
 			? 'bg-gradient-to-br from-blue-950 via-[#070b14] to-purple-950'
@@ -68,7 +72,7 @@
 		<button
 			type="button"
 			onclick={dismiss}
-			aria-label="סגירה"
+			aria-label={i18n.t('common.close')}
 			class="fixed top-4 left-4 z-[1310] flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-200 transition-colors hover:bg-white/20 hover:text-white"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false">
@@ -81,7 +85,7 @@
 				{#if kind === 'new'}
 					<img
 						src={LOGO_SRC}
-						alt="לוגו המומחים של העם"
+						alt={i18n.t('site.logoAlt')}
 						width="400"
 						height="344"
 						decoding="async"
@@ -89,28 +93,28 @@
 					/>
 					<h2 class="flex items-center justify-center gap-2 text-white font-black text-3xl sm:text-4xl mb-3">
 						<span class="text-xl" aria-hidden="true">🎉</span>
-						<span>ברוכים המצטרפים</span>
+						<span>{i18n.t('welcome.joinedTitle')}</span>
 					</h2>
 					<p class="text-gray-200 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto mb-6">
-						נרשמת בהצלחה — ומעכשיו אתה מוכר בכל אתרי רשת יוצאים לחירות, ללא צורך בהזדהות נוספת.
+						{i18n.t('welcome.joinedBody')}
 					</p>
 					<p class="text-purple-200 text-base sm:text-lg font-bold tracking-wide mb-4">
-						יוצאים לחירות מוכיחים שעולם חדש הוא אפשרי
+						{i18n.t('welcome.joinedTagline')}
 					</p>
 				{:else}
 					<div class="text-7xl sm:text-8xl mb-4">👋</div>
 					<h2 class="text-white font-black text-3xl sm:text-4xl mb-3">
-						ברוכים השבים{userName.trim() ? `, ${userName.trim()}` : ''}!
+						{i18n.t('welcome.backTitle')}{userName.trim() ? `, ${userName.trim()}` : ''}!
 					</h2>
 					<p class="text-gray-200 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto mb-6">
-						טוב לראות אותך שוב ברשת יוצאים לחירות.
+						{i18n.t('welcome.backBody')}
 					</p>
 				{/if}
 				<!-- לוגואים של כל האתרים ברשת (הרשימה הקנונית המלאה, כולל האתר
 				     הנוכחי) — מוצגים בשני המצבים (מצטרפים + שבים). flex-wrap עם
 				     מרכוז כדי שהשורה האחרונה (חלקית) תתמרכז ולא תישאר צמודה לצד -->
-				<div class="flex flex-wrap justify-center gap-2 sm:gap-3" aria-label="אתרי רשת יוצאים לחירות">
-					{#each networkSites as site (site.id)}
+				<div class="flex flex-wrap justify-center gap-2 sm:gap-3" aria-label={i18n.t('welcome.networkLabel')}>
+					{#each sites as site (site.id)}
 						<a
 							href={site.href}
 							target="_blank"

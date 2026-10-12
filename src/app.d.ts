@@ -6,6 +6,8 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			auth: () => Promise<import('@auth/sveltekit').Session | null>;
+			/** שפת הגולש לפי ?lang= / עוגיית lang (hooks.server.ts) */
+			locale: import('$lib/i18n').Locale;
 		}
 		interface PageData {
 			session?: import('@auth/sveltekit').Session | null;

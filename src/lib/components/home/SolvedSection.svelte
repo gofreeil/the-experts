@@ -1,10 +1,14 @@
 <script lang="ts">
-    import { FEATURED, LEDGER, CATS, DEMO_DATA, catColor, fmt } from '$lib/homeData';
+    import { FEATURED, LEDGER, CATS, DEMO_DATA, catColor, catShort, fmt } from '$lib/homeData';
     import LedgerTable from './LedgerTable.svelte';
     import SectionHead from './SectionHead.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // preview = גרסת דף הבית (כרטיס מרכזי + 4 שורות). בדף המלא יש את כל השורות וסינון לפי תחום.
     let { preview = false }: { preview?: boolean } = $props();
+
+    const i18n = useI18n();
+    const featured = $derived(i18n.l(FEATURED));
 
     let cat = $state('all');
     const rows = $derived(preview ? LEDGER.slice(0, 4) : LEDGER.filter((r) => cat === 'all' || r.c === cat));
@@ -13,36 +17,36 @@
 <section class="section alt" id="solved">
     <div class="inner">
         {#if preview}
-            <SectionHead title="בעיות שנסגרו, ומי קיבל על זה כסף" lede="כל שורה כאן היא בעיה שנפתרה, אושרה על ידי מי שהעלה אותה, ושולמה. אפשר ללמוד מהן לפני שמעלים בעיה חדשה." demo />
+            <SectionHead title={i18n.t('solved.title')} lede={i18n.t('solved.lede')} demo />
         {:else if DEMO_DATA}
-            <p class="demo-line"><span class="demo-tag" style="margin:0">נתוני הדגמה</span></p>
+            <p class="demo-line"><span class="demo-tag" style="margin:0">{i18n.t('common.demoData')}</span></p>
         {/if}
 
         <div class="solved-grid">
             <article class="feature">
                 <span class="stamp">
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9" /></svg>נפתר
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9" /></svg>{i18n.t('solved.stamp')}
                 </span>
-                <h3>{FEATURED.title}</h3>
+                <h3>{featured.title}</h3>
                 <div class="ba">
-                    <div><small>הבעיה</small><p>{FEATURED.problem}</p></div>
-                    <div><small>הפתרון</small><p>{FEATURED.solution}</p></div>
+                    <div><small>{i18n.t('solved.problem')}</small><p>{featured.problem}</p></div>
+                    <div><small>{i18n.t('solved.solution')}</small><p>{featured.solution}</p></div>
                 </div>
-                <blockquote>״{FEATURED.quote}״<footer>{FEATURED.by}</footer></blockquote>
+                <blockquote>{i18n.t('common.quote', { text: featured.quote })}<footer>{featured.by}</footer></blockquote>
                 <div class="feat-meta">
-                    <div><b><span class="num">{fmt(FEATURED.paid)}</span></b><span>שולם למומחית</span></div>
-                    <div><b>{FEATURED.days} יום</b><span>מהעלאה עד אישור</span></div>
-                    <div><b><span class="num">{FEATURED.rating}</span></b><span>דירוג</span></div>
+                    <div><b><span class="num">{fmt(featured.paid)}</span></b><span>{i18n.t('solved.paidToExpert')}</span></div>
+                    <div><b>{i18n.tn('solved.days', featured.days)}</b><span>{i18n.t('solved.uploadToApproval')}</span></div>
+                    <div><b><span class="num">{featured.rating}</span></b><span>{i18n.t('experts.statRating')}</span></div>
                 </div>
             </article>
 
             <div class="right">
                 {#if !preview}
-                    <div class="chips" role="group" aria-label="סינון לפי תחום">
-                        <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => (cat = 'all')}>הכל</button>
+                    <div class="chips" role="group" aria-label={i18n.t('common.filterByField')}>
+                        <button class="chip" type="button" aria-pressed={cat === 'all'} onclick={() => (cat = 'all')}>{i18n.t('common.all')}</button>
                         {#each CATS as c}
                             <button class="chip" type="button" style="--c:{catColor(c.slug)}" aria-pressed={cat === c.slug} onclick={() => (cat = cat === c.slug ? 'all' : c.slug)}>
-                                <span class="dot" style="--c:{catColor(c.slug)}"></span>{c.short}
+                                <span class="dot" style="--c:{catColor(c.slug)}"></span>{catShort(c.slug, i18n.locale)}
                             </button>
                         {/each}
                     </div>

@@ -1,5 +1,8 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
+    import { useI18n } from '$lib/i18n/context';
+
+    const i18n = useI18n();
 
     // כותרת קומפקטית לדפי פרט (רזומה של מומחה, דף צוות): תמונה וכותרת בשורה אחת, משפט תיאור, כפתורים קטנים.
     let { title, lede = '', meta = '', backHref, backLabel, lead, actions }: {
@@ -14,7 +17,7 @@
 </script>
 
 <svelte:head>
-    <title>{title} | המומחים של העם</title>
+    <title>{title} | {i18n.t('site.name')}</title>
     <meta name="description" content={meta || lede} />
 </svelte:head>
 

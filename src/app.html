@@ -1,18 +1,13 @@
 <!doctype html>
-<html lang="he" dir="rtl">
+<!-- שפת הדף וכיוונו מוחלפים בשרת (hooks.server.ts) לפי שפת הגולש -->
+<html lang="%lang%" dir="%dir%">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" href="/favicon.ico" sizes="48x48" />
 		<link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-		<!-- Open Graph / WhatsApp sharing -->
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content="המומחים של העם" />
-		<meta property="og:description" content="המומחים" />
-		<meta name="twitter:card" content="summary" />
-		<meta name="twitter:title" content="המומחים של העם" />
-		<meta name="twitter:description" content="המומחים" />
+		<!-- תגי Open Graph / טוויטר (שם האתר ושפה) נוצרים ב-+layout.svelte, כדי שיהיו בשפת הגולש -->
 		<!-- Google Analytics — נכס משותף לכל אתרי "יוצאים לחירות". ההפרדה בין
 		     האתרים נעשית לפי hostName, ולכן אותו מזהה משמש את כולם. -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=G-YTEG7S0H9N"></script>

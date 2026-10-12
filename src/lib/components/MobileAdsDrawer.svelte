@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { ads } from '$lib/adsData';
+	import { ads as adSources } from '$lib/adsData';
 	import { page } from '$app/state';
+	import { useI18n } from '$lib/i18n/context';
+
+	const i18n = useI18n();
+	const ads = $derived(i18n.l(adSources));
 
 	let isAuthPage = $derived(
 		page.url.pathname === '/login' ||
@@ -225,14 +229,14 @@
 </script>
 
 <!-- מוצג רק בנייד -->
-<div class="lg:hidden" dir="rtl">
+<div class="lg:hidden">
 
 	<!-- Overlay כהה כשפתוח -->
 	{#if open}
 	<button
 		class="overlay"
 		onclick={closeAll}
-		aria-label="סגור פרסומות"
+		aria-label={i18n.t('drawer.closeAds')}
 	></button>
 	{/if}
 
@@ -243,19 +247,19 @@
 	<div class="drawer"
 		role="dialog"
 		aria-modal="true"
-		aria-label="האזור האישי וההטבות מהקהילה הארצית"
+		aria-label={i18n.t('drawer.dialog')}
 		aria-hidden={!open}
 		ontouchstart={onDrawerTouchStart}
 		ontouchend={onDrawerTouchEnd}
 	>
 		<!-- כפתור התחברות / אזור אישי -->
 		<div class="section-title section-title-first">
-			האזור האישי
+			{i18n.t('drawer.personalArea')}
 			<button
 				type="button"
 				class="close-btn"
 				onclick={closeAll}
-				aria-label="סגור"
+				aria-label={i18n.t('common.close')}
 			>×</button>
 		</div>
 		<div class="auth-section">
@@ -302,13 +306,13 @@
 						<span class="text-white font-black text-base truncate">
 							{layoutUser.nickname || layoutUser.name || currentUser.username}
 						</span>
-						<span class="text-orange-400 text-xs font-bold">📩 הודעות אישיות</span>
-						<span class="text-gray-400 text-xs">לאזור האישי ←</span>
+						<span class="text-orange-400 text-xs font-bold">📩 {i18n.t('drawer.messages')}</span>
+						<span class="text-gray-400 text-xs">{i18n.t('drawer.toPersonalArea')}</span>
 					</div>
 
 					<!-- יתרה -->
-					<div class="flex-shrink-0 flex flex-col items-center gap-1 mr-auto">
-						<img src="/images/wallet.webp" alt="היתרה בארנק" width="200" height="133" loading="lazy" decoding="async" class="w-10 h-10 object-contain" />
+					<div class="flex-shrink-0 flex flex-col items-center gap-1 ms-auto">
+						<img src="/images/wallet.webp" alt={i18n.t('drawer.walletAlt')} width="200" height="133" loading="lazy" decoding="async" class="w-10 h-10 object-contain" />
 						<span class="text-green-400 text-xs font-black">{layoutUser.balance ?? 0}₪</span>
 					</div>
 
@@ -323,7 +327,7 @@
 				{/if}
 				<div class="profile-btn-text">
 					<span class="profile-btn-name">{currentUser.username}</span>
-					<span class="profile-btn-sub">לאזור האישי שלי ←</span>
+					<span class="profile-btn-sub">{i18n.t('drawer.toMyPersonalArea')}</span>
 				</div>
 			</a>
 			{:else}
@@ -339,8 +343,8 @@
 					<span class="login-icon">🔐</span>
 				</div>
 				<div class="login-btn-text">
-					<span class="login-btn-title">התחברות / הרשמה</span>
-					<span class="login-btn-sub">לאזור האישי שלך ←</span>
+					<span class="login-btn-title">{i18n.t('drawer.loginRegister')}</span>
+					<span class="login-btn-sub">{i18n.t('drawer.toYourPersonalArea')}</span>
 				</div>
 			</a>
 			{/if}
@@ -349,7 +353,7 @@
 		<!-- רשימת פרסומות -->
 		<div class="benefits-list">
 			<!-- כותרת הטבות (גוללת עם הרשימה, לא מוקפאת) -->
-			<div class="section-title section-title-benefits">הטבות ארציות <span class="title-gold">יוצאים לחירות</span></div>
+			<div class="section-title section-title-benefits">{i18n.t('drawer.benefits')} <span class="title-gold">{i18n.t('footer.movement')}</span></div>
 
 			{#each ads as ad (ad.id)}
 			<a
@@ -371,7 +375,7 @@
 				<div class="benefit-body">
 					<p class="benefit-title">{ad.title}</p>
 					<p class="benefit-desc">{ad.description}</p>
-					<span class="benefit-cta" title={ad.hover ?? undefined}>← {ad.cta}</span>
+					<span class="benefit-cta" title={ad.hover ?? undefined}>{#if i18n.rtl}← {ad.cta}{:else}{ad.cta} →{/if}</span>
 				</div>
 			</a>
 			{/each}
@@ -387,10 +391,10 @@
 		style="top: {tabY > 0 ? `${tabY}px` : '80%'}; transform: translateY(-50%);"
 		onclick={onTabClick}
 		use:nonPassiveTouch
-		aria-label="פתח הטבות לקהילה"
+		aria-label={i18n.t('drawer.openTab')}
 	>
 		{#if !(collapsed && !open)}
-			<span class="tab-text">לאזור האישי ולהטבות</span>
+			<span class="tab-text">{i18n.t('drawer.tabText')}</span>
 		{/if}
 	</button>
 	{/if}
@@ -606,7 +610,7 @@
 	.profile-btn-text, .login-btn-text {
 		display: flex;
 		flex-direction: column;
-		text-align: right;
+		text-align: start;
 		flex: 1;
 	}
 

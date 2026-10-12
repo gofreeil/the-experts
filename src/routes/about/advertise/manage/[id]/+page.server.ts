@@ -4,6 +4,7 @@ import { getAd, isAdOwner } from '$lib/server/adsStore';
 import { getAdStats, type AdStats } from '$lib/server/adStats';
 import { ownerCandidateKeys } from '$lib/server/ownership';
 import { planFor } from '$lib/adPlans';
+import { createTranslator } from '$lib/i18n/translate';
 
 const STATS_DAYS = 14;
 
@@ -15,10 +16,11 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
         throw redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`);
     }
 
+    const { t } = createTranslator(locals.locale);
     const ad = await getAd(params.id);
-    if (!ad) throw error(404, 'הפרסומת לא נמצאה');
+    if (!ad) throw error(404, t('detail.notFound'));
     if (!isAdOwner(ownerCandidateKeys(session.user), ad)) {
-        throw error(403, 'רק מי שהעלה את הפרסומת יכול לנהל אותה. אם זו הפרסומת שלך — התחברו עם החשבון שממנו נשלחה.');
+        throw error(403, t('detail.forbidden'));
     }
 
     const stats = await getAdStats([ad.id], STATS_DAYS)

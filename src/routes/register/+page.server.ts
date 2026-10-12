@@ -2,6 +2,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import { strapiRegister } from '$lib/server/strapiAuth';
 import type { PageServerLoad, Actions } from './$types';
 import { oauthEnabled } from '../../auth';
+import { createTranslator } from '$lib/i18n/translate';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const session = await locals.auth();
@@ -12,14 +13,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
+		const { t } = createTranslator(locals.locale);
 		const form = await request.formData();
 		const name = (form.get('name') as string)?.trim();
 		const email = (form.get('email') as string)?.trim().toLowerCase();
 		const password = form.get('password') as string;
 
-		if (!email || !password) return fail(400, { error: 'יש למלא אימייל וסיסמה' });
-		if (password.length < 6) return fail(400, { error: 'הסיסמה חייבת להכיל לפחות 6 תווים' });
+		if (!email || !password) return fail(400, { error: t('register.needEmailPw') });
+		if (password.length < 6) return fail(400, { error: t('register.pwShort') });
 
 		const username = name || email.split('@')[0];
 		try {
@@ -27,8 +29,8 @@ export const actions: Actions = {
 		} catch (err) {
 			const msg = String((err as Error)?.message || '');
 			if (msg.includes('taken') || msg.includes('already') || msg.includes('400'))
-				return fail(400, { error: 'משתמש עם אימייל זה כבר קיים' });
-			return fail(500, { error: 'ההרשמה נכשלה, נסו שוב' });
+				return fail(400, { error: t('register.exists') });
+			return fail(500, { error: t('register.failed') });
 		}
 		// הצלחה — הלקוח יבצע signIn('credentials') עם אותם פרטים
 		return { success: true };

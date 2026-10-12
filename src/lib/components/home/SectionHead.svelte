@@ -2,15 +2,18 @@
     import type { Snippet } from 'svelte';
     import { DEMO_DATA } from '$lib/homeData';
     import FancyHeading from './FancyHeading.svelte';
+    import { useI18n } from '$lib/i18n/context';
 
     // כותרת נושא בדף הבית בעיצוב חכמי העדה: כותרת ❦ ממורכזת, משפט הסבר אחד, ופעולות (אופציונלי).
     let { title, lede = '', demo = false, children }: { title: string; lede?: string; demo?: boolean; children?: Snippet } = $props();
+
+    const i18n = useI18n();
 </script>
 
 <header class="sec-fancy">
     <FancyHeading as="h2" {title} />
     {#if lede || (demo && DEMO_DATA)}
-        <p class="lede">{#if demo && DEMO_DATA}<span class="demo-tag" style="margin:0 0 0 8px">נתוני הדגמה</span>{/if}{lede}</p>
+        <p class="lede">{#if demo && DEMO_DATA}<span class="demo-tag" style="margin:0; margin-inline-end:8px">{i18n.t('common.demoData')}</span>{/if}{lede}</p>
     {/if}
     {#if children}<div class="acts">{@render children()}</div>{/if}
 </header>

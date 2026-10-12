@@ -69,7 +69,7 @@ body {
     padding: 0;
     background-color: var(--bg-deep);
     color: #f8fafc;
-    direction: rtl;
+    /* הכיוון (rtl/ltr) נקבע ב-<html dir> לפי שפת הגולש (hooks.server.ts) */
     font-size: 16.5px;
     /* clip במקום hidden — כדי שלא ניצור scroll container על body ולא נשבור sticky.
        overflow:hidden + position:relative על body גרם ל-html להיות הסקרול הראשי
@@ -165,7 +165,7 @@ label,
 .skip-link {
     position: absolute;
     top: -100px;
-    right: 0;
+    inset-inline-start: 0;
     background: #005fcc;
     color: #ffffff;
     padding: 10px 20px;

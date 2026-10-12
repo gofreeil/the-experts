@@ -3,33 +3,35 @@ import type { RequestHandler } from './$types';
 import { getAd, isAdOwner, updateAdContent, normalizeLanding } from '$lib/server/adsStore';
 import { ownerCandidateKeys } from '$lib/server/ownership';
 import { adPayloadIssue } from '$lib/server/adBudget';
+import { createTranslator } from '$lib/i18n/translate';
 
 // עריכה מחדש של מודעה קיימת בידי המפרסם שהעלה אותה (דשבורד הנכס →
 // הבונה → שלב השליחה). תוכן בלבד: הסטטוס, התוקף, המסלול והתשלום
 // נשארים כפי שהאדמין קבע, ורק edited_at מתעדכן.
 export const PUT: RequestHandler = async ({ params, request, locals }) => {
+    const { t } = createTranslator(locals.locale);
     const session = await locals.auth();
-    if (!session?.user) throw error(401, 'צריך להתחבר כדי לערוך פרסומת');
+    if (!session?.user) throw error(401, t('api.loginToEdit'));
 
     const ad = await getAd(params.id);
-    if (!ad) throw error(404, 'הפרסומת לא נמצאה');
+    if (!ad) throw error(404, t('detail.notFound'));
     if (!isAdOwner(ownerCandidateKeys(session.user), ad)) {
-        throw error(403, 'אין לך הרשאה לערוך את הפרסומת הזו');
+        throw error(403, t('api.forbidden'));
     }
 
     let payload: any;
     try {
         payload = await request.json();
     } catch {
-        throw error(400, 'גוף הבקשה חייב להיות JSON תקין');
+        throw error(400, t('api.badJson'));
     }
     for (const k of ['title', 'subtitle', 'mainImage', 'gradient']) {
         if (!payload?.[k] || typeof payload[k] !== 'string') {
-            throw error(400, `חסר שדה: ${k}`);
+            throw error(400, t('api.missingField', { field: k }));
         }
     }
     if (!payload.landing || typeof payload.landing !== 'object') {
-        throw error(400, 'חסר אובייקט landing');
+        throw error(400, t('api.missingLanding'));
     }
 
     // אכיפת התקרות גם בשרת — הבילדר אוכף בצד הלקוח, אבל בקשה ישירה עוקפת אותו
@@ -55,9 +57,9 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
         console.error('ads PUT failed:', err);
         // תקרת koa-body של Strapi (~1MB) — שגיאה שהמפרסם יכול לתקן בעצמו
         if (err instanceof Error && err.message.includes('→ 413')) {
-            throw error(413, 'התמונות כבדות מדי — הקטינו תמונה ונסו שוב');
+            throw error(413, t('api.tooHeavy'));
         }
-        throw error(502, 'העדכון נכשל — נסו שוב בעוד רגע');
+        throw error(502, t('api.updateFailed'));
     }
 
     return json({ ok: true, id: params.id, status: ad.status });

@@ -1,5 +1,8 @@
 import { writable } from 'svelte/store';
-import { ads, type Ad } from './adsData';
+import { ads, type AdSource } from './adsData';
+
+// המאגר כאן נשאר דו-לשוני (AdSource); הפופ-אפ עצמו (MobileAdPopup) מתרגם בעת התצוגה,
+// כך שהחפיסה והמצב השמור לא תלויים בשפה.
 
 const STORAGE_KEY = 'ad_deck_v2';
 const LEGACY_STORAGE_KEY = 'ad_deck';
@@ -17,14 +20,14 @@ const LEGACY_STORAGE_KEY = 'ad_deck';
 /** כל כמה פופ-אפים מוצגת פרסומת רשת אחת; השאר - מפרסמים משולמים */
 const NETWORK_AD_EVERY = 4;
 
-let paidAds: Ad[] = [];
+let paidAds: AdSource[] = [];
 
 /** לרישום מודעות משולמות כשיהיה לאתר מקור כזה (ראו אתר הקהילה) */
-export function registerPaidAds(list: Ad[]): void {
+export function registerPaidAds(list: AdSource[]): void {
     paidAds = list.filter(a => a.title && a.image && a.href);
 }
 
-function getNetworkAds(): Ad[] {
+function getNetworkAds(): AdSource[] {
     return ads.filter(a => a.title && a.description && a.image && a.href);
 }
 
@@ -78,7 +81,7 @@ function saveState(state: PopupState) {
  * החפיסה נבנית מחדש כשהיא נגמרה או כשהמאגר השתנה - למשל פרסומת
  * שנוספה אחרי שהחפיסה נשמרה, או פרסומת שהוסרה.
  */
-function drawFrom(state: DeckState, pool: Ad[]): Ad | null {
+function drawFrom(state: DeckState, pool: AdSource[]): AdSource | null {
     if (!pool.length) return null;
 
     const poolIds = new Set(pool.map(a => String(a.id)));
@@ -93,7 +96,7 @@ function drawFrom(state: DeckState, pool: Ad[]): Ad | null {
     return pool.find(a => String(a.id) === id) ?? pool[0];
 }
 
-function getNextAd(): Ad | null {
+function getNextAd(): AdSource | null {
     const paid = paidAds;
     const net = getNetworkAds();
     if (!paid.length && !net.length) return null;
@@ -116,7 +119,7 @@ function getNextAd(): Ad | null {
     return ad;
 }
 
-export const adPopup = writable<{ ad: Ad; pendingHref?: string } | null>(null);
+export const adPopup = writable<{ ad: AdSource; pendingHref?: string } | null>(null);
 
 export function triggerAdPopup(pendingHref?: string): boolean {
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) return false;

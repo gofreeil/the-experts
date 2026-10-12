@@ -1,15 +1,17 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { navItem } from '$lib/navMenu';
+    import { useI18n } from '$lib/i18n/context';
 
     // כותרת קומפקטית לדפים הנפרדים: אייקון וכותרת בשורה אחת, משפט אחד, כפתורים קטנים.
     let { href, actions }: { href: string; actions?: Snippet } = $props();
 
-    const item = $derived(navItem(href));
+    const i18n = useI18n();
+    const item = $derived(i18n.l(navItem(href)));
 </script>
 
 <svelte:head>
-    <title>{item.title} | המומחים של העם</title>
+    <title>{item.title} | {i18n.t('site.name')}</title>
     <meta name="description" content={item.lede} />
 </svelte:head>
 
@@ -19,7 +21,7 @@
             <h1><span class="ico" aria-hidden="true">{item.icon}</span>{item.title}</h1>
             <div class="acts">
                 {@render actions?.()}
-                <a class="btn btn-ghost btn-sm" href="/">← לדף הבית</a>
+                <a class="btn btn-ghost btn-sm" href="/">{i18n.t('common.toHome')}</a>
             </div>
         </div>
         <p>{item.lede}</p>

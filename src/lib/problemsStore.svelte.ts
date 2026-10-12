@@ -2,7 +2,9 @@
 // מודל: בעיה אחת -> מספר הצעות פתרון
 
 import { browser } from '$app/environment';
-import { demoProblems } from './demoProblems';
+import { demoProblems, problemTextEn, posterNameEn, solutionTextEn } from './demoProblems';
+import { DEFAULT_LOCALE, LOCALE_META, type Locale } from './i18n';
+import { createTranslator } from './i18n/translate';
 
 export type ProblemType = 'individual' | 'community';
 export type ProblemStatus = 'open' | 'in-progress' | 'solved';
@@ -165,19 +167,47 @@ class ProblemsStore {
 
 export const problemsStore = new ProblemsStore();
 
-export function formatTimeAgo(ts: number): string {
+/** "לפני 3 שעות" / "3 hours ago" */
+export function formatTimeAgo(ts: number, locale: Locale = DEFAULT_LOCALE): string {
+    const { t, tn } = createTranslator(locale);
     const diffMs = Date.now() - ts;
     const min = Math.floor(diffMs / 60000);
-    if (min < 1) return 'הרגע';
-    if (min < 60) return `לפני ${min} דק'`;
+    if (min < 1) return t('time.now');
+    if (min < 60) return tn('time.minutesAgo', min);
     const hr = Math.floor(min / 60);
-    if (hr < 24) return `לפני ${hr} שעות`;
+    if (hr < 24) return tn('time.hoursAgo', hr);
     const days = Math.floor(hr / 24);
-    if (days < 30) return `לפני ${days} ימים`;
+    if (days < 30) return tn('time.daysAgo', days);
     const months = Math.floor(days / 30);
-    return `לפני ${months} חודשים`;
+    return tn('time.monthsAgo', months);
 }
 
-export function formatBounty(n: number): string {
-    return new Intl.NumberFormat('he-IL').format(n) + ' ₪';
+/** "1,200 ₪" בעברית (השקל אחרי המספר), "₪1,200" באנגלית */
+export function formatBounty(n: number, locale: Locale = DEFAULT_LOCALE): string {
+    const num = new Intl.NumberFormat(LOCALE_META[locale].bcp47).format(n);
+    return locale === 'he' ? `${num} ₪` : `₪${num}`;
 }
+
+/**
+ * הבעיה כפי שמוצגת בשפה הנבחרת. בעיות הדגמה מתורגמות (לפי הכותרת העברית שלהן);
+ * בעיה שגולש כתב נשארת בשפה שבה נכתבה.
+ */
+export function localizeProblem(p: Problem, locale: Locale): Problem {
+    if (locale === 'he') return p;
+    const en = problemTextEn(p.title);
+    const poster = posterNameEn(p.posterName);
+    if (!en && !poster && !p.solutions.some((s) => solutionTextEn(s.proposal))) return p;
+    return {
+        ...p,
+        title: en?.title ?? p.title,
+        description: en?.description ?? p.description,
+        posterName: poster ?? en?.posterName ?? p.posterName,
+        solutions: p.solutions.map((s) => {
+            const t = solutionTextEn(s.proposal);
+            return t ? { ...s, solverName: t.solverName, proposal: t.proposal } : s;
+        })
+    };
+}
+
+export const localizeProblems = (list: Problem[], locale: Locale): Problem[] =>
+    locale === 'he' ? list : list.map((p) => localizeProblem(p, locale));
