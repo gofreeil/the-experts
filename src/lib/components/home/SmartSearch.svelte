@@ -149,7 +149,7 @@
                 {#if res.empty}
                     <div class="none">
                         {i18n.t('search.nothingFor')} <b>{trimmed}</b>.
-                        <a href="#compose">{i18n.t('search.newProblem')}</a>
+                        <a href="/problems/new?title={encodeURIComponent(trimmed)}">{i18n.t('search.newProblem')}</a>
                     </div>
                 {/if}
             </div>

@@ -59,7 +59,7 @@
             <div class="hero-text">
                 <p class="hero-lede">{i18n.t('home.lede')}</p>
                 <div class="hero-cta">
-                    <a class="btn btn-primary" href="#compose">{i18n.t('home.cta')}</a>
+                    <a class="btn btn-primary" href="/problems/new">{i18n.t('home.cta')}</a>
                 </div>
             </div>
 

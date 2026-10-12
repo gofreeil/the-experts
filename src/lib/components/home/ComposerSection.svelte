@@ -5,8 +5,7 @@
     const i18n = useI18n();
 </script>
 
-<!-- id="compose": היעד של כפתור הגיבור "העלו בעיה והציבו פרס" -->
-<section class="compose" id="compose">
+<section class="compose">
     <div class="inner">
         <div class="banner">
             <FancyHeading as="h2" title={i18n.t('compose.title')} />
