@@ -121,7 +121,7 @@
 				</button>
 				{/if}
 				<a href="/register?redirect={encodeURIComponent(data.returnTo || '/')}" class="mt-1 text-sm text-gray-400 underline hover:text-gray-200">{i18n.t('callback.manual')}</a>
-				<a href="/login" class="text-sm text-gray-500 underline hover:text-gray-300">{i18n.t('callback.backToLogin')}</a>
+				<a href="/login?redirect={encodeURIComponent(data.returnTo || '/')}" class="text-sm text-gray-500 underline hover:text-gray-300">{i18n.t('callback.backToLogin')}</a>
 			</div>
 		{/if}
 	</div>

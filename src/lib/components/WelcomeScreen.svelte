@@ -12,6 +12,7 @@
 	 */
 	import { onMount } from 'svelte';
 	import { networkSites } from '$lib/networkSites';
+	import { describeReturn } from '$lib/authIntent';
 	import { useI18n } from '$lib/i18n/context';
 
 	let { userName = '' }: { userName?: string } = $props();
@@ -20,6 +21,10 @@
 	const sites = $derived(i18n.l(networkSites));
 
 	const WELCOME_MS = 7000;
+	// הגיעו לכאן מבקשה שדרשה הרשמה (ולא לדף הבית): מסך קצר יותר, ישר לבקשה
+	const PENDING_MS = 4500;
+	let pending = $state<ReturnType<typeof describeReturn>>(null);
+	let ms = $state(WELCOME_MS);
 	// לוגו האתר — המשתנה היחיד שמשתנה בין אתרי הרשת
 	const LOGO_SRC = '/images/experts-logo.webp';
 
@@ -44,6 +49,8 @@
 		const p = new URLSearchParams(window.location.search).get('welcome');
 		kind = p === '1' || p === 'new' ? 'new' : p === 'back' ? 'back' : null;
 		if (!kind) return;
+		pending = describeReturn(window.location.pathname + window.location.search);
+		if (pending) ms = PENDING_MS;
 		visible = true;
 		// מסמנים שהדפדפן הזה כבר קיבל ברכה — התחברויות SSO הבאות יציגו "ברוכים השבים"
 		try {
@@ -52,7 +59,7 @@
 			/* ignore */
 		}
 		requestAnimationFrame(() => (fill = true));
-		timer = setTimeout(dismiss, WELCOME_MS);
+		timer = setTimeout(dismiss, ms);
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
@@ -110,6 +117,15 @@
 						{i18n.t('welcome.backBody')}
 					</p>
 				{/if}
+				<!-- נשלחו להירשם באמצע פעולה: "השלמת את ההרשמה — כעת תועבר לבקשתך הראשונה" (ראו $lib/authIntent) -->
+				{#if pending}
+					<div class="mx-auto mb-6 max-w-xl rounded-2xl border border-white/20 bg-white/10 px-4 py-3">
+						<p class="text-white font-bold text-base sm:text-lg leading-relaxed">
+							{i18n.t(kind === 'new' ? 'welcome.pendingNew' : 'welcome.pendingBack')} — <span class="text-amber-300">{i18n.t(pending)}</span>…
+						</p>
+						<button type="button" onclick={dismiss} class="mt-2 rounded-full bg-white px-5 py-1.5 text-sm font-black text-gray-900 transition-colors hover:bg-gray-100">{i18n.t('welcome.pendingGo')}</button>
+					</div>
+				{/if}
 				<!-- לוגואים של כל האתרים ברשת (הרשימה הקנונית המלאה, כולל האתר
 				     הנוכחי) — מוצגים בשני המצבים (מצטרפים + שבים). flex-wrap עם
 				     מרכוז כדי שהשורה האחרונה (חלקית) תתמרכז ולא תישאר צמודה לצד -->
@@ -142,7 +158,7 @@
 		<div class="fixed bottom-0 left-0 right-0 h-1.5 bg-white/10 z-[1310]">
 			<div
 				class="h-full {kind === 'new' ? 'bg-purple-400' : 'bg-emerald-400'}"
-				style="width: {fill ? '100%' : '0%'}; transition: width {WELCOME_MS}ms linear;"
+				style="width: {fill ? '100%' : '0%'}; transition: width {ms}ms linear;"
 			></div>
 		</div>
 	</div>
