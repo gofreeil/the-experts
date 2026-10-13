@@ -61,6 +61,24 @@
     );
 </script>
 
+<!-- המרצים: גלריה אנכית שנעה מלמטה למעלה. העותק השני (מוסתר מקוראי מסך) סוגר את הלולאה בלי קפיצה. -->
+{#snippet speakers()}
+    <div class="speakers" style="--n:{meetup.speakers.length}">
+        <div class="track">
+            {#each [0, 1] as copy}
+                <div class="copy" aria-hidden={copy === 1}>
+                    {#each meetup.speakers as s}
+                        <div class="spk">
+                            <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
+                            <div><b>{s.name}</b><small>{i18n.t('meetup.speaker')}</small></div>
+                        </div>
+                    {/each}
+                </div>
+            {/each}
+        </div>
+    </div>
+{/snippet}
+
 <section class="section" id="meet">
     <div class="inner">
         {#if headTitle}<SectionHead title={headTitle} />{/if}
@@ -90,16 +108,11 @@
                         <span class="reg-note"><b class="num">{MEETUP.registered + (registered ? 1 : 0)}</b> {i18n.t('meetup.regNote', { cap: MEETUP.capacity })}</span>
                     </div>
 
-                    <div class="speakers">
-                        {#each meetup.speakers as s}
-                            <div class="spk">
-                                <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
-                                <div><b>{s.name}</b><small>{i18n.t('meetup.speaker')}</small></div>
-                            </div>
-                        {/each}
-                    </div>
+                    {#if !preview}{@render speakers()}{/if}
                 </div>
             </div>
+
+            {#if preview}{@render speakers()}{/if}
 
             {#if !preview}
             <div class="agenda">
@@ -124,7 +137,6 @@
     .meet {
         display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(22px, 4cqi, 52px);
     }
-    .meet.solo { grid-template-columns: minmax(0, 1fr); }
     .meet-main { min-width: 0; }
     .live-pill { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--honey-text); border: 1px solid var(--honey-deep); background: rgba(245, 165, 36, 0.1); padding: 4px 12px; border-radius: 999px; }
     .live-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--honey-text); box-shadow: 0 0 0 0 rgba(185, 119, 14, 0.6); animation: beat 2s infinite; }
@@ -139,8 +151,16 @@
     .count span { display: block; font-size: 13px; color: var(--fg-mute); margin-top: 6px; }
     .meet-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 26px; }
     .reg-note { color: var(--fg-mute); font-size: 14px; }
-    .speakers { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 28px; }
-    .spk { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    /* גלריית מרצים אנכית: חלון של כשתי שורות וחצי, והרשימה (פעמיים) גולשת מלמטה למעלה בלולאה */
+    .speakers {
+        --row: 56px;
+        height: calc(var(--row) * min(2.5, var(--n))); overflow: hidden; margin-top: 28px; max-width: 260px;
+        mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
+    }
+    .track { animation: spk-up calc(var(--n) * 3s) linear infinite; }
+    .speakers:hover .track { animation-play-state: paused; }
+    @keyframes spk-up { to { transform: translateY(-50%); } }
+    .spk { display: flex; align-items: center; gap: 10px; min-width: 0; height: var(--row); }
     .mini-av.big { width: 40px; height: 44px; font-size: 14px; }
     .spk b { display: block; font-size: 15px; font-weight: 700; line-height: 1.25; }
     .spk small { display: block; color: var(--fg-faint); font-size: 12.5px; }
@@ -157,9 +177,10 @@
     .solo .meet-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 32px; margin-top: 16px; }
     .solo .meet-cta { margin-top: 0; justify-content: center; gap: 8px 12px; }
     .solo .reg-note { font-size: 13px; }
-    .solo .speakers { margin-top: 0; justify-content: center; gap: 8px 18px; }
+    /* בדף הבית הגלריה עומדת בצד הסוף של הבאנר (שמאל בעברית), מופרדת בקו דק */
+    .meet.solo { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; }
+    .solo > .speakers { --row: 48px; margin-top: 0; padding-inline-start: 20px; border-inline-start: 1px solid var(--line-soft); }
     .solo .mini-av.big { width: 32px; height: 36px; font-size: 12px; }
-    .solo .spk { text-align: start; }
     .solo .spk b { font-size: 14px; }
     .solo .spk small { font-size: 12px; }
     .agenda { align-self: start; min-width: 0; }
@@ -174,6 +195,16 @@
 
     @container home (max-width: 820px) {
         .meet { grid-template-columns: minmax(0, 1fr); }
+    }
+    /* צר: הגלריה יורדת מתחת לבאנר, ממורכזת ובגובה שתי שורות */
+    @container home (max-width: 600px) {
+        .meet.solo { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+        .solo > .speakers { justify-self: center; height: calc(var(--row) * min(2, var(--n))); padding-inline-start: 0; border-inline-start: 0; }
+    }
+    /* בלי תנועה: רשימה סטטית מלאה, בלי העותק הכפול */
+    @media (prefers-reduced-motion: reduce) {
+        .speakers, .solo > .speakers { height: auto; mask-image: none; }
+        .copy[aria-hidden='true'] { display: none; }
     }
     @container home (max-width: 440px) {
         .count { gap: 5px; }
