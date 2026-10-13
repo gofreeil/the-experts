@@ -8,6 +8,7 @@ interface AdBase<T> {
     cta: T;
     href: string;
     image: string;
+    thumb: string;
     color: string;
     imageHeight?: string;   // גובה מותאם לתמונה (ברירת מחדל: auto)
     imageScale?: number;    // זום על התמונה (ברירת מחדל: 1)
@@ -32,6 +33,7 @@ export const ads: AdSource[] = [
         cta: { he: "תהנה מכל היתרונות של הקהילה בשכונה שלך", en: "Enjoy everything the community in your neighborhood has to offer" },
         href: "https://community.gofreeil.com/",
         image: "/images/community-neighborhood.webp",
+        thumb: "/images/community-neighborhood-thumb.webp",
         color: "from-blue-500 to-purple-600"
     },
     {
@@ -41,6 +43,7 @@ export const ads: AdSource[] = [
         cta: { he: "יש לך סיכסוך? לחץ לפתרון", en: "In a dispute? Click for a solution" },
         href: "https://chachmim.gofreeil.com/",
         image: "/images/bati-hapius.webp",
+        thumb: "/images/bati-hapius-thumb.webp",
         color: "from-orange-600 to-red-600"
     },
     {
@@ -51,6 +54,7 @@ export const ads: AdSource[] = [
         hover: { he: 'מצא כל גמח בקלות!', en: 'Find any gemach with ease!' },
         href: "https://gemach.gofreeil.com/",
         image: "/images/gemach-harzi.webp",
+        thumb: "/images/gemach-harzi-thumb.webp",
         color: "from-pink-600 via-fuchsia-600 to-purple-700",
     },
     {
@@ -60,6 +64,7 @@ export const ads: AdSource[] = [
         cta: { he: "הכר והשתתף במהפכת משילות העם על מוסדותיו", en: "Get to know and join the people’s governance revolution" },
         href: "https://neighborhoods.gofreeil.com/",
         image: "/images/news/vaadei-shchunot.webp",
+        thumb: "/images/news/vaadei-shchunot-thumb.webp",
         color: "from-blue-600 to-cyan-600",
         imageHeight: "110px"
     },
@@ -70,6 +75,7 @@ export const ads: AdSource[] = [
         cta: { he: "מבקרים את הרשויות, ממצים את זכות התושב", en: "Auditing the authorities and exercising residents’ rights" },
         href: "https://criticism.gofreeil.com/",
         image: "/images/mevaker-rashuyot.webp",
+        thumb: "/images/mevaker-rashuyot-thumb.webp",
         color: "from-blue-700 to-indigo-700",
         imageHeight: "120px",
         imageScale: 1.2,
@@ -81,6 +87,7 @@ export const ads: AdSource[] = [
         cta: { he: "העם מדרג את הרשויות ועובדי הציבור", en: "The people rate the authorities and public servants" },
         href: "https://rating.gofreeil.com/",
         image: "/images/public-rating.webp",
+        thumb: "/images/public-rating-thumb.webp",
         color: "from-indigo-600 to-blue-600",
         imageHeight: "110px",
         imageScale: 0.9,
@@ -93,6 +100,7 @@ export const ads: AdSource[] = [
         hover: { he: "הבע דעתך על הסוגיות האקטואליות", en: "Have your say on the issues of the day" },
         href: "https://referendum.gofreeil.com/",
         image: "/images/referendum.webp",
+        thumb: "/images/referendum-thumb.webp",
         color: "from-purple-600 to-indigo-700"
     },
     {
@@ -102,6 +110,7 @@ export const ads: AdSource[] = [
         cta: { he: "הצטרף לקבוצת הרכישה שלנו והוזל מיד את ההוצאות!", en: "Join our buying group and cut your expenses right away!" },
         href: "https://groups.gofreeil.com/",
         image: "/images/whatsapp_cta.webp",
+        thumb: "/images/whatsapp_cta-thumb.webp",
         color: "from-green-800 to-emerald-900"
     },
     {
@@ -111,6 +120,7 @@ export const ads: AdSource[] = [
         cta: { he: "מחפש בעל מקצוע איכותי באזורך?", en: "Looking for a quality professional near you?" },
         href: "https://index.gofreeil.com/",
         image: "/images/professionals.webp",
+        thumb: "/images/professionals-thumb.webp",
         color: "from-yellow-500 to-orange-500",
         imageHeight: "110px"
     },
@@ -122,6 +132,7 @@ export const ads: AdSource[] = [
         hover: { he: "החנות שלנו!", en: "Our store!" },
         href: "https://shop.gofreeil.com/",
         image: "/images/shop.webp",
+        thumb: "/images/shop-thumb.webp",
         color: "from-emerald-600 to-teal-700",
         imageHeight: "110px"
     }
