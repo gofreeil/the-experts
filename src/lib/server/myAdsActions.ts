@@ -8,6 +8,7 @@
 // ============================================================
 
 import { fail, type RequestEvent } from '@sveltejs/kit';
+import { failReason } from './strapiClient.js';
 import { resolveRole } from './adsAdmin';
 import { approveAd, pauseAd, rejectAd, resumeAd, unapproveAd } from './adsStore';
 import { normalizePlanDays, planLabel } from '$lib/adPlans';
@@ -43,7 +44,7 @@ export const myAdsAdminActions = {
             };
         } catch (err) {
             console.error('[my-ads] approve failed:', err instanceof Error ? err.message : err);
-            return fail(502, { error: 'האישור נכשל — נסו שוב' });
+            return fail(502, { error: `האישור נכשל: ${failReason(err)}` });
         }
     },
     reject: async (event: RequestEvent) => {
@@ -54,7 +55,7 @@ export const myAdsAdminActions = {
             return { message: 'הפרסומת נדחתה' };
         } catch (err) {
             console.error('[my-ads] reject failed:', err instanceof Error ? err.message : err);
-            return fail(502, { error: 'הדחייה נכשלה — נסו שוב' });
+            return fail(502, { error: `הדחייה נכשלה: ${failReason(err)}` });
         }
     },
     // השהיה — יורדת מהאתר והימים שנותרו נשמרים לה
@@ -67,7 +68,7 @@ export const myAdsAdminActions = {
             return { message: `${r.title} הושהתה — ${r.daysLeft} ימים שמורים לה` };
         } catch (err) {
             console.error('[my-ads] pause failed:', err instanceof Error ? err.message : err);
-            return fail(502, { error: 'ההשהיה נכשלה — נסו שוב' });
+            return fail(502, { error: `ההשהיה נכשלה: ${failReason(err)}` });
         }
     },
     // המשך אחרי השהיה — הימים השמורים נספרים מהיום
@@ -80,7 +81,7 @@ export const myAdsAdminActions = {
             return { message: `${r.title} חזרה לאוויר — ${r.daysLeft} ימים` };
         } catch (err) {
             console.error('[my-ads] resume failed:', err instanceof Error ? err.message : err);
-            return fail(502, { error: 'ההפעלה מחדש נכשלה — נסו שוב' });
+            return fail(502, { error: `ההפעלה מחדש נכשלה: ${failReason(err)}` });
         }
     },
     // הורדה מהאתר בלי מחיקה — חוזרת לממתינות
@@ -92,7 +93,7 @@ export const myAdsAdminActions = {
             return { message: 'הפרסומת הורדה מהאתר וחזרה לממתינות' };
         } catch (err) {
             console.error('[my-ads] unapprove failed:', err instanceof Error ? err.message : err);
-            return fail(502, { error: 'ההורדה נכשלה — נסו שוב' });
+            return fail(502, { error: `ההורדה נכשלה: ${failReason(err)}` });
         }
     },
 };
