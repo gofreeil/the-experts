@@ -1,6 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
-    import { adPlans, planLabel } from '$lib/adPlans';
+    import { adPlans } from '$lib/adPlans';
     import { ctr } from '$lib/adOwner';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/rightAdsData';
@@ -235,6 +235,25 @@
         durationModal = null;
         return async ({ update }: { update: () => Promise<void> }) => update();
     }
+
+    // ===== טבלת תזמון הפרסומות - כמו בגמ"ח הארצי =====
+    // מסודרת לפי תאריך הפרסום - החדשות בראש
+    let schedulesByDate = $derived(
+        [...(data.schedules ?? [])].sort(
+            (a, b) => (Date.parse(b.publishedAt) || 0) - (Date.parse(a.publishedAt) || 0)
+        )
+    );
+    // הפרסומת המלאה של כל שורה - לתצוגה המקדימה ולחלון הקציבה
+    let schedAdById = $derived(new Map((data.ads as any[]).map((a) => [String(a.id), a] as const)));
+    // תאריך ושעה בשתי שורות נפרדות בטבלת התזמון - חוסך רוחב
+    function fmtDay(s?: string) {
+        if (!s) return '';
+        return new Date(s).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    }
+    function fmtTime(s?: string) {
+        if (!s) return '';
+        return new Date(s).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    }
 </script>
 
 <svelte:head>
@@ -287,35 +306,235 @@
             </p>
         {/if}
 
-        <!-- לוח התפוסה: כל מודעה פעילה, כמה זמן נשאר לה ומתי היא מתפנה -->
-        {#if active.length > 0}
-            <h2 class="sec-title">לוח התפוסה — מי מחזיק משבצת ועד מתי</h2>
-            <div class="occ-list">
-                {#each active as a (a.id)}
-                    <div class="occ-row">
-                        <div class="occ-head">
-                            <!-- ריחוף = תצוגה מקדימה צפה של הכרטיס; הקשה = מודאל עם הכרטיס עצמו -->
-                            <button type="button" class="occ-title title-preview-btn"
-                                    onmouseenter={(e) => openHoverPreview(e, a.id)}
-                                    onmouseleave={() => hoverPreview = null}
-                                    onclick={() => { hoverPreview = null; modalPreviewId = a.id; }}
-                                    title="תצוגה מקדימה של הפרסומת כפי שהיא מוצגת באתר">
-                                {a.title}
-                            </button>
-                            <span class="occ-who">{a.submittedBy?.email || a.submittedBy?.name || 'ללא זיהוי'}</span>
-                        </div>
-                        <div class="occ-bar" title="נוצלו {a.usedPct}% מהתקופה">
-                            <div class="occ-bar-fill" class:ending={a.daysLeft !== null && a.daysLeft <= 7} style="width: {a.usedPct}%"></div>
-                        </div>
-                        <div class="occ-meta">
-                            <span class:soon={a.daysLeft !== null && a.daysLeft <= 7}>⏳ {leftLabel(a)}</span>
-                            {#if a.expiresAt}<span>מתפנה ב-{fmtDate(a.expiresAt)}</span>{/if}
-                            {#if a.totalDays}<span>מסלול: {planLabel(a.totalDays)}</span>{/if}
-                        </div>
-                    </div>
-                {/each}
+        <!-- ════ תזמון פרסומות - אותה טבלה כמו בגמ"ח הארצי ובקהילה בשכונה: ════
+             מקום + העבר, פורסם/פג וכמה נותר, וכל הניהול מהשורה -->
+        <div class="sched">
+            <div class="sched-head">
+                <div class="sched-title">
+                    <span class="sched-icon" aria-hidden="true">📅</span>
+                    <h2>תזמון פרסומות</h2>
+                    <span class="sched-count">{data.schedules?.length ?? 0}</span>
+                </div>
+                <div class="sched-legend">
+                    <span class="tone-emerald"><span class="dot"></span>פעילה</span>
+                    <span class="tone-amber"><span class="dot"></span>≤ 7 ימים</span>
+                    <span class="tone-red"><span class="dot"></span>פגה</span>
+                    <span class="tone-blue"><span class="dot"></span>מושהית</span>
+                </div>
             </div>
-        {/if}
+
+            <!-- מקרא הרביעיות: רביעייה = המקומות שמתחלפים באותה משבצת בטור (1,5,9,13 וכו׳),
+                 וכל רביעייה צבועה בצבע שלה. בכל רגע הטור מציג מקום אחד מכל רביעייה -->
+            <div class="sched-quads">
+                <span>כל רביעייה מתחלפת באותה משבצת בטור:</span>
+                {#each groupSlotOptions(SLOT_NUMBERS) as grp (grp.letter)}
+                    <span class="quad-chip" style="background:{slotOptionBg(grp.nums[0])}">{grp.letter}׳ · {grp.nums.join(', ')}</span>
+                {/each}
+                <span class="dim">א׳ למעלה, ד׳ למטה; בכל רגע מוצג מקום אחד מכל רביעייה</span>
+            </div>
+
+            {#if !data.schedules?.length}
+                <div class="sched-empty">אין כרגע פרסומות פעילות באתר</div>
+            {:else}
+                <div class="sched-wrap">
+                    <table class="sched-table" dir="rtl">
+                        <thead>
+                            <!-- 4 עמודות בלבד - המידע מוערם בכמה שורות בכל תא, כדי שבדסקטופ
+                                 הכל ייכנס למסך אחד בלי גלילה אופקית -->
+                            <tr>
+                                <th>מקום</th>
+                                <th>פרסומת ומפרסם</th>
+                                <th>תקופה</th>
+                                <th>ניהול</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#each schedulesByDate as s (s.id)}
+                                {@const tone = s.state === 'paused' ? 'blue' : s.state === 'expired' ? 'red' : s.state === 'ending' ? 'amber' : 'emerald'}
+                                {@const stateLabel = s.state === 'paused' ? 'מושהית'
+                                    : s.state === 'expired' ? 'פגה'
+                                    : s.state === 'ending' ? 'פגה בקרוב'
+                                    : 'פעילה'}
+                                {@const daysTone = s.state === 'paused' ? 'blue'
+                                    : s.daysLeft < 0 ? 'red'
+                                    : s.daysLeft <= 7 ? 'amber'
+                                    : 'emerald'}
+                                {@const progress = s.durationDays > 0
+                                    ? Math.min(100, Math.max(0, ((s.durationDays - Math.max(0, s.daysLeft)) / s.durationDays) * 100))
+                                    : 100}
+                                <!-- מקום מעל 16 (גלישה) מתווסף לבורר כדי שלא ייעלם -->
+                                {@const slotOptions = s.slot && !SLOT_NUMBERS.includes(s.slot)
+                                    ? [...SLOT_NUMBERS, s.slot].sort((a, b) => a - b)
+                                    : SLOT_NUMBERS}
+                                <tr>
+                                    <!-- מספר המקום בטור + העברה ישירה למקום אחר (מקום תפוס - מתחלפות).
+                                         פריסה אנכית צרה - כדי שכל הטבלה תיכנס ברוחב המסך בלי גלילה -->
+                                    <td>
+                                        <form method="POST" action="?/setSlot" use:enhance class="sch-slot">
+                                            <input type="hidden" name="id" value={s.id} />
+                                            <div class="sch-slot-row">
+                                                <span class="sch-slot-badge"
+                                                      style="background:{typeof s.slot === 'number' ? slotOptionBg(s.slot) : '#fff'}"
+                                                      title={typeof s.slot === 'number' ? `רביעייה ${slotGroupLetter(s.slot)}׳ · המשבצת ה${slotPosName(s.slot)} בטור` : ''}>
+                                                    {typeof s.slot === 'number' ? `${s.slot} · ${slotGroupLetter(s.slot)}׳` : '-'}
+                                                </span>
+                                                <select name="slot" class="sch-select" onchange={(e) => onSlotPick(e, s)}>
+                                                    <!-- כל רביעייה תחת כותרת משלה - הקשר מספר↔רביעייה קריא במילים,
+                                                         לא רק בצבע; מקום תפוס שומר את צבע הרביעייה ומסומן באדום מודגש -->
+                                                    {#each groupSlotOptions(slotOptions) as grp (grp.letter)}
+                                                        <optgroup label="— רביעייה {grp.letter}׳ · המשבצת ה{slotPosName(grp.nums[0])} בטור —">
+                                                            {#each grp.nums as n (n)}
+                                                                {@const occ = slotOccupants.get(n)}
+                                                                {@const takenByOther = !!occ && occ.id !== s.id}
+                                                                <option value={n} selected={n === s.slot}
+                                                                        style="background:{slotOptionBg(n)};color:{takenByOther ? '#b91c1c' : '#111'};font-weight:{takenByOther ? '700' : '400'}">
+                                                                    {slotOptionLabel(n, s.id)}
+                                                                </option>
+                                                            {/each}
+                                                        </optgroup>
+                                                    {/each}
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="sch-btn purple"
+                                                    onclick={(e) => confirmSlotMove(e, s)}
+                                                    title="העבר למקום שנבחר; מקום תפוס - תתבקש לאשר החלפה בין השתיים">
+                                                ⇄ העבר
+                                            </button>
+                                            {#if slotWarning[s.id]}
+                                                <span class="sch-warning">⚠ {slotWarning[s.id]}</span>
+                                            {/if}
+                                        </form>
+                                    </td>
+                                    <!-- פרסומת + מפרסם + סטטוס בתא אחד, מוערמים.
+                                         ריחוף על הכותרת = תצוגה מקדימה צפה; הקשה = מודאל עם הכרטיס עצמו -->
+                                    <td>
+                                        <button type="button" class="sch-title"
+                                                onmouseenter={(e) => openHoverPreview(e, s.id)}
+                                                onmouseleave={() => hoverPreview = null}
+                                                onclick={() => { hoverPreview = null; modalPreviewId = s.id; }}
+                                                title="תצוגה מקדימה של הפרסומת כפי שהיא מוצגת באתר">
+                                            {s.title}
+                                        </button>
+                                        <div class="sch-adv">{s.advertiserName || '-'}</div>
+                                        <div class="sch-email">{s.advertiserEmail}</div>
+                                        <span class="sch-state tone-{tone}">{stateLabel}</span>
+                                    </td>
+                                    <!-- כל נתוני הזמן בתא אחד: פורסם, פג, וכמה נותר מתוך המשך -->
+                                    <td class="sch-period">
+                                        <div>פורסם: {fmtDay(s.publishedAt)} <span class="sch-time">{fmtTime(s.publishedAt)}</span></div>
+                                        <div>פג: {fmtDay(s.expiresAt)} <span class="sch-time">{fmtTime(s.expiresAt)}</span></div>
+                                        <div class="sch-days tone-{daysTone}">
+                                            {s.daysLeft < 0 ? `${-s.daysLeft}- ימים` : `${s.daysLeft} ימים`}
+                                            <span class="sch-of">מתוך {s.durationDays}</span>
+                                        </div>
+                                        <div class="sch-bar">
+                                            <div class="sch-bar-fill tone-{tone === 'blue' ? 'emerald' : tone}" style="width: {progress}%"></div>
+                                        </div>
+                                    </td>
+                                    <!-- ניהול הפרסומת ישירות מהשורה: קציבת תקופה, השהיה, הורדה, מחיקה.
+                                         רוחב מוגבל - הכפתורים נערמים בשתי שורות במקום להרחיב את הטבלה -->
+                                    <td>
+                                        <div class="sch-actions">
+                                            <!-- פותח את חלון הקציבה: פרטי תשלום ותאריכים + שינוי תקופה/תפוגה.
+                                                 שמור לסופר-אדמין (כמו המחיקה) - אדמין רגיל לא רואה את הכפתור -->
+                                            {#if data.superAdmin && schedAdById.has(s.id)}
+                                                <button type="button" class="sch-btn blue"
+                                                        onclick={() => durationModal = schedAdById.get(s.id)}
+                                                        title="פרטי התקופה והתשלום + שינוי תקופה או תאריך תפוגה">
+                                                    ⏱ קצוב
+                                                </button>
+                                            {/if}
+
+                                            {#if s.state === 'paused'}
+                                                <form method="POST" action="?/resume" use:enhance>
+                                                    <input type="hidden" name="id" value={s.id} />
+                                                    <button type="submit" class="sch-btn emerald" title="הימים השמורים נספרים מהיום">
+                                                        ▶ המשך
+                                                    </button>
+                                                </form>
+                                            {:else}
+                                                <form method="POST" action="?/pause" use:enhance>
+                                                    <input type="hidden" name="id" value={s.id} />
+                                                    <button type="submit" class="sch-btn white"
+                                                            title="יורדת מהאתר ושומרת את הימים שנותרו"
+                                                            onclick={(e) => { if (!confirm('להשהות את הפרסומת? היא תרד מהאתר והימים שנותרו יישמרו לה.')) e.preventDefault(); }}>
+                                                        ⏸ השהה
+                                                    </button>
+                                                </form>
+                                            {/if}
+
+                                            <form method="POST" action="?/unapprove" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <button type="submit" class="sch-btn amber"
+                                                        title="חוזרת לתור האישורים"
+                                                        onclick={(e) => { if (!confirm('להוריד את הפרסומת מהאתר ולהחזיר אותה לממתינות?')) e.preventDefault(); }}>
+                                                    ⤴ הורד
+                                                </button>
+                                            </form>
+
+                                            {#if data.superAdmin}
+                                                <form method="POST" action="?/remove" use:enhance>
+                                                    <input type="hidden" name="id" value={s.id} />
+                                                    <button type="submit" class="sch-btn red"
+                                                            onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${s.title}"?`)) e.preventDefault(); }}>
+                                                        🗑 מחק
+                                                    </button>
+                                                </form>
+                                            {/if}
+                                            <!-- שכפל פרסומת (סופר-אדמין): אותה פרסומת גם במקומות נוספים - למשל
+                                                 2 ו-6, כך שהיא נשארת באותו גובה ולא מתחלפת בסבב.
+                                                 תג ⧉ = שכפול קיים; לחיצה עליו מבטלת אותו -->
+                                            {#if data.superAdmin}
+                                                {@const dup = dupOptions(s)}
+                                                <div style="display: contents">
+                                                    {#each s.extraSlots ?? [] as n (n)}
+                                                        <form method="POST" action="?/removeExtraSlot" use:enhance>
+                                                            <input type="hidden" name="id" value={s.id} />
+                                                            <input type="hidden" name="slot" value={n} />
+                                                            <button type="submit" class="sch-dup-chip"
+                                                                    style="background:{slotOptionBg(n)}"
+                                                                    title="שכפול במקום {n} (המשבצת ה{slotPosName(n)} בטור) - לחיצה מבטלת את השכפול">
+                                                                ⧉ {n} · {slotGroupLetter(n)}׳ <span class="x">✕</span>
+                                                            </button>
+                                                        </form>
+                                                    {/each}
+                                                    {#if dup.same.length + dup.rest.length > 0}
+                                                        <form method="POST" action="?/addExtraSlot" use:enhance>
+                                                            <input type="hidden" name="id" value={s.id} />
+                                                            <select name="slot" aria-label="שכפל פרסומת" class="sch-dup-select"
+                                                                    onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+                                                                <option value="" selected disabled>⧉ שכפל פרסומת</option>
+                                                                {#if dup.same.length > 1}
+                                                                    <option value="same" style="background:#fff;color:#111;font-weight:700">
+                                                                        ★ קבועה בכל הסבב ({dup.same.join(', ')})
+                                                                    </option>
+                                                                {/if}
+                                                                {#if dup.same.length > 0}
+                                                                    <optgroup label="★ אותו גובה בטור">
+                                                                        {#each dup.same as n (n)}
+                                                                            <option value={n} style="background:{slotOptionBg(n)};color:#111">{n} · {slotPosName(n)}</option>
+                                                                        {/each}
+                                                                    </optgroup>
+                                                                {/if}
+                                                                <optgroup label="מקומות פנויים אחרים">
+                                                                    {#each dup.rest as n (n)}
+                                                                        <option value={n} style="background:{slotOptionBg(n)};color:#111">{n} · {slotPosName(n)}</option>
+                                                                    {/each}
+                                                                </optgroup>
+                                                            </select>
+                                                        </form>
+                                                    {/if}
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {/each}
+                        </tbody>
+                    </table>
+                </div>
+            {/if}
+        </div>
     </section>
 
     <!-- ═══ 2. המפרסמים — הנתונים של כל אחד ═══ -->
@@ -889,48 +1108,135 @@
         color: #fca5a5;
     }
 
-    /* לוח התפוסה */
-    .occ-list { display: flex; flex-direction: column; gap: 0.6rem; }
-    .occ-row {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 0.75rem;
-        padding: 0.65rem 0.85rem;
+    /* --- טבלת תזמון הפרסומות (כמו בגמ"ח הארצי) --- */
+    .sched { margin-top: 1rem; }
+    .sched-head {
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
     }
-    .occ-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        margin-bottom: 0.4rem;
+    .sched-title { display: flex; align-items: center; gap: 0.5rem; }
+    .sched-title h2 { margin: 0; font-size: 1.125rem; font-weight: 900; color: #fff; }
+    .sched-icon { font-size: 1.5rem; }
+    .sched-count {
+        font-size: 0.75rem; font-weight: 700; color: #d1d5db;
+        background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.125rem 0.5rem; border-radius: 999px;
     }
-    .occ-title { font-weight: 900; color: #fff; font-size: 0.9rem; }
-    .occ-who { font-size: 0.72rem; color: #9ca3af; direction: ltr; }
-    .occ-bar {
-        height: 0.45rem;
-        border-radius: 999px;
-        background: rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        overflow: hidden;
+    .sched-legend { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
+    .sched-legend > span { display: inline-flex; align-items: center; gap: 0.25rem; }
+    .sched-legend .dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: currentColor; }
+    .sched-quads {
+        display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+        margin-bottom: 0.75rem; font-size: 0.75rem; font-weight: 700; color: #d1d5db;
     }
-    .occ-bar-fill {
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    .sched-quads .dim { color: #6b7280; }
+    .quad-chip {
+        padding: 0.125rem 0.5rem; border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.2); color: #111;
     }
-    /* שבוע אחרון לתקופה — הפס מאדים כדי למשוך את העין לחידוש */
-    .occ-bar-fill.ending { background: linear-gradient(90deg, #f59e0b, #ef4444); }
-    .occ-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem 1rem;
-        margin-top: 0.4rem;
-        font-size: 0.72rem;
-        color: #9ca3af;
-        font-weight: 700;
+    .sched-empty {
+        text-align: center; padding: 2rem 0; color: #6b7280; font-size: 0.875rem; font-style: italic;
+        border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 1rem;
     }
-    .occ-meta .soon { color: #fcd34d; }
+    .sched-wrap {
+        overflow-x: auto; border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05);
+    }
+    .sched-table { width: 100%; font-size: 0.875rem; border-collapse: collapse; }
+    .sched-table thead { background: rgba(255, 255, 255, 0.05); }
+    .sched-table th {
+        text-align: right; font-weight: 700; padding: 0.625rem 0.5rem;
+        font-size: 0.75rem; color: #9ca3af; letter-spacing: 0.025em;
+    }
+    .sched-table td { padding: 0.5rem; vertical-align: middle; }
+    .sched-table tbody tr { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+    .sched-table tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
+
+    .sch-slot { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    .sch-slot-row { display: flex; align-items: center; gap: 0.25rem; }
+    .sch-slot-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 1.5rem; height: 1.5rem; padding: 0 0.375rem; border-radius: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.2); color: #111;
+        font-weight: 900; font-size: 0.75rem; white-space: nowrap;
+    }
+    .sch-select {
+        padding: 0.25rem 0.375rem; border-radius: 0.5rem;
+        background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff; font-size: 11px; font-family: inherit;
+    }
+    .sch-select:focus { outline: none; border-color: rgba(251, 191, 36, 0.5); }
+    .sch-warning {
+        font-size: 10px; font-weight: 700; color: #fcd34d; line-height: 1.375; max-width: 150px;
+    }
+
+    .sch-title {
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden; overflow-wrap: break-word; max-width: 160px;
+        padding: 0; background: none; border: none; font-family: inherit; font-size: inherit;
+        font-weight: 700; color: #fff; line-height: 1.375; text-align: right; cursor: pointer;
+        text-decoration: underline dotted rgba(255, 255, 255, 0.3); text-underline-offset: 2px;
+    }
+    .sch-title:hover { color: #fcd34d; }
+    .sch-adv, .sch-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+    .sch-adv { font-size: 0.75rem; color: #d1d5db; margin-top: 0.125rem; }
+    .sch-email { font-size: 10px; color: #6b7280; }
+    .sch-state {
+        display: inline-block; margin-top: 0.25rem; font-size: 11px; font-weight: 900;
+        padding: 0.125rem 0.5rem; border-radius: 999px; white-space: nowrap; border: 1px solid;
+    }
+    .sch-state.tone-emerald { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
+    .sch-state.tone-amber { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.4); }
+    .sch-state.tone-red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
+    .sch-state.tone-blue { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); }
+
+    .sch-period { font-size: 0.75rem; line-height: 1.625; white-space: nowrap; color: #d1d5db; }
+    .sch-time { font-size: 10px; color: #6b7280; }
+    .sch-days { font-weight: 900; margin-top: 0.125rem; }
+    .sch-of { font-weight: 700; color: #6b7280; font-size: 10px; }
+    .sch-bar {
+        margin-top: 0.25rem; height: 0.375rem; width: 6rem; border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1); overflow: hidden;
+    }
+    .sch-bar-fill { height: 100%; }
+    .sch-bar-fill.tone-emerald { background: #34d399; }
+    .sch-bar-fill.tone-amber { background: #fbbf24; }
+    .sch-bar-fill.tone-red { background: #f87171; }
+    .tone-emerald { color: #6ee7b7; }
+    .tone-amber { color: #fcd34d; }
+    .tone-red { color: #fca5a5; }
+    .tone-blue { color: #93c5fd; }
+
+    .sch-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; max-width: 240px; }
+    .sch-btn {
+        padding: 0.25rem 0.625rem; border-radius: 0.5rem; border: 1px solid;
+        font-size: 11px; font-weight: 900; font-family: inherit; white-space: nowrap; cursor: pointer;
+        transition: background 0.15s;
+    }
+    .sch-btn.purple { background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.4); color: #e9d5ff; padding: 0.25rem 0.5rem; }
+    .sch-btn.purple:hover { background: rgba(168, 85, 247, 0.3); }
+    .sch-btn.blue { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #bfdbfe; }
+    .sch-btn.blue:hover { background: rgba(59, 130, 246, 0.3); }
+    .sch-btn.emerald { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #a7f3d0; }
+    .sch-btn.emerald:hover { background: rgba(16, 185, 129, 0.3); }
+    .sch-btn.white { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #e5e7eb; }
+    .sch-btn.white:hover { background: rgba(255, 255, 255, 0.2); }
+    .sch-btn.amber { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fde68a; }
+    .sch-btn.amber:hover { background: rgba(245, 158, 11, 0.25); }
+    .sch-btn.red { background: rgba(220, 38, 38, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+    .sch-btn.red:hover { background: rgba(220, 38, 38, 0.3); }
+    .sch-dup-chip {
+        display: inline-flex; align-items: center; gap: 0.25rem; height: 1.5rem; padding: 0 0.375rem;
+        border-radius: 0.5rem; border: 1px solid rgba(0, 0, 0, 0.2); color: #111;
+        font-size: 11px; font-weight: 900; font-family: inherit; white-space: nowrap; cursor: pointer;
+    }
+    .sch-dup-chip:hover { opacity: 0.8; }
+    .sch-dup-chip .x { color: #b91c1c; }
+    .sch-dup-select {
+        border-radius: 0.5rem; border: 1px solid rgba(14, 165, 233, 0.4); background: rgba(14, 165, 233, 0.15);
+        padding: 0.25rem 0.375rem; font-size: 11px; font-weight: 900; font-family: inherit; color: #bae6fd;
+    }
+    .sch-dup-select:focus { outline: none; border-color: rgba(56, 189, 248, 0.6); }
 
     /* ═══ המפרסמים ═══ */
     .advs { margin-bottom: 0.5rem; }
@@ -1227,8 +1533,6 @@
     }
     .title-preview-btn:hover { color: #fcd34d; }
     /* בלוח התפוסה הכפתור שומר על עיצוב הכותרת המקורי (מודגש-לבן) */
-    .occ-title.title-preview-btn { font-weight: 900; color: #fff; font-size: 0.9rem; }
-    .occ-title.title-preview-btn:hover { color: #fcd34d; }
     .a-btn:disabled {
         opacity: 0.35;
         cursor: not-allowed;
