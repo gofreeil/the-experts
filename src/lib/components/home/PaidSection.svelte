@@ -55,7 +55,7 @@
                     <div><div class="stat-n"><span class="num">{MEDIAN_DAYS}</span> <span class="unit">{i18n.t('paid.days')}</span></div><div class="stat-l">{i18n.t('paid.median')}</div></div>
                     <div><div class="stat-n"><span class="num">{PAID_EXPERTS}</span></div><div class="stat-l">{i18n.t('paid.expertsShort')}</div></div>
                 </div>
-                <svg class="spark" viewBox="0 0 {SW} {SH}" role="img" aria-label={i18n.t('paid.sparkAria')}>
+                <svg class="spark" viewBox="0 0 {SW} {SH}" preserveAspectRatio="none" role="img" aria-label={i18n.t('paid.sparkAria')}>
                     {#each sparks as b}
                         <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="1.5" fill="#f5a524" fill-opacity={b.last ? 1 : 0.42} />
                         {#if b.last}<text class="val" x={b.x + b.w / 2} y={b.y - 4} text-anchor="middle">₪{Math.round(b.v / 1000)}K</text>{/if}
@@ -163,5 +163,15 @@
     @container home (max-width: 520px) {
         .split-list { grid-template-columns: minmax(0, 1fr); }
         .stat-n { font-size: 22px; }
+        /* נייד: גרסת הבית מצומצמת - סכום קטן, מספרים קטנים ותרשים נמוך בלי תוויות */
+        .strip { gap: 10px; }
+        .strip .paid-total { font-size: 26px; }
+        .s-cap { font-size: 12px; margin-top: 2px; }
+        .strip .mini-grid > div { padding-inline-end: 6px; }
+        .strip .mini-grid > div + div { padding-inline-start: 10px; }
+        .strip .stat-n { font-size: 17px; }
+        .strip .stat-l { font-size: 11px; margin-top: 2px; }
+        .spark { max-width: none; height: 36px; }
+        .spark text { display: none; }
     }
 </style>
