@@ -96,9 +96,6 @@
     <MeetupSection headTitle={navTitle('/meetup')} preview />
     <FloorLink href="/meetup" label={navTitle('/meetup')} />
 
-    <RecentSolutions problems={all} />
-    <FloorLink href="/problems" label={navTitle('/problems')} />
-
     <!-- ═════ תחומים ═════ -->
     <section class="section" id="cats">
         <div class="inner">
@@ -121,6 +118,9 @@
         </div>
     </section>
     <FloorLink href="/categories" label={navTitle('/categories')} />
+
+    <RecentSolutions problems={all} />
+    <FloorLink href="/problems" label={navTitle('/problems')} />
 
     <ComposerSection />
 </div>
