@@ -63,18 +63,21 @@
 
 <!-- המרצים: גלריה אנכית שנעה מלמטה למעלה. העותק השני (מוסתר מקוראי מסך) סוגר את הלולאה בלי קפיצה. -->
 {#snippet speakers()}
-    <div class="speakers" style="--n:{meetup.speakers.length}">
-        <div class="track">
-            {#each [0, 1] as copy}
-                <div class="copy" aria-hidden={copy === 1}>
-                    {#each meetup.speakers as s}
-                        <div class="spk">
-                            <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
-                            <div><b>{s.name}</b><small>{i18n.t('meetup.speaker')}</small></div>
-                        </div>
-                    {/each}
-                </div>
-            {/each}
+    <div class="panel">
+        <h3 class="panel-title">{i18n.t('meetup.panelTitle')}</h3>
+        <div class="speakers" style="--n:{meetup.speakers.length}">
+            <div class="track">
+                {#each [0, 1] as copy}
+                    <div class="copy" aria-hidden={copy === 1}>
+                        {#each meetup.speakers as s}
+                            <div class="spk">
+                                <span class="mini-av big" style="--c2:{catColor(s.team)}">{s.ini}</span>
+                                <div><b>{s.name}</b><small>{i18n.t('meetup.speaker')}</small></div>
+                            </div>
+                        {/each}
+                    </div>
+                {/each}
+            </div>
         </div>
     </div>
 {/snippet}
@@ -152,9 +155,11 @@
     .meet-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 26px; }
     .reg-note { color: var(--fg-mute); font-size: 14px; }
     /* גלריית מרצים אנכית: חלון של כשתי שורות וחצי, והרשימה (פעמיים) גולשת מלמטה למעלה בלולאה */
+    .panel { margin-top: 28px; max-width: 260px; min-width: 0; }
+    .panel-title { font-size: 13px; font-weight: 800; color: var(--honey-text); margin-bottom: 2px; }
     .speakers {
         --row: 56px;
-        height: calc(var(--row) * min(2.5, var(--n))); overflow: hidden; margin-top: 28px; max-width: 260px;
+        height: calc(var(--row) * min(2.5, var(--n))); overflow: hidden;
         mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
     }
     .track { animation: spk-up calc(var(--n) * 3s) linear infinite; }
@@ -179,7 +184,8 @@
     .solo .reg-note { font-size: 13px; }
     /* בדף הבית הגלריה עומדת בצד הסוף של הבאנר (שמאל בעברית), מופרדת בקו דק */
     .meet.solo { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; }
-    .solo > .speakers { --row: 48px; margin-top: 0; padding-inline-start: 20px; border-inline-start: 1px solid var(--line-soft); }
+    .solo > .panel { margin-top: 0; padding-inline-start: 20px; border-inline-start: 1px solid var(--line-soft); }
+    .solo .speakers { --row: 48px; }
     .solo .mini-av.big { width: 32px; height: 36px; font-size: 12px; }
     .solo .spk b { font-size: 14px; }
     .solo .spk small { font-size: 12px; }
@@ -199,11 +205,13 @@
     /* צר: הגלריה יורדת מתחת לבאנר, ממורכזת ובגובה שתי שורות */
     @container home (max-width: 600px) {
         .meet.solo { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-        .solo > .speakers { justify-self: center; height: calc(var(--row) * min(2, var(--n))); padding-inline-start: 0; border-inline-start: 0; }
+        .solo > .panel { justify-self: center; padding-inline-start: 0; border-inline-start: 0; }
+        .solo .panel-title { text-align: center; }
+        .solo .speakers { height: calc(var(--row) * min(2, var(--n))); }
     }
     /* בלי תנועה: רשימה סטטית מלאה, בלי העותק הכפול */
     @media (prefers-reduced-motion: reduce) {
-        .speakers, .solo > .speakers { height: auto; mask-image: none; }
+        .speakers, .solo .speakers { height: auto; mask-image: none; }
         .copy[aria-hidden='true'] { display: none; }
     }
     @container home (max-width: 440px) {
