@@ -122,6 +122,8 @@ export interface SubmittedAd {
     replacesTitle?: string;
     /** מי החליפה אותה. מודעה מסומנת כך היא היסטוריה ולא מועמדת להחלפה נוספת */
     supersededBy?: string;
+    /** באשפה: נמחקה במסך הניהול ואפשר לשחזר אותה (ראה trashAd) */
+    deletedAt?: string;
     /** מודעה נוספת שנקנתה בכוונה - האישור לא מוריד את מה שכבר רץ למפרסם */
     standalone?: boolean;
 }
@@ -264,6 +266,8 @@ function fromStrapi(row: StrapiAd | null | undefined): SubmittedAd | null {
         replacesAdId: typeof l._replacesAdId === 'string' ? l._replacesAdId : undefined,
         replacesTitle: typeof l._replacesTitle === 'string' ? l._replacesTitle : undefined,
         supersededBy: typeof l._supersededBy === 'string' ? l._supersededBy : undefined,
+        // באשפה — מחיקה רכה: הרשומה נשארת כ-rejected והמצב הקודם נשמר לשחזור
+        deletedAt: typeof l._deletedAt === 'string' ? l._deletedAt : undefined,
         standalone: l._standalone === true,
     };
 }
@@ -284,13 +288,14 @@ function byDisplayOrder(a: SubmittedAd, b: SubmittedAd): number {
  * של ההורדה נכשל אחרי שהאישור כבר עבר. בלי זה אותה פרסומת הופיעה פעמיים:
  * הגרסה החדשה "באוויר" והישנה לצידה, באותו מקום בטור.
  */
-function withoutReplaced(list: SubmittedAd[]): SubmittedAd[] {
+function withoutReplaced(list: SubmittedAd[], { keepDeleted = false } = {}): SubmittedAd[] {
     const replaced = new Set(
         list
             .filter((a) => a.status === 'approved' && a.replacesAdId && !a.supersededBy)
             .map((a) => a.replacesAdId),
     );
-    return list.filter((a) => !a.supersededBy && !replaced.has(a.id));
+    // גם מה שבאשפה מסונן — חוץ ממסך הניהול שמציג אותה (keepDeleted)
+    return list.filter((a) => !a.supersededBy && !replaced.has(a.id) && (keepDeleted || !a.deletedAt));
 }
 
 // ---------- שליפות בסיס ----------
@@ -879,9 +884,12 @@ export async function updateAdContent(
 /** כל המודעות למסך האדמין (ממתינות + מאושרות + נדחות).
  *  גרסה שהוחלפה בעדכון מאושר לא מוצגת: היא לא "נדחתה" ולא ממתינה —
  *  היא ההיסטוריה של מודעה שכבר רצה על האתר בגרסה חדשה יותר. */
-export async function listAllForAdmin(): Promise<SubmittedAd[]> {
+export async function listAllForAdmin({ withDeleted = false } = {}): Promise<SubmittedAd[]> {
     const rows = await fetchAllRows();
-    return withoutReplaced(rows.map(fromStrapi).filter((a): a is SubmittedAd => Boolean(a)));
+    // withDeleted = גם מה שבאשפה — למסך הניהול בלבד; חישובי המקומות בלעדיה
+    return withoutReplaced(rows.map(fromStrapi).filter((a): a is SubmittedAd => Boolean(a)), {
+        keepDeleted: withDeleted,
+    });
 }
 
 /** אישור מודעה — קובע תוקף (ברירת מחדל 30 יום). התשלום ידני, ולכן
@@ -1011,6 +1019,89 @@ export async function unapproveAd(id: string, decidedBy = ''): Promise<void> {
         rejection_reason: '',
     });
     invalidateAdsCache();
+}
+
+// ---------- אשפה: מחיקה רכה, שחזור, ופגות תוקף לחידוש ----------
+
+/** "מחק" במסך הניהול — לאשפה ולא לצמיתות: המודעה יורדת מהאתר (ad_status
+ *  rejected) ונעלמת מכל הרשימות, אבל התוכן שלה נשמר ואפשר לשחזר אותה.
+ *  המצב הקודם נשמר ב-landing (_deletedStatus), יחד עם המקום בלוח והתוקף
+ *  — השחזור מחזיר אותה בדיוק למה שהייתה. */
+export async function trashAd(id: string): Promise<{ title: string } | null> {
+    const row = await findRow(id);
+    if (!row) return null;
+    const l = (row.landing ?? {}) as Record<string, any>;
+    if (typeof l._deletedAt === 'string') return { title: row.title ?? '' };
+    await strapiPut(`${ENDPOINT}/${encodeURIComponent(id)}`, {
+        data: {
+            ad_status: 'rejected',
+            landing: { ...l, _deletedAt: new Date().toISOString(), _deletedStatus: row.ad_status ?? 'pending' },
+        },
+    });
+    invalidateAdsCache();
+    return { title: row.title ?? '' };
+}
+
+/** שחזור מהאשפה למצב שלפני המחיקה. מודעה מאושרת חוזרת לאוויר אם התוקף
+ *  שלה עוד לא עבר; אם עבר — היא מופיעה באשפה כפגה, לחידוש. */
+export async function restoreAd(id: string): Promise<{ title: string } | null> {
+    const row = await findRow(id);
+    const l = { ...((row?.landing ?? {}) as Record<string, any>) };
+    if (!row || typeof l._deletedAt !== 'string') return null;
+    const status: AdStatus =
+        l._deletedStatus === 'approved' || l._deletedStatus === 'rejected' ? l._deletedStatus : 'pending';
+    delete l._deletedAt;
+    delete l._deletedStatus;
+    await strapiPut(`${ENDPOINT}/${encodeURIComponent(id)}`, { data: { ad_status: status, landing: l } });
+    invalidateAdsCache();
+    return { title: row.title ?? '' };
+}
+
+/** שורה באשפה של מסך הניהול. למחוקות מצורפים נתוני הכרטיס לתצוגה
+ *  המקדימה; פגות התוקף כבר נמצאות ברשימה הראשית של הדף. */
+export interface TrashItem {
+    id: string;
+    title: string;
+    advertiserName: string;
+    kind: 'deleted' | 'expired';
+    at: string;
+    requestedDurationDays: number;
+    subtitle?: string;
+    cta?: string;
+    gradient?: string;
+    logo?: string;
+    mainImage?: string;
+    mainImageFit?: AdImageFit;
+    adStyle?: AdStyle | null;
+}
+
+/** האשפה: מה שנמחק (לשחזור) ומאושרות שפג תוקפן (לחידוש), החדשות בראש.
+ *  list = listAllForAdmin({ withDeleted: true }). */
+export function computeTrash(list: SubmittedAd[]): TrashItem[] {
+    const now = Date.now();
+    return list
+        .filter((a) => a.deletedAt
+            || (a.status === 'approved' && !a.paused && !!a.expiresAt && Date.parse(a.expiresAt) <= now))
+        .map((a): TrashItem => ({
+            id: a.id,
+            title: a.title,
+            advertiserName: a.submittedBy?.name || a.submittedBy?.email || '-',
+            kind: a.deletedAt ? 'deleted' : 'expired',
+            at: a.deletedAt || a.expiresAt,
+            requestedDurationDays: a.requestedDurationDays,
+            ...(a.deletedAt
+                ? {
+                      subtitle: a.subtitle,
+                      cta: a.cta,
+                      gradient: a.gradient,
+                      logo: a.logo,
+                      mainImage: a.mainImage,
+                      mainImageFit: a.mainImageFit,
+                      adStyle: a.adStyle,
+                  }
+                : {}),
+        }))
+        .sort((x, y) => (Date.parse(y.at) || 0) - (Date.parse(x.at) || 0));
 }
 
 /** מחיקה לצמיתות (ניקוי מודעות ישנות במסך האדמין). מוגן שיוך-אתר:
