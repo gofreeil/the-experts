@@ -156,7 +156,14 @@
     .reg-note { color: var(--fg-mute); font-size: 14px; }
     /* גלריית מרצים אנכית: חלון של כשתי שורות וחצי, והרשימה (פעמיים) גולשת מלמטה למעלה בלולאה */
     .panel { margin-top: 28px; max-width: 260px; min-width: 0; }
-    .panel-title { font-size: 13px; font-weight: 800; color: var(--honey-text); margin-bottom: 2px; }
+    .panel-title {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        font-family: var(--font-display); font-size: 18px; font-weight: 900; line-height: 1.2; color: var(--fg);
+    }
+    .panel-title::before {
+        content: ''; flex: none; width: 4px; height: 1.1em; border-radius: 2px;
+        background: linear-gradient(var(--honey-bright), var(--honey-deep));
+    }
     .speakers {
         --row: 56px;
         height: calc(var(--row) * min(2.5, var(--n))); overflow: hidden;
@@ -206,7 +213,7 @@
     @container home (max-width: 600px) {
         .meet.solo { grid-template-columns: minmax(0, 1fr); gap: 10px; }
         .solo > .panel { justify-self: center; padding-inline-start: 0; border-inline-start: 0; }
-        .solo .panel-title { text-align: center; }
+        .solo .panel-title { justify-content: center; }
         .solo .speakers { height: calc(var(--row) * min(2, var(--n))); }
     }
     /* בלי תנועה: רשימה סטטית מלאה, בלי העותק הכפול */
