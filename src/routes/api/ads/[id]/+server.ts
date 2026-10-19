@@ -3,12 +3,14 @@ import type { RequestHandler } from './$types';
 import { getAd, isAdOwner, updateAdContent, normalizeLanding } from '$lib/server/adsStore';
 import { ownerCandidateKeys } from '$lib/server/ownership';
 import { notifyAdminsAdEdited } from '$lib/server/adsNotify';
+import { resolveRole } from '$lib/server/adsAdmin';
 import { adPayloadIssue } from '$lib/server/adBudget';
 import { createTranslator } from '$lib/i18n/translate';
 
 // עריכה מחדש של מודעה קיימת בידי המפרסם שהעלה אותה (דשבורד הנכס →
-// הבונה → שלב השליחה). תוכן בלבד: הסטטוס, התוקף, המסלול והתשלום
-// נשארים כפי שהאדמין קבע, ורק edited_at מתעדכן.
+// הבונה → שלב השליחה), או בידי סופר-אדמין (מסך ניהול הפרסומות → "ערוך").
+// תוכן בלבד: הסטטוס, התוקף, המסלול, התשלום והבעלות נשארים כפי שהיו,
+// ורק edited_at מתעדכן.
 export const PUT: RequestHandler = async ({ params, request, locals }) => {
     const { t } = createTranslator(locals.locale);
     const session = await locals.auth();
@@ -16,7 +18,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
     const ad = await getAd(params.id);
     if (!ad) throw error(404, t('detail.notFound'));
-    if (!isAdOwner(ownerCandidateKeys(session.user), ad)) {
+    const isOwner = isAdOwner(ownerCandidateKeys(session.user), ad);
+    if (!isOwner && (await resolveRole(session)) !== 'super_admin') {
         throw error(403, t('api.forbidden'));
     }
 
@@ -64,14 +67,17 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
     }
 
     // העריכה לא עוברת אישור (מודעה מאושרת מתעדכנת באתר מיד) — הצוות חייב
-    // לדעת עליה. best-effort: כשל בהתראה לא מפיל את העריכה.
-    await notifyAdminsAdEdited({
-        adTitle: payload.title,
-        previousTitle: ad.title,
-        status: ad.status,
-        editorName: session.user.name,
-        editorEmail: session.user.email,
-    });
+    // לדעת עליה. best-effort: כשל בהתראה לא מפיל את העריכה. עריכה של
+    // סופר-אדמין לא מתריעה - הוא עצמו הצוות.
+    if (isOwner) {
+        await notifyAdminsAdEdited({
+            adTitle: payload.title,
+            previousTitle: ad.title,
+            status: ad.status,
+            editorName: session.user.name,
+            editorEmail: session.user.email,
+        });
+    }
 
     return json({ ok: true, id: params.id, status: ad.status });
 };

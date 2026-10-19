@@ -3,13 +3,15 @@ import type { PageServerLoad } from './$types';
 import { getAd, isAdOwner } from '$lib/server/adsStore';
 import { getAdStats, type AdStats } from '$lib/server/adStats';
 import { ownerCandidateKeys } from '$lib/server/ownership';
+import { resolveRole } from '$lib/server/adsAdmin';
 import { planFor } from '$lib/adPlans';
 import { createTranslator } from '$lib/i18n/translate';
 
 const STATS_DAYS = 14;
 
 // דף ניהול הנכס של המפרסם: מדדים, עריכה מחדש וחידוש הפרסום.
-// רק מי ששלח את המודעה רואה אותה (אימות מול submitted_by בכל טעינה).
+// רק מי ששלח את המודעה רואה אותה (אימות מול submitted_by בכל טעינה) —
+// וגם סופר-אדמין, שמגיע לכאן מכפתור "ערוך" במסך ניהול הפרסומות.
 export const load: PageServerLoad = async ({ params, locals, url }) => {
     const session = await locals.auth();
     if (!session?.user) {
@@ -19,7 +21,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     const { t } = createTranslator(locals.locale);
     const ad = await getAd(params.id);
     if (!ad) throw error(404, t('detail.notFound'));
-    if (!isAdOwner(ownerCandidateKeys(session.user), ad)) {
+    if (!isAdOwner(ownerCandidateKeys(session.user), ad) && (await resolveRole(session)) !== 'super_admin') {
         throw error(403, t('detail.forbidden'));
     }
 

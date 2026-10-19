@@ -615,8 +615,11 @@
                                     · 📄 {a.totals.landing}
                                     · 🤝 {a.totals.leads}
                                 </span>
+                                {#if data.superAdmin}
+                                    <a class="adv-ad-link" href="/about/advertise/manage/{a.id}" title="דשבורד הנכס — ומשם עריכה בבונה">✏️ ערוך</a>
+                                {/if}
                                 {#if a.status === 'approved'}
-                                    <a class="adv-ad-link" href="/ads/{a.id}" target="_blank" rel="noopener">לדף הנחיתה ↗</a>
+                                    <a class="adv-ad-link" class:adv-ad-link-next={data.superAdmin} href="/ads/{a.id}" target="_blank" rel="noopener">לדף הנחיתה ↗</a>
                                 {/if}
                             </div>
                         {/each}
@@ -847,6 +850,11 @@
                     {/if}
 
                     <div class="ad-actions">
+                        <!-- עריכה (סופר-אדמין) = אותו מסלול של המפרסם: דשבורד הנכס → הבונה
+                             עם התוכן הקיים → שמירה במקום. הבעלות, הסטטוס והתוקף נשארים -->
+                        {#if data.superAdmin}
+                            <a href="/about/advertise/manage/{ad.id}" class="a-btn ghost" title="פתיחת דשבורד הנכס ומשם עריכה בבונה">✏️ ערוך</a>
+                        {/if}
                         {#if ad.status === 'approved'}
                             <a href="/ads/{ad.id}" target="_blank" class="a-btn ghost">פתח את דף הנחיתה ↗</a>
                         {/if}
@@ -1263,6 +1271,7 @@
     .adv-ad-nums { color: #9ca3af; font-variant-numeric: tabular-nums; }
     .adv-ad-link { color: #93c5fd; text-decoration: none; margin-inline-start: auto; }
     .adv-ad-link:hover { text-decoration: underline; }
+    .adv-ad-link-next { margin-inline-start: 0.75rem; }
 
     .tabs {
         display: flex;
