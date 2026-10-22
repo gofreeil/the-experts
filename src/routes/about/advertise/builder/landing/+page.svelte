@@ -16,6 +16,7 @@
         shrinkAdPayload, heaviestImageLabel,
     } from "$lib/adPayloadBudget";
     import { getAdIntent, clearAdIntent } from "$lib/adIntent";
+    import { DEFAULT_AD_STYLE, parseAdStyle } from "$lib/adStyle";
     import { planTitle, planShortLabel } from "$lib/adPlans";
     import { useI18n } from "$lib/i18n/context";
 
@@ -69,6 +70,12 @@
     let logo = $state("");
     let logoShape = $state(/** @type {'square' | 'circle'} */ ("square"));
     let gradient = $state("linear-gradient(135deg, #f59e0b, #ea580c)");
+    // העיצוב שנקבע בשלבים הקודמים - עובר כמו-שהוא אל המודעה בשליחה
+    // (landing._adStyle), בדיוק כמו בקהילה בשכונה. בלעדיו המודעה התפרסמה
+    // עם ברירות המחדל: הלוגו קפץ ממקום שאליו נגרר, הרצועה שינתה גובה,
+    // והכותרת ותת-הכותרת איבדו צבע, מיקום וטיפוגרפיה.
+    /** @type {import('$lib/adStyle').AdStyle} */
+    let adStyleFromDraft = $state({ ...DEFAULT_AD_STYLE });
 
     // ===== גרירת קבצים =====
     let isDraggingLandingImage = $state(false);
@@ -108,6 +115,7 @@
         return {
             title, subtitle, hoverText, cta, gradient,
             logo, mainImage, mainImageFit,
+            adStyle: { ...adStyleFromDraft },
             landing: {
                 headline: landingHeadline,
                 pitch: landingPitch,
@@ -362,6 +370,21 @@
                     logo = d.logo ?? "";
                     logoShape = d.logoShape ?? "square";
                     gradient = d.gradient ?? gradient;
+                    // הטיוטה שומרת את השדות בשמות של הבילדר; כאן הם נארזים
+                    // לאובייקט העיצוב שנשלח עם המודעה
+                    adStyleFromDraft = parseAdStyle({
+                        logoShape: d.logoShape,
+                        logoAnchor: d.logoPosition,
+                        logoX: d.logoFreeX,
+                        logoY: d.logoFreeY,
+                        bandHeight: d.diagHeight,
+                        titleOffsetY: d.titleOffsetY,
+                        titleColor: d.titleColor,
+                        // טיפוגרפיית תת-הכותרת משלב 5
+                        subFontSize: d.subFontSize,
+                        subLineHeight: d.subLineHeight,
+                        subAlign: d.subAlign,
+                    }) ?? { ...DEFAULT_AD_STYLE };
                 }
             } catch {}
             // טיוטה ישנה שחורגת מהתקציב מכווצת מיד — לא מחכים לכישלון בסוף

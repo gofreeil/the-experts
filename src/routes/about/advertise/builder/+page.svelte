@@ -10,6 +10,12 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
+    import {
+        bandCorners, logoCornerSide,
+        DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
+        DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
+    } from "$lib/adStyle";
+    import { bandGradient, ctaGradient } from "$lib/adGradient";
     import { logoClearance } from "$lib/logoClearance";
     import { normalizePlanDays } from "$lib/adPlans";
     import { useI18n } from "$lib/i18n/context";
@@ -282,6 +288,17 @@
     let titleColor = $state("#ffffff");
     let titleOffsetY = $state(0);
     let subtitle = $state("");
+    // טיפוגרפיית תת-הכותרת (שלב 5) - גודל, רווח בין שורות ויישור
+    let subFontSize = $state(DEFAULT_SUB_FONT_SIZE);
+    let subLineHeight = $state(DEFAULT_SUB_LINE_HEIGHT);
+    let subAlign = $state(/** @type {import('$lib/adStyle').SubAlign} */ ("right"));
+    /** @type {Array<{ id: import('$lib/adStyle').SubAlign, key: import('$lib/i18n/translate').MessageKey, icon: string }>} */
+    const SUB_ALIGN_OPTIONS = [
+        { id: "right",   key: "b.s5AlignRight",   icon: "➡" },
+        { id: "center",  key: "b.s5AlignCenter",  icon: "↔" },
+        { id: "left",    key: "b.s5AlignLeft",    icon: "⬅" },
+        { id: "justify", key: "b.s5AlignJustify", icon: "☰" },
+    ];
     let hoverText = $state("");
     let cta = $state(i18n.t('b.defaultCta'));
     // גרדיאנט כמחרוזת CSS - תואם לשדה color של adsData.js באתר הזה
@@ -372,14 +389,42 @@
         return () => window.removeEventListener("resize", onResize);
     });
 
-    // גובה הפס האלכסוני - משתני CSS גלובליים שכל התצוגות משתמשות בהם
+    // גובה הפס האלכסוני - משתני CSS גלובליים שכל התצוגות משתמשות בהם.
+    // bandCorners הוא אותו עוזר שהאתר משתמש בו (adStyle.ts), כך שהרצועה
+    // שהמפרסם מכוון כאן היא פיקסל-לפיקסל הרצועה שמתפרסמת.
     $effect(() => {
         if (!browser) return;
-        const topLeft = Math.max(0, Math.min(100, 100 - diagHeight));
-        const topRight = Math.max(0, topLeft - 10);
-        document.documentElement.style.setProperty("--diag-top-left", `${topLeft}%`);
-        document.documentElement.style.setProperty("--diag-top-right", `${topRight}%`);
+        const { left, right } = bandCorners(diagHeight);
+        document.documentElement.style.setProperty("--diag-top-left", `${left}%`);
+        document.documentElement.style.setProperty("--diag-top-right", `${right}%`);
+        // אותם משתנים שהאתר מקבל מ-adStyleVars — כאן הם על ה-root כדי שכל
+        // התצוגות בבילדר (דמו חי, דסקטופ, נייד) יתעדכנו יחד
+        document.documentElement.style.setProperty("--sub-size", `${subFontSize}rem`);
+        document.documentElement.style.setProperty("--sub-lh", String(subLineHeight));
+        document.documentElement.style.setProperty("--sub-align", subAlign);
     });
+
+    // ===== העיצוב שנוסע עם המודעה =====
+    // כל מה שהמפרסם קובע בכרטיס - צורת הלוגו ומיקומו, גובה הרצועה, מיקום
+    // וצבע הכותרת וטיפוגרפיית תת-הכותרת - נארז כאן, נשמר בטיוטה ונשלח עם
+    // המודעה (landing._adStyle). אותו מבנה בדיוק כמו בקהילה בשכונה.
+    /** @type {import('$lib/adStyle').AdStyle} */
+    let adStyle = $derived({
+        logoShape,
+        logoAnchor: logoPosition,
+        logoX: logoFreeX,
+        logoY: logoFreeY,
+        bandHeight: diagHeight,
+        titleOffsetY,
+        titleColor,
+        subFontSize,
+        subLineHeight,
+        subAlign,
+    });
+
+    // שמירת מקום ללוגו פינתי ליד הכותרת - אותו עוזר שהאתר משתמש בו, כך
+    // שהכותרת נשברת אותו דבר בתצוגה ובטור
+    let titleCornerSide = $derived(logoCornerSide(adStyle, Boolean(logo)));
 
     /**
      * @param {HTMLElement | null} el
@@ -468,15 +513,7 @@
             // העיצוב שנקבע כאן נוסע עם המודעה עד לאתר. בלעדיו המודעה
             // שהתפרסמה נבנתה מחדש מברירות המחדל: הלוגו קפץ מהמקום שאליו
             // נגרר, הרצועה חזרה לגובה הבסיסי והכותרת איבדה את צבעה.
-            adStyle: {
-                logoShape,
-                logoAnchor: logoPosition,
-                logoX: logoFreeX,
-                logoY: logoFreeY,
-                bandHeight: diagHeight,
-                titleOffsetY,
-                titleColor,
-            },
+            adStyle: { ...adStyle },
             landing: {
                 headline: landingHeadline,
                 pitch: landingPitch,
@@ -753,10 +790,13 @@
                     titleColor = d.titleColor ?? "#ffffff";
                     titleOffsetY = typeof d.titleOffsetY === "number" ? d.titleOffsetY : 0;
                     subtitle = d.subtitle ?? "";
+                    subFontSize = typeof d.subFontSize === "number" ? d.subFontSize : DEFAULT_SUB_FONT_SIZE;
+                    subLineHeight = typeof d.subLineHeight === "number" ? d.subLineHeight : DEFAULT_SUB_LINE_HEIGHT;
+                    subAlign = (d.subAlign === "center" || d.subAlign === "left" || d.subAlign === "justify") ? d.subAlign : "right";
                     hoverText = d.hoverText ?? "";
                     cta = d.cta || i18n.t('b.defaultCta');
                     gradient = d.gradient ?? gradient;
-                    diagHeight = typeof d.diagHeight === "number" ? d.diagHeight : 12;
+                    diagHeight = typeof d.diagHeight === "number" ? d.diagHeight : 25;
                     landingHeadline = d.landingHeadline ?? "";
                     landingPitch = d.landingPitch ?? "";
                     landingExtended = d.landingExtended ?? "";
@@ -808,7 +848,7 @@
             logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit,
             logoFreeX, logoFreeY,
             mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleColor, titleOffsetY,
-            subtitle, hoverText, cta, gradient, diagHeight,
+            subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages,
             uniqueness, phone, whatsapp, website, email, address, hours, products,
         };
@@ -1309,6 +1349,54 @@
                     />
                     <div class="char-count">{subtitle.length}/70</div>
 
+                    <!-- טיפוגרפיה של תת-הכותרת: גודל, רווח בין שורות ויישור. הערכים
+                         נוסעים עם המודעה דרך adStyle, ולכן מה שנראה כאן הוא מה שיתפרסם. -->
+                    <div class="sub-type-panel">
+                        <p class="sub-type-title">{i18n.t('b.s5TypeTitle')}</p>
+
+                        <div class="sub-type-row">
+                            <span class="sub-type-label">{i18n.t('b.s5Size')}</span>
+                            <input type="range" class="sub-type-range"
+                                   min={SUB_FONT_SIZE_MIN} max={SUB_FONT_SIZE_MAX} step="0.02"
+                                   bind:value={subFontSize}
+                                   aria-label={i18n.t('b.s5Size')}
+                                   oninput={() => activeStep === "subtitle" || (activeStep = "subtitle")} />
+                            <span class="sub-type-value">{subFontSize.toFixed(2)}</span>
+                        </div>
+
+                        <div class="sub-type-row">
+                            <span class="sub-type-label">{i18n.t('b.s5LineHeight')}</span>
+                            <input type="range" class="sub-type-range"
+                                   min={SUB_LINE_HEIGHT_MIN} max={SUB_LINE_HEIGHT_MAX} step="0.05"
+                                   bind:value={subLineHeight}
+                                   aria-label={i18n.t('b.s5LineHeight')}
+                                   oninput={() => activeStep === "subtitle" || (activeStep = "subtitle")} />
+                            <span class="sub-type-value">{subLineHeight.toFixed(2)}</span>
+                        </div>
+
+                        <div class="sub-type-row">
+                            <span class="sub-type-label">{i18n.t('b.s5Align')}</span>
+                            <div class="sub-type-aligns">
+                                {#each SUB_ALIGN_OPTIONS as opt}
+                                    <button type="button"
+                                            onclick={() => (subAlign = opt.id)}
+                                            title={i18n.t(opt.key)}
+                                            aria-pressed={subAlign === opt.id}
+                                            class="sub-type-align-btn"
+                                            class:is-active={subAlign === opt.id}>
+                                        <span aria-hidden="true">{opt.icon}</span>
+                                        <span class="sub-type-align-text">{i18n.t(opt.key)}</span>
+                                    </button>
+                                {/each}
+                            </div>
+                        </div>
+
+                        <button type="button" class="sub-type-reset"
+                                onclick={() => { subFontSize = DEFAULT_SUB_FONT_SIZE; subLineHeight = DEFAULT_SUB_LINE_HEIGHT; subAlign = "right"; }}>
+                            {i18n.t('b.s5TypeReset')}
+                        </button>
+                    </div>
+
                     <div class="step-nav-row">
                         <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("subtitle"))}>{i18n.t('b.prevStep')}</button>
                         {#if subtitle}
@@ -1389,14 +1477,14 @@
                                             {:else}
                                                 <div class="img-placeholder">{i18n.t('b.mainImage')}</div>
                                             {/if}
-                                            <div class="pro-diag" style:background={gradient}></div>
+                                            <div class="pro-diag" style:background={bandGradient(gradient)}></div>
                                             <div class="pro-title-wrap mobile">
                                                 <p class="pro-sub"><span class="logo-avoid" data-anchor="bottom" aria-hidden="true"></span>{subtitle || i18n.t('b.s5Title')}</p>
                                             </div>
                                             <div class="close-countdown">5</div>
                                         </div>
                                         <div class="popup-body">
-                                            <button type="button" class="popup-cta" style:background={gradient}>← {cta}</button>
+                                            <button type="button" class="popup-cta" style:background={ctaGradient(gradient)}>← {cta}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1414,14 +1502,17 @@
                                 onfocus={() => (hoverPreview = true)}
                                 onblur={() => (hoverPreview = false)}
                             >
-                                <div class="pro-img-wrap clean-card-img" use:logoClearance={[title, subtitle, logo, logoFreeX, logoFreeY, logoPosition, diagHeight, titleOffsetY]}>
+                                <div class="pro-img-wrap clean-card-img" use:logoClearance={[title, subtitle, logo, logoFreeX, logoFreeY, logoPosition, diagHeight, titleOffsetY, subFontSize, subLineHeight, subAlign]}>
                                     {#if mainImage}
                                         <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
                                     {:else}
                                         <div class="img-placeholder">{i18n.t('b.yourImage')}</div>
                                     {/if}
-                                    <div class="pro-diag" style:background={gradient} style:opacity={showHover ? 0 : 1}></div>
-                                    <div class="pro-title-top" style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
+                                    <div class="pro-diag" style:background={bandGradient(gradient)} style:opacity={showHover ? 0 : 1}></div>
+                                    <div class="pro-title-top"
+                                         class:has-corner-logo-right={titleCornerSide === "right"}
+                                         class:has-corner-logo-left={titleCornerSide === "left"}
+                                         style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
                                         <h3 class="pro-title" style:color={titleColor}><span class="logo-avoid" aria-hidden="true"></span>{title || i18n.t('b.s3Title')}</h3>
                                     </div>
                                     <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
@@ -1458,7 +1549,7 @@
                                         />
                                     {/if}
                                 </div>
-                                <div class="promo-cta" style:background={gradient}>
+                                <div class="promo-cta" style:background={ctaGradient(gradient)}>
                                     <p>{cta}</p>
                                 </div>
                             </div>
@@ -1508,7 +1599,7 @@
                 <div class="live-demo-card">
                     <p class="live-demo-label">{i18n.t('b.demoTitle')}</p>
                     <div class="live-demo-frame">
-                        <div class="pro-img-wrap live-demo-img-wrap" use:logoClearance={[title, subtitle, logo, logoFreeX, logoFreeY, logoPosition, diagHeight, titleOffsetY]}>
+                        <div class="pro-img-wrap live-demo-img-wrap" use:logoClearance={[title, subtitle, logo, logoFreeX, logoFreeY, logoPosition, diagHeight, titleOffsetY, subFontSize, subLineHeight, subAlign]}>
                             {#if mainImage}
                                 <img
                                     src={mainImage}
@@ -1525,8 +1616,11 @@
                                     <p class="placeholder-hint">{i18n.t('b.step1')}</p>
                                 </div>
                             {/if}
-                            <div class="pro-diag" style:background={gradient} style:opacity={activeStep === "hover" ? 0 : 1}></div>
-                            <div class="pro-title-top" style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
+                            <div class="pro-diag" style:background={bandGradient(gradient)} style:opacity={activeStep === "hover" ? 0 : 1}></div>
+                            <div class="pro-title-top"
+                                 class:has-corner-logo-right={titleCornerSide === "right"}
+                                 class:has-corner-logo-left={titleCornerSide === "left"}
+                                 style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
                                 {#if title}
                                     <h3 class="pro-title" style:color={titleColor}><span class="logo-avoid" aria-hidden="true"></span>{title}</h3>
                                 {:else}
@@ -1576,7 +1670,7 @@
                                 <p class="hover-text">{hoverText || i18n.t('b.hoverPhShort')}</p>
                             </div>
                         </div>
-                        <div class="promo-cta" style:background={gradient}>
+                        <div class="promo-cta" style:background={ctaGradient(gradient)}>
                             <p>{cta}</p>
                         </div>
                     </div>
@@ -1820,16 +1914,18 @@
     .b-reset:hover { color: #fcd34d; }
 
     /* ============== שתי עמודות + דמו קופץ ============== */
+    /* רוחב הטור: 144px (רוחב המשבצת האמיתי בטור הימני) + 11.2px ריפוד
+       ו-1px מסגרת בכל צד של הכרטיס = 168.4px, מעוגל ל-170px - כמו בקהילה בשכונה. */
     .builder-cols {
         position: relative;
-        padding-inline-end: 156px; /* מקום לדמו (140px) + רווח */
+        padding-inline-end: 186px; /* מקום לדמו (170px) + רווח 16px */
     }
     .builder-steps { width: 100%; }
     .builder-demo {
         position: absolute;
         top: 0;
         inset-inline-end: 0;
-        width: 140px;
+        width: 170px;
         transition: top 700ms cubic-bezier(0.4, 0, 0.2, 1);
     }
     @media (max-width: 768px) {
@@ -1837,7 +1933,9 @@
         .builder-demo {
             position: static;
             width: 100%;
-            max-width: 240px;
+            /* גם בנייד התצוגה נשארת ברוחב האמיתי - משבצת רחבה יותר הייתה
+               מראה שבירת שורות אחרת לגמרי ממה שיתפרסם */
+            max-width: 170px;
             margin: 0 auto 1rem;
         }
     }
@@ -1848,8 +1946,8 @@
         position: absolute;
         top: 0.5rem;
         bottom: 0.5rem;
-        inset-inline-end: -156px;
-        width: 140px;
+        inset-inline-end: -186px;
+        width: 170px;
         border: 2px dashed rgba(251, 191, 36, 0.22);
         border-radius: 0.85rem;
         background: rgba(251, 191, 36, 0.025);
@@ -1872,8 +1970,12 @@
         text-align: center;
         margin: 0 0 0.5rem;
     }
+    /* 144px בדיוק - רוחב המשבצת בטור הימני (w-36). כשהתצוגה הייתה צרה
+       יותר הטקסט נשבר לשורות אחרות והמפרסם ראה מודעה שאינה זו שתתפרסם. */
     .live-demo-frame {
-        width: 100%;
+        width: 144px;
+        max-width: 100%;
+        margin-inline: auto;
         border-radius: 0.55rem;
         overflow: hidden;
         background: #0f172a;
@@ -2720,7 +2822,7 @@
     }
 
     .clean-card {
-        width: 140px;
+        width: 144px; /* רוחב המשבצת האמיתי בטור הימני */
         border-radius: 0.6rem;
         overflow: hidden;
         background: #0f172a;
@@ -2784,13 +2886,25 @@
         transition: opacity 1500ms ease;
         pointer-events: none;
     }
+    /* לוגו בפינה העליונה יושב בגובה הכותרת, ולכן הכותרת שומרת לו מקום -
+       אחרת הוא מכסה את המילה האחרונה במשבצת של 144px. אותם כללים בדיוק
+       ב-RightAdBanner, כך שהכותרת נשברת אותו דבר בתצוגה ובאתר. */
+    .pro-title-top.has-corner-logo-right { padding-right: 46px; }
+    .pro-title-top.has-corner-logo-left { padding-left: 46px; }
     .pro-title {
         color: white;
         font-weight: 900;
-        font-size: 0.95rem;
+        font-size: 1.15rem;
         line-height: 1.15;
-        margin: 0;
+        margin: 0 0 0.2rem;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.9);
+        letter-spacing: -0.02em;
+    }
+    .pro-title-top .pro-title {
+        margin: 0;
+        text-align: center;
+        letter-spacing: 0.005em;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.95);
     }
     .pro-title-wrap {
         position: absolute;
@@ -2799,19 +2913,23 @@
         bottom: 0;
         padding: 0.55rem 0.7rem 1.1rem;
         z-index: 4;
-        text-align: start;
+        text-align: var(--sub-align, right);
         transition: opacity 1500ms ease;
     }
     .pro-title-wrap.mobile { padding: 0.65rem 0.85rem 1.25rem; }
     .pro-sub {
         color: rgba(255, 255, 255, 0.95);
         font-weight: 600;
-        font-size: 0.7rem;
-        line-height: 1.3;
+        /* גודל/רווח/יישור מגיעים מהמשתנים ש-adStyleVars מייצר (שלב 5) -
+           בדיוק אותו כלל שרץ ב-RightAdBanner באתר */
+        font-size: var(--sub-size, 0.88rem);
+        line-height: var(--sub-lh, 1.3);
         margin: 0;
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     }
-    .pro-title-wrap.mobile .pro-sub { font-size: 0.9rem; }
+    /* בנייד המשבצת רחבה יותר, ולכן הטיפוגרפיה מוגדלת ביחס קבוע לבחירת המפרסם */
+    .pro-title-wrap.mobile .pro-sub { font-size: calc(var(--sub-size, 0.88rem) * 1.14); }
+    .pro-title-wrap.mobile .pro-sub::before { width: 32%; height: 1.4em; }
     /* השורה הראשונה של הסלוגן מתקצרת בעקבות האלכסון */
     .pro-sub::before {
         content: "";
@@ -2924,34 +3042,123 @@
         text-align: center;
         transition: opacity 1500ms ease;
         pointer-events: none;
-        z-index: 6;
+        z-index: 4;
     }
     .hover-title {
         color: white;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         margin: 0 0 0.4rem;
     }
     .hover-text {
         color: #e5e7eb;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         line-height: 1.4;
-        margin: 0;
+        margin: 0 0 0.4rem;
         font-weight: 700;
         /* pre-line - ירידות שורה שהמפרסם הקליד בשלב 6 נשמרות בתצוגה
            המקדימה (בלי זה HTML מכווץ כל \n לרווח והמשפט נשפך לשורה אחת) */
         white-space: pre-line;
     }
+    /* אותם מספרים של רצועת ה-CTA בטור הימני (p-2.5 / text-xs / leading-tight),
+       כדי שטקסט ארוך יישבר שם בדיוק כמו כאן */
     .promo-cta {
-        padding: 0.65rem;
+        padding: 0.625rem;
         text-align: center;
     }
     .promo-cta p {
         color: white;
         font-weight: 700;
-        font-size: 0.72rem;
-        line-height: 1.3;
+        font-size: 0.75rem;
+        line-height: 1.25;
         margin: 0;
+    }
+
+    /* ============== טיפוגרפיית תת-הכותרת (שלב 5) ============== */
+    .sub-type-panel {
+        margin-top: 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 0.9rem;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 0.75rem 0.9rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    .sub-type-title {
+        margin: 0;
+        color: #fde68a;
+        font-weight: 900;
+        font-size: 0.85rem;
+    }
+    .sub-type-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+    .sub-type-label {
+        color: #d1d5db;
+        font-weight: 700;
+        font-size: 0.78rem;
+        min-width: 6.5rem;
+    }
+    .sub-type-range {
+        flex: 1 1 8rem;
+        min-width: 7rem;
+        accent-color: #f59e0b;
+    }
+    .sub-type-value {
+        color: white;
+        font-weight: 700;
+        font-size: 0.75rem;
+        min-width: 2.6rem;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+    .sub-type-aligns {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        flex: 1 1 auto;
+    }
+    .sub-type-align-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 0.6rem;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+        color: #d1d5db;
+        font-size: 0.72rem;
+        font-weight: 700;
+        font-family: inherit;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .sub-type-align-btn:hover { color: white; background: rgba(255, 255, 255, 0.1); }
+    .sub-type-align-btn.is-active {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: black;
+    }
+    /* במסך צר נשארים האייקונים בלבד, כדי שארבע האפשרויות ייכנסו בשורה */
+    @media (max-width: 480px) {
+        .sub-type-align-text { display: none; }
+    }
+    .sub-type-reset {
+        align-self: flex-start;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #fcd34d;
+        font-size: 0.72rem;
+        font-weight: 700;
+        font-family: inherit;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        padding: 0;
     }
     .img-placeholder {
         width: 100%;

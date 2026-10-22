@@ -12,6 +12,7 @@
     } from '$lib/adOwner';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { planShortLabel } from '$lib/adPlans';
+    import { parseAdStyle, DEFAULT_AD_STYLE } from '$lib/adStyle';
     import { useI18n } from '$lib/i18n/context';
 
     let { data } = $props();
@@ -54,25 +55,36 @@
 
     function editInBuilder() {
         const adv = (lp.advantages ?? []) as string[];
+        // העיצוב שנשמר עם המודעה (landing._adStyle) חוזר לבונה במלואו - כולל
+        // מודעה שהופצה מקהילה בשכונה - כדי שעריכה לא תאבד אף פרמטר. מודעה
+        // ותיקה בלי עיצוב שמור נשארת על כללי ברירת המחדל של הבונה (לוגו
+        // אוטומטי לפי אורך הכותרת), שהם גם הכללים שמציירים אותה באתר.
+        const st = parseAdStyle(ad.adStyle);
+        const base = st ?? DEFAULT_AD_STYLE;
         const draft = {
             logo: ad.logo ?? '',
             logoOriginal: ad.logo ?? '',
-            hasCircleCrop: false,
-            logoShape: 'square',
-            logoPosition: 'right',
-            logoPositionExplicit: false,
+            hasCircleCrop: st?.logoShape === 'circle',
+            logoShape: base.logoShape,
+            logoPosition: base.logoAnchor,
+            logoPositionExplicit: st !== null,
+            logoFreeX: base.logoX,
+            logoFreeY: base.logoY,
             mainImage: ad.mainImage ?? '',
             mainImageObjectX: ad.mainImageFit?.x ?? 50,
             mainImageObjectY: ad.mainImageFit?.y ?? 50,
             mainImageZoom: ad.mainImageFit?.z ?? 1,
             title: ad.title ?? '',
-            titleColor: '#ffffff',
-            titleOffsetY: 0,
+            titleColor: base.titleColor,
+            titleOffsetY: base.titleOffsetY,
             subtitle: ad.subtitle ?? '',
+            subFontSize: base.subFontSize,
+            subLineHeight: base.subLineHeight,
+            subAlign: base.subAlign,
             hoverText: ad.hoverText ?? '',
             cta: ad.cta ?? '',
             gradient: ad.gradient ?? '',
-            diagHeight: 12,
+            diagHeight: base.bandHeight,
             landingHeadline: lp.headline ?? '',
             landingPitch: lp.pitch ?? '',
             landingExtended: lp.extended ?? '',

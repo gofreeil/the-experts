@@ -42,6 +42,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
             logo: ad.logo,
             mainImage: ad.mainImage,
             mainImageFit: ad.mainImageFit,
+            adStyle: ad.adStyle,
             landing: ad.landing,
             submittedAt: ad.submittedAt,
             editedAt: ad.editedAt,
