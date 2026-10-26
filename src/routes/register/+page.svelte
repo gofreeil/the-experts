@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PasswordInput from '$lib/components/PasswordInput.svelte';
 	import { signIn } from '@auth/sveltekit/client';
 	import { enhance } from '$app/forms';
 	import { useI18n } from '$lib/i18n/context';
@@ -66,7 +67,7 @@
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none" />
 			<input name="email" type="email" required bind:value={email} placeholder={i18n.t('login.email')} autocomplete="email"
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none" />
-			<input name="password" type="password" required bind:value={password} placeholder={i18n.t('register.passwordPh')} autocomplete="new-password"
+			<PasswordInput name="password" required bind:value={password} placeholder={i18n.t('register.passwordPh')} autocomplete="new-password"
 				class="w-full rounded-xl border border-white/10 bg-[#1e293b] px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none" />
 			<button type="submit" disabled={loading}
 				class="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3.5 font-bold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60">
