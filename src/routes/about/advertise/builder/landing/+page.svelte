@@ -16,7 +16,7 @@
         shrinkAdPayload, heaviestImageLabel,
     } from "$lib/adPayloadBudget";
     import { getAdIntent, clearAdIntent } from "$lib/adIntent";
-    import { DEFAULT_AD_STYLE, parseAdStyle } from "$lib/adStyle";
+    import { DEFAULT_AD_STYLE, parseAdStyle, lpLogoStyle } from "$lib/adStyle";
     import { planTitle, planShortLabel } from "$lib/adPlans";
     import { useI18n } from "$lib/i18n/context";
 
@@ -77,6 +77,11 @@
     // והכותרת ותת-הכותרת איבדו צבע, מיקום וטיפוגרפיה.
     /** @type {import('$lib/adStyle').AdStyle} */
     let adStyleFromDraft = $state({ ...DEFAULT_AD_STYLE });
+    // לוגו בדף הנחיתה: יישור, רקע וגודל משלו (null = ברירת המחדל של הדף)
+    let lpAlign = $state(/** @type {'right' | 'center' | 'left'} */ ("right"));
+    let lpBg = $state(/** @type {'white' | 'black' | 'clear' | null} */ (null));
+    let lpSize = $state(/** @type {number | null} */ (null));
+    const lpStyle = $derived({ ...adStyleFromDraft, lpLogoAlign: lpAlign, lpLogoBg: lpBg, lpLogoSize: lpSize });
 
     // ===== גרירת קבצים =====
     let isDraggingLandingImage = $state(false);
@@ -116,7 +121,7 @@
         return {
             title, subtitle, hoverText, cta, gradient,
             logo, mainImage, mainImageFit,
-            adStyle: { ...adStyleFromDraft },
+            adStyle: { ...lpStyle },
             landing: {
                 headline: landingHeadline,
                 pitch: landingPitch,
@@ -797,6 +802,35 @@
                 </div>
             </section>
 
+            {#if logo}
+                <section class="step-card">
+                    <div class="flex flex-wrap items-center gap-3 text-xs">
+                        <span class="font-bold text-gray-300">{i18n.t('b.lpLogoCtrl')}</span>
+                        <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                            <button type="button" onclick={() => (lpAlign = "right")}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {lpAlign === "right" ? "bg-amber-500 text-black" : "text-gray-300 hover:text-white"}">{i18n.t('b.right')}</button>
+                            <button type="button" onclick={() => (lpAlign = "center")}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {lpAlign === "center" ? "bg-amber-500 text-black" : "text-gray-300 hover:text-white"}">{i18n.t('b.lpLogoCenter')}</button>
+                            <button type="button" onclick={() => (lpAlign = "left")}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {lpAlign === "left" ? "bg-amber-500 text-black" : "text-gray-300 hover:text-white"}">{i18n.t('b.left')}</button>
+                        </div>
+                        <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                            <button type="button" onclick={() => (lpBg = "white")}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {(lpBg ?? logoBg) === "white" ? "bg-amber-500 text-black" : "text-gray-300 hover:text-white"}">{i18n.t('b.bgWhite')}</button>
+                            <button type="button" onclick={() => (lpBg = "black")}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {(lpBg ?? logoBg) === "black" ? "bg-amber-500 text-black" : "text-gray-300 hover:text-white"}">{i18n.t('b.bgBlack')}</button>
+                            <button type="button" onclick={() => (lpBg = "clear")}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {(lpBg ?? logoBg) === "clear" ? "bg-amber-500 text-black" : "text-gray-300 hover:text-white"}">{i18n.t('b.bgClear')}</button>
+                        </div>
+                        <div class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-2 py-1">
+                            <button type="button" aria-label="-" class="w-6 h-6 rounded-md font-bold text-gray-300 bg-white/5" onclick={() => (lpSize = Math.max(30, (lpSize ?? 54) - 6))}>−</button>
+                            <input type="range" min="30" max="140" step="2" class="w-20 accent-amber-500" value={lpSize ?? 54} oninput={(e) => (lpSize = +e.currentTarget.value)} />
+                            <button type="button" aria-label="+" class="w-6 h-6 rounded-md font-bold text-gray-300 bg-white/5" onclick={() => (lpSize = Math.min(140, (lpSize ?? 54) + 6))}>+</button>
+                        </div>
+                    </div>
+                </section>
+            {/if}
+
             <!-- =================== תצוגה מקדימה =================== -->
             <section class="step-card">
                 <div class="step-head">
@@ -812,7 +846,7 @@
                             <div class="landing-hero-inner" class:has-media={!!(landingImage || mainImage)}>
                                 <div class="landing-hero-content">
                                     {#if logo}
-                                        <img src={logo} alt={i18n.t('b.logo')} class="landing-logo" class:circle={logoShape === "circle"} style={logoBg === "black" ? "background:#000;" : logoBg === "clear" ? "background:transparent;" : ""} />
+                                        <img src={logo} alt={i18n.t('b.logo')} class="landing-logo" class:circle={logoShape === "circle"} style={lpLogoStyle(lpStyle)} />
                                     {/if}
                                     <h1>{landingHeadline || title || i18n.t('l.headline')}</h1>
                                     <p>{landingPitch || subtitle || i18n.t('l.openingPh')}</p>
