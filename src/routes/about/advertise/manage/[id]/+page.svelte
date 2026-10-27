@@ -66,6 +66,7 @@
             logoOriginal: ad.logo ?? '',
             hasCircleCrop: st?.logoShape === 'circle',
             logoShape: base.logoShape,
+            logoBg: base.logoBg ?? 'white',
             logoPosition: base.logoAnchor,
             logoPositionExplicit: st !== null,
             logoFreeX: base.logoX,

@@ -69,6 +69,7 @@
     let mainImageFit = $state({ x: 50, y: 50, z: 1 });
     let logo = $state("");
     let logoShape = $state(/** @type {'square' | 'circle'} */ ("square"));
+    let logoBg = $state(/** @type {'white' | 'black' | 'clear'} */ ("white"));
     let gradient = $state("linear-gradient(135deg, #f59e0b, #ea580c)");
     // העיצוב שנקבע בשלבים הקודמים - עובר כמו-שהוא אל המודעה בשליחה
     // (landing._adStyle), בדיוק כמו בקהילה בשכונה. בלעדיו המודעה התפרסמה
@@ -369,11 +370,13 @@
                     };
                     logo = d.logo ?? "";
                     logoShape = d.logoShape ?? "square";
+                    logoBg = d.logoBg === "black" || d.logoBg === "clear" ? d.logoBg : "white";
                     gradient = d.gradient ?? gradient;
                     // הטיוטה שומרת את השדות בשמות של הבילדר; כאן הם נארזים
                     // לאובייקט העיצוב שנשלח עם המודעה
                     adStyleFromDraft = parseAdStyle({
                         logoShape: d.logoShape,
+                        logoBg: d.logoBg,
                         logoAnchor: d.logoPosition,
                         logoX: d.logoFreeX,
                         logoY: d.logoFreeY,
@@ -803,7 +806,7 @@
                             <div class="landing-hero-inner" class:has-media={!!(landingImage || mainImage)}>
                                 <div class="landing-hero-content">
                                     {#if logo}
-                                        <img src={logo} alt={i18n.t('b.logo')} class="landing-logo" class:circle={logoShape === "circle"} />
+                                        <img src={logo} alt={i18n.t('b.logo')} class="landing-logo" class:circle={logoShape === "circle"} style={logoBg === "black" ? "background:#000;" : logoBg === "clear" ? "background:transparent;" : ""} />
                                     {/if}
                                     <h1>{landingHeadline || title || i18n.t('l.headline')}</h1>
                                     <p>{landingPitch || subtitle || i18n.t('l.openingPh')}</p>

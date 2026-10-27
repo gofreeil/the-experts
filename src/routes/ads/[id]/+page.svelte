@@ -81,7 +81,8 @@
         <div class="al-hero-inner" class:has-media={!!heroImage}>
             <div class="al-copy">
                 {#if ad.logo}
-                    <img src={ad.logo} alt={i18n.t('landing.logoAlt', { title: ad.title })} decoding="async" class="al-logo" class:is-circle={logoCircle} />
+                    <img src={ad.logo} alt={i18n.t('landing.logoAlt', { title: ad.title })} decoding="async" class="al-logo" class:is-circle={logoCircle}
+                         style={ad.adStyle?.logoBg === 'black' ? 'background:#000' : ad.adStyle?.logoBg === 'clear' ? 'background:transparent;box-shadow:none' : ''} />
                 {/if}
                 <h1>{lp.headline || ad.title}</h1>
                 {#if lp.pitch}
