@@ -377,11 +377,13 @@
                     adStyleFromDraft = parseAdStyle({
                         logoShape: d.logoShape,
                         logoBg: d.logoBg,
+                        logoSize: d.logoSize,
                         logoAnchor: d.logoPosition,
                         logoX: d.logoFreeX,
                         logoY: d.logoFreeY,
                         bandHeight: d.diagHeight,
                         titleOffsetY: d.titleOffsetY,
+                        titleFontSize: d.titleFontSize,
                         titleColor: d.titleColor,
                         // טיפוגרפיית תת-הכותרת משלב 5
                         subFontSize: d.subFontSize,

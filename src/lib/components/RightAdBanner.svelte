@@ -4,7 +4,7 @@
     import { markAdSeen, trackAdClick } from "$lib/adTrack";
     import { adImgFit, parseAdImageFit } from "$lib/adImageFit";
     import {
-        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoBgStyle, logoCornerSide,
+        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoBgStyle, logoSizeStyle, titleSizeStyle, logoCornerSide,
         type AdStyle,
     } from "$lib/adStyle";
     import { bandGradient, ctaGradient } from "$lib/adGradient";
@@ -132,7 +132,7 @@
                             class:has-corner-logo-left={cornerSide === 'left'}
                             style="transform: translateY({st.titleOffsetY}px);"
                         >
-                            <h3 class="promo-title" style="color: {st.titleColor};"><span class="logo-avoid" aria-hidden="true"></span>{ad.title}</h3>
+                            <h3 class="promo-title" style="color: {st.titleColor};{titleSizeStyle(st.titleFontSize)}"><span class="logo-avoid" aria-hidden="true"></span>{ad.title}</h3>
                         </div>
                         {#if ad.subtitle}
                             <div class="promo-sub-wrap transition-opacity duration-[1500ms] group-hover:opacity-0">
@@ -148,7 +148,7 @@
                                 data-ad-logo
                                 class="promo-logo {logoAnchorClass(st, 'promo')} {st.logoShape === 'circle' ? 'promo-logo-circle' : ''}
                                        transition-opacity duration-[1500ms] group-hover:opacity-0"
-                                style={logoFreeStyle(st) + logoBgStyle(st.logoBg)}
+                                style={logoFreeStyle(st) + logoBgStyle(st.logoBg) + logoSizeStyle(st.logoSize)}
                             />
                         {/if}
                         <div
