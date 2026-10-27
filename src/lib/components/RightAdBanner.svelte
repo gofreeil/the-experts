@@ -4,7 +4,7 @@
     import { markAdSeen, trackAdClick } from "$lib/adTrack";
     import { adImgFit, parseAdImageFit } from "$lib/adImageFit";
     import {
-        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoBgStyle, logoSizeStyle, titleSizeStyle, logoCornerSide,
+        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoBgStyle, logoSizeStyle, titleSizeStyle, hoverLogoStyle, logoCornerSide,
         type AdStyle,
     } from "$lib/adStyle";
     import { bandGradient, ctaGradient } from "$lib/adGradient";
@@ -158,6 +158,9 @@
                                 <h3 class="text-white font-bold text-sm mb-1">{ad.title}</h3>
                                 <p class="text-gray-200 text-xs">{ad.subtitle}</p>
                             </div>
+                            {#if ad.logo && st.hoverLogo}
+                                <img src={ad.logo} alt="" class="bg-white p-[3px] shadow-md" style={hoverLogoStyle(st, logoBgStyle(st.logoBg))} />
+                            {/if}
                         </div>
                     </div>
                     <!-- כרטיס מוצר מהחנות - בלי רצועת המחיר ("₪.. · לצפייה בחנות").
