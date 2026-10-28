@@ -18,7 +18,7 @@
             cta: a.cta,
             hover: a.hover,
             href: a.href,
-            target: '_blank' as const,
+            target: '_self' as const,
             image: a.image,
             color: a.color,
             imageHeight: a.imageHeight,
