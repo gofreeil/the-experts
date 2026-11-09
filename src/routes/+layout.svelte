@@ -41,7 +41,7 @@
 </script>
 
 <svelte:head>
-	<title>{i18n.t('site.name')}</title>
+	<title>{i18n.t('site.name')} | יוצאים לחירות</title>
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={i18n.t('site.name')} />
 	<meta property="og:description" content={i18n.t('site.name')} />

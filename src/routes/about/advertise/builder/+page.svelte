@@ -992,7 +992,7 @@
 </script>
 
 <svelte:head>
-    <title>{i18n.t('b.pageTitle')} | {i18n.t('site.name')}</title>
+    <title>{i18n.t('b.pageTitle')} | {i18n.t('site.name')} | יוצאים לחירות</title>
 </svelte:head>
 
 {#if !accessChecked}

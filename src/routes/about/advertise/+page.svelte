@@ -40,7 +40,7 @@
 </script>
 
 <svelte:head>
-    <title>{i18n.t("footer.advertise")} | {i18n.t("site.name")}</title>
+    <title>{i18n.t("footer.advertise")} | {i18n.t("site.name")} | יוצאים לחירות</title>
     <meta name="description" content={i18n.t("advertise.metaDesc")} />
 </svelte:head>
 

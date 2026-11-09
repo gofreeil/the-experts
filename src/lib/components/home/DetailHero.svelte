@@ -17,7 +17,7 @@
 </script>
 
 <svelte:head>
-    <title>{title} | {i18n.t('site.name')}</title>
+    <title>{title} | {i18n.t('site.name')} | יוצאים לחירות</title>
     <meta name="description" content={meta || lede} />
 </svelte:head>
 

@@ -29,7 +29,7 @@
 </script>
 
 <svelte:head>
-    <title>{i18n.t("about.title")} | {siteName}</title>
+    <title>{i18n.t("about.title")} | {siteName} | יוצאים לחירות</title>
     <meta name="description" content={description} />
     <link rel="canonical" href="{SITE_URL}/about" />
 </svelte:head>
