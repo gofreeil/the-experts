@@ -68,6 +68,8 @@ export function adImgFit(node: HTMLImageElement, fit: AdImageFit) {
         node.style.bottom = 'auto';
         node.style.maxWidth = 'none';
         node.style.maxHeight = 'none';
+        node.style.minWidth = '0';
+        node.style.minHeight = '0';
         node.style.objectFit = 'fill';
     }
 
