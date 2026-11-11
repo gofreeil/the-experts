@@ -1,5 +1,7 @@
 import type { L10n } from '$lib/i18n';
 import { SITE_NAMES } from '$lib/networkSites';
+import type { AdStyle } from '$lib/adStyle';
+import type { AdImageFit } from '$lib/adImageFit';
 
 interface AdBase<T> {
     id: number;
@@ -16,6 +18,9 @@ interface AdBase<T> {
     gradientCss?: string;   // רקע כמחרוזת CSS מלאה (מודעות מהבילדר) — גובר על color
     /** מזהה המודעה ב-Strapi (רק למודעות מהבילדר) — למדידה בדשבורד המפרסם */
     adId?: string;
+    /** פרסומת משולמת מהבילדר: בנייד היא מצוירת בדיוק כמו התצוגה בשלב 7
+     *  (MobileAdCard) - לוגו, העיצוב שנשמר, והתמונה הייעודית לנייד אם הועלתה */
+    card?: { logo: string; style: AdStyle; image: string; fit: AdImageFit };
 }
 
 /** מודעה כפי שמוצגת: כל הטקסטים כבר בשפה הנוכחית */

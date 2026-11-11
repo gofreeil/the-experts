@@ -9,6 +9,7 @@
     import { loadApprovedAds } from '$lib/adSlots';
     import { markAdSeen, trackAdClick } from '$lib/adTrack';
     import { useI18n } from '$lib/i18n/context';
+    import MobileAdCard from '$lib/components/MobileAdCard.svelte';
 
     const i18n = useI18n();
 
@@ -42,6 +43,29 @@
         <div class="ad-int-card">
             <span class="ad-int-badge">{i18n.t('ads.badge')}</span>
 
+            {#if ad.card}
+            <!-- מודעה מהבילדר: אותו כרטיס נייד של שלב 7 (לוגו, עיצוב, תמונה
+                 ייעודית לנייד והזזת הטקסטים) — מה שהמפרסם ראה הוא מה שמוצג.
+                 הכפתור פותח את המפרסם בלשונית חדשה, בלי לעצור את הספירה. -->
+            <div class="ad-int-mcard">
+                <MobileAdCard
+                    title={ad.title}
+                    subtitle={ad.description}
+                    cta={ad.cta}
+                    showCta={Boolean(ad.cta)}
+                    image={ad.card.image}
+                    imageFit={ad.card.fit}
+                    logo={ad.card.logo}
+                    gradient={ad.gradientCss ?? ''}
+                    st={ad.card.style}
+                    showCountdown={false}
+                    href={ad.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onctaclick={() => trackAdClick(ad.adId)}
+                />
+            </div>
+            {:else}
             <!-- הקריאייטיב — קליק פותח את המפרסם בלשונית חדשה, בלי לעצור את הספירה -->
             <a href={ad.href} target="_blank" rel="noopener noreferrer"
                onclick={() => trackAdClick(ad.adId)}
@@ -58,6 +82,7 @@
                 <p class="ad-int-desc">{ad.description}</p>
                 {#if ad.cta}<span class="ad-int-cta">{#if i18n.rtl}{ad.cta} ←{:else}{ad.cta} →{/if}</span>{/if}
             </a>
+            {/if}
 
             <!-- מחוון טעינה + ספירה-לאחור: הסימן למשתמש שהתוכן נטען וכמה זמן נשאר -->
             <div class="ad-int-loader" aria-live="polite">
@@ -145,6 +170,8 @@
         border-radius: 0.75rem;
         -webkit-user-drag: none;
     }
+    /* מרווח עליון כדי שתג "פרסומת" לא יכסה את כותרת הכרטיס */
+    .ad-int-mcard { margin-top: 1.4rem; }
     .ad-int-emoji { font-size: 3rem; line-height: 1; }
     .ad-int-title { font-size: 1.25rem; font-weight: 900; line-height: 1.2; }
     .ad-int-desc { font-size: 0.9rem; line-height: 1.4; opacity: 0.95; }

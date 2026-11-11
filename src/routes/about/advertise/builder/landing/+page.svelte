@@ -67,6 +67,9 @@
     let mainImage = $state("");
     // מיקום+זום שנבחרו בבילדר — עוברים כמו-שהם אל המודעה בשליחה
     let mainImageFit = $state({ x: 50, y: 50, z: 1 });
+    // תמונה ייעודית לנייד (אם הועלתה בשלב התצוגה המקדימה) - נוסעת עם המודעה
+    let mobileImage = $state("");
+    let mobileImageFit = $state({ x: 50, y: 50, z: 1 });
     let logo = $state("");
     let logoShape = $state(/** @type {'square' | 'circle'} */ ("square"));
     let logoBg = $state(/** @type {'white' | 'black' | 'clear'} */ ("white"));
@@ -121,6 +124,8 @@
         return {
             title, subtitle, hoverText, cta, gradient,
             logo, mainImage, mainImageFit,
+            // מחרוזת ריקה (ולא undefined) - כך עריכה שמסירה את התמונה לנייד באמת מוחקת אותה
+            mobileImage, mobileImageFit,
             adStyle: { ...lpStyle },
             landing: {
                 headline: landingHeadline,
@@ -139,6 +144,7 @@
     /** החלת תמונות שכווצו בחזרה על המצב (אחרי shrinkAdPayload) @param {any} p */
     function applyPayloadImages(p) {
         if (p.mainImage !== mainImage) mainImage = p.mainImage;
+        if (typeof p.mobileImage === "string" && p.mobileImage !== mobileImage) mobileImage = p.mobileImage;
         if (p.logo !== logo) logo = p.logo;
         if (p.landing.image !== landingImage) landingImage = p.landing.image;
         let productsChanged = false;
@@ -373,6 +379,12 @@
                         y: typeof d.mainImageObjectY === "number" ? d.mainImageObjectY : 50,
                         z: typeof d.mainImageZoom === "number" ? d.mainImageZoom : 1,
                     };
+                    mobileImage = typeof d.mobileImage === "string" ? d.mobileImage : "";
+                    mobileImageFit = {
+                        x: typeof d.mobileImageObjectX === "number" ? d.mobileImageObjectX : 50,
+                        y: typeof d.mobileImageObjectY === "number" ? d.mobileImageObjectY : 50,
+                        z: typeof d.mobileImageZoom === "number" ? d.mobileImageZoom : 1,
+                    };
                     logo = d.logo ?? "";
                     logoShape = d.logoShape ?? "square";
                     logoBg = d.logoBg === "black" || d.logoBg === "clear" ? d.logoBg : "white";
@@ -401,6 +413,10 @@
                         subFontSize: d.subFontSize,
                         subLineHeight: d.subLineHeight,
                         subAlign: d.subAlign,
+                        // הזזת הטקסטים בפופ-אפ הנייד (שלב התצוגה המקדימה)
+                        mobTitleX: d.mobTitleX, mobTitleY: d.mobTitleY,
+                        mobSubX: d.mobSubX, mobSubY: d.mobSubY,
+                        mobCtaX: d.mobCtaX, mobCtaY: d.mobCtaY,
                     }) ?? { ...DEFAULT_AD_STYLE };
                 }
             } catch {}

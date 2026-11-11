@@ -80,6 +80,11 @@
             mainImageObjectX: ad.mainImageFit?.x ?? 50,
             mainImageObjectY: ad.mainImageFit?.y ?? 50,
             mainImageZoom: ad.mainImageFit?.z ?? 1,
+            // התמונה הייעודית לנייד והמיקום/זום שלה
+            mobileImage: ad.mobileImage ?? '',
+            mobileImageObjectX: ad.mobileImageFit?.x ?? 50,
+            mobileImageObjectY: ad.mobileImageFit?.y ?? 50,
+            mobileImageZoom: ad.mobileImageFit?.z ?? 1,
             title: ad.title ?? '',
             titleColor: base.titleColor,
             titleOffsetY: base.titleOffsetY,
@@ -91,6 +96,10 @@
             subFontSize: base.subFontSize,
             subLineHeight: base.subLineHeight,
             subAlign: base.subAlign,
+            // הזזת הטקסטים בפופ-אפ הנייד
+            mobTitleX: base.mobTitleX, mobTitleY: base.mobTitleY,
+            mobSubX: base.mobSubX, mobSubY: base.mobSubY,
+            mobCtaX: base.mobCtaX, mobCtaY: base.mobCtaY,
             hoverText: ad.hoverText ?? '',
             cta: ad.cta ?? '',
             gradient: ad.gradient ?? '',

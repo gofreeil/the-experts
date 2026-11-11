@@ -4,6 +4,8 @@
     import { onDestroy } from 'svelte';
     import type { AdSource } from '$lib/adsData';
     import { useI18n } from '$lib/i18n/context';
+    import MobileAdCard from '$lib/components/MobileAdCard.svelte';
+    import { markAdSeen, trackAdClick } from '$lib/adTrack';
 
     const i18n = useI18n();
 
@@ -27,6 +29,11 @@
         } else {
             if (timer) { clearInterval(timer); timer = null; }
         }
+    });
+
+    // חשיפה למודעה מהבילדר (adId קיים רק בהן)
+    $effect(() => {
+        if (popup) markAdSeen(popup.ad.adId);
     });
 
     function handleClose() {
@@ -63,6 +70,26 @@
             ></div>
         </div>
 
+        {#if ad.card}
+        <!-- פרסומת משולמת: אותו כרטיס בדיוק כמו התצוגה בשלב 7 בבילדר.
+             דף הנחיתה (/ads/<id>) הוא יעד פנימי ונפתח באותה לשונית. -->
+        <MobileAdCard
+            title={ad.title}
+            subtitle={ad.description}
+            cta={ad.cta}
+            showCta={Boolean(ad.cta)}
+            image={ad.card.image}
+            imageFit={ad.card.fit}
+            logo={ad.card.logo}
+            gradient={ad.gradientCss ?? ''}
+            st={ad.card.style}
+            {countdown}
+            closeLabel={i18n.t('common.close')}
+            onclose={handleClose}
+            href={ad.href}
+            onctaclick={() => { trackAdClick(ad.adId); closeAdPopup(); }}
+        />
+        {:else}
         <!-- Close button with countdown -->
         <button
             onclick={handleClose}
@@ -89,17 +116,20 @@
                 {ad.title}
             </h3>
             <p class="text-gray-300 text-sm mb-3 leading-snug">{ad.description}</p>
+            {#if ad.cta}
             <a
                 href={ad.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={i18n.t('ads.newWindowLabel', { cta: ad.cta, title: ad.title })}
-                onclick={() => closeAdPopup()}
+                target={ad.adId ? undefined : "_blank"}
+                rel={ad.adId ? undefined : "noopener noreferrer"}
+                aria-label={ad.adId ? `${ad.cta} – ${ad.title}` : i18n.t('ads.newWindowLabel', { cta: ad.cta, title: ad.title })}
+                onclick={() => { trackAdClick(ad.adId); closeAdPopup(); }}
                 class="block w-full text-center py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold hover:from-purple-500 hover:to-indigo-500 transition-all"
             >
                 {#if i18n.rtl}← {ad.cta}{:else}{ad.cta} →{/if}
             </a>
+            {/if}
         </div>
+        {/if}
     </div>
 </div>
 {/if}

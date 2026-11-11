@@ -19,7 +19,7 @@ import { goto } from '$app/navigation';
 import type { AdSource } from './adsData';
 import type { L10n } from './i18n';
 import { rightAds } from './rightAdsData';
-import { approvedAds, loadApprovedAds } from './adSlots';
+import { approvedAds, loadApprovedAds, mobileAdOf } from './adSlots';
 
 /** מתג ראשי — כיבוי חירום של כל מנגנון פרסומת-הביניים. */
 export const ADS_ENABLED = true;
@@ -49,19 +49,13 @@ const inviteAd: AdSource = {
 /** מאגר הקריאייטיבים כרגע: המודעות בתשלום לפי סדר המשבצות, ואחריהן
  *  ההזמנה לפרסם. הסבב חוזר להתחלה מיד אחריה. */
 function currentInterstitialAds(): AdSource[] {
-    const real: AdSource[] = get(approvedAds).map((a, i) => ({
-        id: 1000 + i,
-        adId: a.id,   // המזהה האמיתי ב-Strapi — למדידת חשיפות/קליקים
-        title: a.title,
-        description: a.subtitle,
-        // כרטיס מוצר מהחנות - בלי כפתור המחיר
-        cta: a.shop ? '' : (a.cta || DETAILS),
-        hover: a.hover || undefined,
-        href: `/ads/${a.id}`,
-        image: a.mainImage,
-        color: '',
-        gradientCss: a.gradient || 'linear-gradient(135deg, #f59e0b, #ea580c)',
-    }));
+    // אותה צורה שהפופ-אפ בנייד מקבל (כולל card - הכרטיס של שלב 7 בבילדר).
+    // כרטיס מוצר מהחנות - בלי כפתור המחיר; מודעה רגילה בלי טקסט כפתור
+    // מקבלת "לפרטים" כמו קודם.
+    const real: AdSource[] = get(approvedAds).map((a, i) => {
+        const ad = mobileAdOf(a, i);
+        return a.shop ? ad : { ...ad, cta: a.cta || DETAILS };
+    });
     return [...real, inviteAd];
 }
 

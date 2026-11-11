@@ -15,6 +15,9 @@
 //   _site / _order / _paused / _pausedDaysLeft / _adStyle / _mainImageFit /
 //   _payment / _codeRequested / _requestedDurationDays / _replacesAdId /
 //   _replacesTitle / _supersededBy / _standalone / _editedAt / _imgV
+// התמונה הייעודית לנייד נשמרת ב-landing.mobileImage / landing.mobileImageFit
+// (בלי קו-תחתון) - אותם מפתחות בדיוק כמו בקהילה בשכונה, כדי שמודעה שהופצה
+// משם תגיע לכאן עם התמונה שלה.
 // _site='experts' — שיוך קשיח לאתר הזה; בלעדיו הפרסומת לא קיימת כאן.
 // זהירות: תמונות כ-data-URI — תקרת koa-body היא 1MB לבקשה,
 // לכן הבילדר מכווץ תמונות לפני השליחה (600KB לכל המודעה).
@@ -79,6 +82,9 @@ export interface SubmittedAd {
     imgVersion: string;
     /** מיקום+זום של התמונה הראשית במשבצת (מהבילדר) */
     mainImageFit: AdImageFit;
+    /** תמונה ייעודית לנייד (data URI); ריק = הנייד מציג את התמונה הראשית */
+    mobileImage: string;
+    mobileImageFit: AdImageFit;
     /** העיצוב שנקבע בבילדר (לוגו, רצועה, כותרת). null = מודעה ותיקה */
     adStyle: AdStyle | null;
     landing: Partial<AdLanding>;
@@ -140,6 +146,9 @@ export interface ApprovedAdPublic {
     logo: string;
     mainImage: string;
     mainImageFit: AdImageFit;
+    /** תמונה ייעודית לנייד (ככתובת); ריק = הנייד מציג את התמונה הראשית */
+    mobileImage: string;
+    mobileImageFit: AdImageFit;
     /** העיצוב מהבילדר; null במודעות שנשלחו לפני שהוא נשמר */
     adStyle: AdStyle | null;
     /** מספר המקום בלוח (1..16) — נקבע במסך הניהול, מחושב תמיד בשרת */
@@ -217,7 +226,10 @@ function stampOf(logo: string, mainImage: string, landing: Record<string, any> |
             ? landing.products.map((p: { image?: string }) => p?.image ?? '')
             : []),
     ];
-    return imageStamp(logo, mainImage, ...landingImages);
+    // התמונה לנייד נכנסת לחותם רק כשהיא קיימת - כך החותם של מודעות
+    // ותיקות (בלעדיה) לא משתנה והקאש שלהן לא מתאפס
+    const mobile = typeof landing?.mobileImage === 'string' ? landing.mobileImage : '';
+    return imageStamp(logo, mainImage, ...landingImages, ...(mobile ? [mobile] : []));
 }
 
 function fromStrapi(row: StrapiAd | null | undefined): SubmittedAd | null {
@@ -240,6 +252,8 @@ function fromStrapi(row: StrapiAd | null | undefined): SubmittedAd | null {
             ? l._imgV
             : stampOf(logo, mainImage, l),
         mainImageFit: parseAdImageFit(l._mainImageFit),
+        mobileImage: typeof l.mobileImage === 'string' ? l.mobileImage : '',
+        mobileImageFit: parseAdImageFit(l.mobileImageFit),
         // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
         adStyle: parseAdStyle(l._adStyle),
         landing: sanitizeLanding(row.landing ?? emptyLanding()),
@@ -540,6 +554,8 @@ export async function submitAd(payload: {
     logo?: string;
     mainImage?: string;
     mainImageFit?: unknown;
+    mobileImage?: unknown;
+    mobileImageFit?: unknown;
     adStyle?: unknown;
     landing?: Partial<AdLanding>;
     submittedBy?: { id: string; email: string; name: string };
@@ -568,7 +584,12 @@ export async function submitAd(payload: {
 
     const logo = payload.logo ?? '';
     const mainImage = payload.mainImage ?? '';
-    const baseLanding = (payload.landing ?? emptyLanding()) as Record<string, any>;
+    const mobileImage = typeof payload.mobileImage === 'string' ? payload.mobileImage : '';
+    const baseLanding = {
+        ...((payload.landing ?? emptyLanding()) as Record<string, any>),
+        // תמונה ייעודית לנייד + המיקום/זום שלה (רק כשהועלתה)
+        ...(mobileImage ? { mobileImage, mobileImageFit: parseAdImageFit(payload.mobileImageFit) } : {}),
+    } as Record<string, any>;
     const landing: Record<string, unknown> = {
         ...baseLanding,
         // שיוך קשיח לאתר — בלעדיו הפרסומת תיבלע באוסף המשותף
@@ -647,16 +668,17 @@ export async function submitAd(payload: {
  * logo/main הן תמונות הכרטיס בלוח. landing ו-product-<n> הן של דף הנחיתה
  * (/ads/<id>) - הדף שאליו מגיעה כל לחיצה על פרסומת.
  */
-export type AdImageKind = 'logo' | 'main' | 'landing' | `product-${number}`;
+export type AdImageKind = 'logo' | 'main' | 'mobile' | 'landing' | `product-${number}`;
 
 export function isAdImageKind(v: string | undefined): v is AdImageKind {
     if (!v) return false;
-    return v === 'logo' || v === 'main' || v === 'landing' || /^product-\d+$/.test(v);
+    return v === 'logo' || v === 'main' || v === 'mobile' || v === 'landing' || /^product-\d+$/.test(v);
 }
 
 function pickImage(ad: SubmittedAd, kind: AdImageKind): string {
     if (kind === 'logo') return ad.logo;
     if (kind === 'main') return ad.mainImage;
+    if (kind === 'mobile') return ad.mobileImage;
     if (kind === 'landing') return ad.landing?.image ?? '';
     const idx = Number(kind.slice('product-'.length));
     return ad.landing?.products?.[idx]?.image ?? '';
@@ -689,7 +711,14 @@ export function withAdImageUrls(ad: SubmittedAd): SubmittedAd {
         ...ad,
         logo: adImageUrl(ad, 'logo'),
         mainImage: adImageUrl(ad, 'main'),
-        landing: { ...ad.landing, image: adImageUrl(ad, 'landing'), products },
+        mobileImage: adImageUrl(ad, 'mobile'),
+        // גם העותק שבתוך landing מוחלף בכתובת - אחרת ה-base64 שלו היה נוסע עם הדף
+        landing: {
+            ...ad.landing,
+            image: adImageUrl(ad, 'landing'),
+            products,
+            ...(ad.mobileImage ? { mobileImage: adImageUrl(ad, 'mobile') } : {}),
+        } as Partial<AdLanding>,
     };
 }
 
@@ -756,6 +785,8 @@ export async function listApproved(): Promise<ApprovedAdPublic[]> {
                 logo: adImageUrl(a, 'logo'),
                 mainImage: adImageUrl(a, 'main'),
                 mainImageFit: a.mainImageFit,
+                mobileImage: adImageUrl(a, 'mobile'),
+                mobileImageFit: a.mobileImageFit,
                 adStyle: a.adStyle,
                 // המספר בלוח (1-based) — הלקוח מציב לפיו את המודעה בדיוק
                 // במקום שנקבע לה, והחורים ביניהם נשארים משבצות פנויות
@@ -842,6 +873,9 @@ export async function updateAdContent(
         logo?: string;
         mainImage?: string;
         mainImageFit?: unknown;
+        /** מחרוזת (גם ריקה) מחליפה את התמונה לנייד; undefined משאיר את הקיימת */
+        mobileImage?: unknown;
+        mobileImageFit?: unknown;
         adStyle?: unknown;
         landing?: Partial<AdLanding>;
     },
@@ -864,6 +898,15 @@ export async function updateAdContent(
             : (existingLanding._adStyle ?? null),
         _editedAt: new Date().toISOString(),
     };
+    if (typeof patch.mobileImage === 'string') {
+        if (patch.mobileImage) {
+            mergedLanding.mobileImage = patch.mobileImage;
+            mergedLanding.mobileImageFit = parseAdImageFit(patch.mobileImageFit);
+        } else {
+            delete mergedLanding.mobileImage;
+            delete mergedLanding.mobileImageFit;
+        }
+    }
     // חותם תמונות טרי — מחושב על ה-landing הממוזג, אחרי החלפת התמונות
     mergedLanding._imgV = stampOf(logo, mainImage, mergedLanding as Record<string, any>);
     await strapiPut(`${ENDPOINT}/${encodeURIComponent(id)}`, {

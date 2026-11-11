@@ -24,11 +24,13 @@ function dataUriBytes(v: unknown): number {
 export function adPayloadIssue(payload: {
     logo?: unknown;
     mainImage?: unknown;
+    mobileImage?: unknown;
     landing?: { image?: unknown; products?: Array<{ image?: unknown }> } | null;
 }): string | null {
     const images: Array<[string, unknown]> = [
         ['הלוגו', payload.logo],
         ['התמונה הראשית', payload.mainImage],
+        ['התמונה לנייד', payload.mobileImage],
         ['תמונת דף הנחיתה', payload.landing?.image],
         ...(Array.isArray(payload.landing?.products)
             ? payload.landing.products.map((p, i): [string, unknown] => [`תמונת מוצר ${i + 1}`, p?.image])

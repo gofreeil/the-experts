@@ -10,7 +10,10 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import { rightAds, AD_SLOT_COUNT, type RightAd } from './rightAdsData';
-import type { AdStyle } from './adStyle';
+import { parseAdStyle, legacyAdStyle, type AdStyle } from './adStyle';
+import { parseAdImageFit } from './adImageFit';
+import { registerPaidAds } from './adPopupStore';
+import type { AdSource } from './adsData';
 
 /** הצורה הרזה שמחזיר /api/ads/approved (ApprovedAdPublic בשרת) */
 export interface ApprovedAd {
@@ -25,6 +28,9 @@ export interface ApprovedAd {
     mainImage: string;  // data URI
     /** מיקום+זום מהבילדר; אופציונלי — קאש ישן בדפדפן עוד בלעדיו */
     mainImageFit?: { x: number; y: number; z: number };
+    /** תמונה ייעודית לנייד (ככתובת); ריק = הנייד ממשיך עם התמונה הראשית */
+    mobileImage?: string;
+    mobileImageFit?: { x: number; y: number; z: number };
     /** העיצוב מהבילדר (לוגו, רצועה, כותרת); חסר במודעות ותיקות */
     adStyle?: AdStyle | null;
     /** מספר המקום בלוח (1..16) — נקבע במסך הניהול; חסר בקאש ישן */
@@ -41,6 +47,39 @@ export type AdSlot =
     | { kind: 'pending' };                            // שלד — הטעינה הראשונה עוד רצה
 
 export const approvedAds = writable<ApprovedAd[]>([]);
+
+/**
+ * המודעה כפי שהיא מוצגת בנייד (הפופ-אפ ופרסומת-הביניים): אותו כרטיס של
+ * שלב 7 בבילדר. כרטיס מוצר מהחנות נשאר בתצוגה הפשוטה (בלי כפתור מחיר).
+ */
+export function mobileAdOf(a: ApprovedAd, i: number): AdSource {
+    return {
+        id: 1000 + i,
+        adId: a.id,   // המזהה האמיתי ב-Strapi — למדידת חשיפות/קליקים
+        title: a.title,
+        description: a.subtitle,
+        cta: a.shop ? '' : a.cta,
+        hover: a.hover || undefined,
+        href: `/ads/${a.id}`,
+        image: a.mainImage,
+        thumb: a.mainImage,
+        color: '',
+        gradientCss: a.gradient || 'linear-gradient(135deg, #f59e0b, #ea580c)',
+        card: a.shop ? undefined : {
+            logo: a.logo ?? '',
+            style: parseAdStyle(a.adStyle) ?? legacyAdStyle(a.title),
+            image: a.mobileImage || a.mainImage,
+            fit: parseAdImageFit(a.mobileImage ? a.mobileImageFit : a.mainImageFit),
+        },
+    };
+}
+
+// הפופ-אפ בנייד (MobileAdPopup) מקבל את המודעות המשולמות מאותה רשימה
+if (browser) {
+    approvedAds.subscribe((list) => {
+        registerPaidAds(list.filter((a) => a.mainImage).map(mobileAdOf));
+    });
+}
 
 /** האם כבר יש בידינו רשימה אמינה (מהקאש המקומי או מהשרת).
  *  לפני-כן מוצג שלד ניטרלי ולא "מקום פרסום זה" — כדי שהטור לא ייראה

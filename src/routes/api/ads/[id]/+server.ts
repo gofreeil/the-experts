@@ -52,6 +52,9 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
             logo: payload.logo ?? '',
             mainImage: payload.mainImage,
             mainImageFit: payload.mainImageFit,
+            // תמונה ייעודית לנייד (אופציונלי) + המיקום/זום שלה
+            mobileImage: payload.mobileImage,
+            mobileImageFit: payload.mobileImageFit,
             // העיצוב שנקבע בבילדר נשמר גם בעריכה — בלעדיו עריכת טקסט
             // הייתה מאפסת את מיקום הלוגו, גובה הרצועה וצבע הכותרת
             adStyle: payload.adStyle,

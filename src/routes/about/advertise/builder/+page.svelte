@@ -10,6 +10,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
+    import MobileAdCard from "$lib/components/MobileAdCard.svelte";
     import {
         bandCorners, logoCornerSide,
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
@@ -323,6 +324,27 @@
         { id: "left",    key: "b.s5AlignLeft",    icon: "⬅" },
         { id: "justify", key: "b.s5AlignJustify", icon: "☰" },
     ];
+    // הזזת הכותרת / הכיתוב / הכפתור בפופ-אפ הנייד (שלב 7), באחוזי רוחב הכרטיס
+    let mobTitleX = $state(0); let mobTitleY = $state(0);
+    let mobSubX = $state(0); let mobSubY = $state(0);
+    let mobCtaX = $state(0); let mobCtaY = $state(0);
+    /** @param {unknown} v */
+    const num0 = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
+    /** @param {'title' | 'sub' | 'cta'} key @param {number} x @param {number} y */
+    function moveMobile(key, x, y) {
+        if (key === "title") { mobTitleX = x; mobTitleY = y; }
+        else if (key === "sub") { mobSubX = x; mobSubY = y; }
+        else { mobCtaX = x; mobCtaY = y; }
+    }
+    function resetMobilePositions() {
+        mobTitleX = mobTitleY = mobSubX = mobSubY = mobCtaX = mobCtaY = 0;
+    }
+    /** עריכה במקום בכרטיס הנייד @param {'title' | 'sub' | 'cta'} field @param {string} value */
+    function editMobile(field, value) {
+        if (field === "title") title = value;
+        else if (field === "sub") subtitle = value;
+        else cta = value;
+    }
     let hoverText = $state("");
     let cta = $state(i18n.t('b.defaultCta'));
     // גרדיאנט כמחרוזת CSS - תואם לשדה color של adsData.js באתר הזה
@@ -454,6 +476,7 @@
         subFontSize,
         subLineHeight,
         subAlign,
+        mobTitleX, mobTitleY, mobSubX, mobSubY, mobCtaX, mobCtaY,
     });
 
     // שמירת מקום ללוגו פינתי ליד הכותרת - אותו עוזר שהאתר משתמש בו, כך
@@ -612,7 +635,7 @@
         applyPayloadImages(candidate);
         if (res.wasCompressed || fit.changed) {
             const finalUrl = target === "main" ? candidate.mainImage : target === "mobile" ? candidate.mobileImage : candidate.logo;
-            showCompressNotice(res.originalBytes, approxDataUrlBytes(finalUrl));
+            showCompressNotice(res.originalBytes, approxDataUrlBytes(finalUrl ?? ""));
         }
         if (target === "main") {
             mainImageObjectX = 50;
@@ -720,7 +743,7 @@
     }
     /**
      * @param {DragEvent} e
-     * @param {'main' | 'logo'} target
+     * @param {'main' | 'logo' | 'mobile'} target
      * @param {(v: boolean) => void} setActive
      */
     async function handleDrop(e, target, setActive) {
@@ -868,6 +891,9 @@
                     subFontSize = typeof d.subFontSize === "number" ? d.subFontSize : DEFAULT_SUB_FONT_SIZE;
                     subLineHeight = typeof d.subLineHeight === "number" ? d.subLineHeight : DEFAULT_SUB_LINE_HEIGHT;
                     subAlign = (d.subAlign === "center" || d.subAlign === "left" || d.subAlign === "justify") ? d.subAlign : "right";
+                    mobTitleX = num0(d.mobTitleX); mobTitleY = num0(d.mobTitleY);
+                    mobSubX = num0(d.mobSubX); mobSubY = num0(d.mobSubY);
+                    mobCtaX = num0(d.mobCtaX); mobCtaY = num0(d.mobCtaY);
                     hoverText = d.hoverText ?? "";
                     cta = d.cta || i18n.t('b.defaultCta');
                     gradient = d.gradient ?? gradient;
@@ -921,10 +947,12 @@
         if (!browser) return;
         const snapshot = {
             logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, logoPosition, logoPositionExplicit,
+            hoverLogo, hoverLogoX, hoverLogoY, hoverLogoSize,
             logoFreeX, logoFreeY,
             mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
             mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY, titleFontSize, lpLogoAlign, lpLogoBg, lpLogoSize,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
+            mobTitleX, mobTitleY, mobSubX, mobSubY, mobCtaX, mobCtaY,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages,
             uniqueness, phone, whatsapp, website, email, address, hours, products,
         };
@@ -1585,25 +1613,25 @@
                     {#if previewMode === "mobile"}
                         <!-- החלפת תמונה ייעודית לנייד: ממוקמת מעל התצוגה המקדימה -->
                         <div class="mobile-image-swap">
-                            <h4 class="mobile-image-swap-title">תמונה אחרת לנייד</h4>
-                            <p class="mobile-image-swap-help">המשבצת בנייד רחבה ונמוכה, ובדסקטופ צרה וגבוהה - אותה תמונה נחתכת אחרת. אפשר להעלות כאן תמונה שמתאימה לנייד; בלעדיה הנייד ממשיך עם התמונה הראשית.</p>
+                            <h4 class="mobile-image-swap-title">{i18n.t('b.mobImgTitle')}</h4>
+                            <p class="mobile-image-swap-help">{i18n.t('b.mobImgHelp')}</p>
                             {#if mobileImage}
                                 <div class="mobile-image-swap-frame"
                                      class:dragging={isDraggingMobile}
                                      ondragover={(e) => dragOver(e, (v) => (isDraggingMobile = v))}
                                      ondragleave={(e) => dragLeave(e, (v) => (isDraggingMobile = v))}
                                      ondrop={(e) => handleDrop(e, "mobile", (v) => (isDraggingMobile = v))}>
-                                    <img src={mobileImage} alt="תמונה לנייד" style:object-position="{mobileImageObjectX}% {mobileImageObjectY}%" use:adImgFit={mobileImageFit} />
-                                    <button type="button" class="crop-arrow up" onclick={() => nudgeMainImage("up", "mobile")} aria-label="למעלה">▲</button>
-                                    <button type="button" class="crop-arrow down" onclick={() => nudgeMainImage("down", "mobile")} aria-label="למטה">▼</button>
-                                    <button type="button" class="crop-arrow left" onclick={() => nudgeMainImage("left", "mobile")} aria-label="שמאלה">◀</button>
-                                    <button type="button" class="crop-arrow right" onclick={() => nudgeMainImage("right", "mobile")} aria-label="ימינה">▶</button>
-                                    <button type="button" class="remove-x" onclick={() => clearImage("mobile")} aria-label="הסר תמונה לנייד">✕</button>
-                                    <button type="button" class="crop-reset" onclick={() => { mobileImageObjectX = 50; mobileImageObjectY = 50; mobileImageZoom = 1; }} aria-label="איפוס">⊙</button>
-                                    <button type="button" class="crop-zoom zoom-in" onclick={() => zoomMainImage("in", "mobile")} aria-label="הגדל">＋</button>
-                                    <button type="button" class="crop-zoom zoom-out" onclick={() => zoomMainImage("out", "mobile")} aria-label="הקטן">－</button>
+                                    <img src={mobileImage} alt={i18n.t('b.mobImgAlt')} style:object-position="{mobileImageObjectX}% {mobileImageObjectY}%" use:adImgFit={mobileImageFit} />
+                                    <button type="button" class="crop-arrow up" onclick={() => nudgeMainImage("up", "mobile")} aria-label={i18n.t('b.mobImgUp')}>▲</button>
+                                    <button type="button" class="crop-arrow down" onclick={() => nudgeMainImage("down", "mobile")} aria-label={i18n.t('b.mobImgDown')}>▼</button>
+                                    <button type="button" class="crop-arrow left" onclick={() => nudgeMainImage("left", "mobile")} aria-label={i18n.t('b.mobImgLeft')}>◀</button>
+                                    <button type="button" class="crop-arrow right" onclick={() => nudgeMainImage("right", "mobile")} aria-label={i18n.t('b.mobImgRight')}>▶</button>
+                                    <button type="button" class="remove-x" onclick={() => clearImage("mobile")} aria-label={i18n.t('b.mobImgRemove')}>✕</button>
+                                    <button type="button" class="crop-reset" onclick={() => { mobileImageObjectX = 50; mobileImageObjectY = 50; mobileImageZoom = 1; }} aria-label={i18n.t('b.mobImgReset')}>⊙</button>
+                                    <button type="button" class="crop-zoom zoom-in" onclick={() => zoomMainImage("in", "mobile")} aria-label={i18n.t('b.mobImgZoomIn')}>＋</button>
+                                    <button type="button" class="crop-zoom zoom-out" onclick={() => zoomMainImage("out", "mobile")} aria-label={i18n.t('b.mobImgZoomOut')}>－</button>
                                 </div>
-                                <p class="mobile-image-swap-note">התמונה לנייד פעילה ומוצגת בתצוגה</p>
+                                <p class="mobile-image-swap-note">{i18n.t('b.mobImgActive')}</p>
                             {:else}
                                 <label class="mobile-image-swap-drop"
                                        class:dragging={isDraggingMobile}
@@ -1612,9 +1640,9 @@
                                        ondrop={(e) => handleDrop(e, "mobile", (v) => (isDraggingMobile = v))}>
                                     <span style="font-size: 1.5rem;" aria-hidden="true">{isDraggingMobile ? "✨" : "📱"}</span>
                                     <span class="mobile-image-swap-drop-main">
-                                        {isDraggingMobile ? "שחררו כאן את התמונה" : "העלאת תמונה ייעודית לנייד"}
+                                        {isDraggingMobile ? i18n.t('b.mobImgDropActive') : i18n.t('b.mobImgUpload')}
                                     </span>
-                                    <span class="mobile-image-swap-drop-sub">לחיצה או גרירה</span>
+                                    <span class="mobile-image-swap-drop-sub">{i18n.t('b.mobImgDropSub')}</span>
                                     <input type="file" accept="image/*" onchange={(e) => handleImage(e, "mobile")} style="display: none;" />
                                 </label>
                             {/if}
@@ -1624,32 +1652,27 @@
                             <div class="phone-screen">
                                 <div class="phone-notch"></div>
                                 <div class="phone-content">
-                                    <div class="mobile-popup">
-                                        <div class="popup-title-row">
-                                            {#if logo}
-                                                <img src={logo} alt={i18n.t('b.logo')} class="popup-logo-above" class:circle={logoShape === "circle"} style={logoBgCss} />
-                                            {/if}
-                                            <h3 class="popup-title-above" style:color={titleColor}>{title || i18n.t('b.s3Title')}</h3>
-                                        </div>
-                                        <div class="popup-img pro-img-wrap">
-                                            {#if previewMobileImage}
-                                                <img src={previewMobileImage} alt={title} use:adImgFit={previewMobileFit} />
-                                            {:else}
-                                                <div class="img-placeholder">{i18n.t('b.mainImage')}</div>
-                                            {/if}
-                                            <div class="pro-diag" style:background={bandGradient(gradient)}></div>
-                                            <div class="pro-title-wrap mobile">
-                                                <p class="pro-sub"><span class="logo-avoid" data-anchor="bottom" aria-hidden="true"></span>{subtitle || i18n.t('b.s5Title')}</p>
-                                            </div>
-                                            <div class="close-countdown">5</div>
-                                        </div>
-                                        <div class="popup-body">
-                                            <button type="button" class="popup-cta" style:background={ctaGradient(gradient)}>← {cta}</button>
-                                        </div>
+                                    <!-- אותו רכיב שמצייר את הפרסומת בנייד באתר (MobileAdCard):
+                                         לחיצה על טקסט = עריכה במקום, גרירה = הזזה -->
+                                    <div class="mobile-popup-slot">
+                                        <MobileAdCard
+                                            editable
+                                            {title} {subtitle} {cta} {gradient}
+                                            image={previewMobileImage}
+                                            imageFit={previewMobileFit}
+                                            {logo}
+                                            st={adStyle}
+                                            placeholder={i18n.t('b.mainImage')}
+                                            onedit={editMobile}
+                                            onmove={moveMobile}
+                                        />
+                                        {#if mobTitleX || mobTitleY || mobSubX || mobSubY || mobCtaX || mobCtaY}
+                                            <button type="button" class="mobile-reset-pos" onclick={resetMobilePositions}>{i18n.t('b.mobileResetPos')}</button>
+                                        {/if}
                                     </div>
                                 </div>
                             </div>
-                            <p class="preview-caption">{i18n.t('b.mobileCaption')}</p>
+                            <p class="preview-caption">{i18n.t('b.mobileCaption')} <b>{i18n.t('b.mobileEditHint')}</b></p>
                         </div>
                     {:else}
                         <div class="preview-frame">
@@ -2906,6 +2929,19 @@
         align-items: center;
         justify-content: center;
         padding: 1rem;
+    }
+    .mobile-popup-slot { width: 100%; max-width: 240px; }
+    .mobile-reset-pos {
+        display: block;
+        margin: 0.4rem auto 0;
+        font-size: 0.7rem;
+        padding: 0.15rem 0.6rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        cursor: pointer;
+        font-family: inherit;
     }
     .mobile-popup {
         width: 100%;
