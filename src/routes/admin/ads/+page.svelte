@@ -34,6 +34,7 @@
     let trash = $derived((data.trash ?? []) as any[]);
     // תצוגה מקדימה מהאשפה: הכרטיס המלא (פגות נמצאות ב-data.ads), ולמחוקות — נתוני האשפה
     let trashPreview = $state<any>(null);
+    let trashOpen = $state(false);
     function openTrashPreview(t: any) {
         trashPreview = (data.ads as any[]).find((a) => String(a.id) === t.id) ?? t;
     }
@@ -652,58 +653,7 @@
         {#if trash.length === 0}
             <p class="empty">האשפה ריקה.</p>
         {/if}
-        <div class="trash-list">
-            {#each trash as t (t.id)}
-                <div class="trash-row">
-                    <span class="trash-body">
-                        <button type="button" class="ad-title-btn trash-title" onclick={() => openTrashPreview(t)}
-                                title="תצוגה מקדימה של הפרסומת">{t.title}</button>
-                        <span class="trash-meta">
-                            <span class="status-pill {t.kind === 'deleted' ? 'rejected' : 'pending'}">{t.kind === 'deleted' ? 'נמחקה' : 'פג התוקף'}</span>
-                            {fmtDate(t.at)} · {t.advertiserName}
-                        </span>
-                    </span>
-                    <span class="trash-actions">
-                        {#if t.kind === 'deleted'}
-                            {#if data.superAdmin}
-                                <form method="POST" action="?/restore" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <button type="submit" class="a-btn approve" title="חזרה למצב שלפני המחיקה">♻ שחזר</button>
-                                </form>
-                                <form method="POST" action="?/purge" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <button type="submit" class="a-btn reject"
-                                            onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${t.title}"? אין דרך חזרה.`)) e.preventDefault(); }}>✕ מחק לצמיתות</button>
-                                </form>
-                            {/if}
-                        {:else}
-                            <form method="POST" action="?/approve" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <input type="hidden" name="durationDays" value={t.requestedDurationDays ?? ''} />
-                                    <button type="submit" class="a-btn approve" title="פרסום מחדש לתקופה חדשה מהיום, באותו מקום בלוח">♻ חדש</button>
-                                </form>
-                            {#if data.superAdmin}
-                                <form method="POST" action="?/remove" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <button type="submit" class="a-btn ghost" title="העברה לאשפה — אפשר לשחזר">🗑 מחק</button>
-                                </form>
-                            {/if}
-                        {/if}
-                    </span>
-                </div>
-            {/each}
-        </div>
-        {#if trashPreview}
-            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-            <div class="trash-preview-backdrop" role="presentation" onclick={() => (trashPreview = null)}>
-                <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-                <div class="trash-preview-dialog" role="dialog" aria-modal="true" aria-label="תצוגה מקדימה של הפרסומת"
-                     tabindex="-1" onclick={(e) => e.stopPropagation()}>
-                    <AdCardPreview ad={trashPreview} />
-                    <button type="button" class="a-btn ghost" onclick={() => (trashPreview = null)}>✕ סגור</button>
-                </div>
-            </div>
-        {/if}
+        {@render trashRows()}
     {:else if shown.length === 0}
         <p class="empty">אין פרסומות בקטגוריה הזו.</p>
     {/if}
@@ -1031,6 +981,81 @@
                 </div>
             </div>
         {/if}
+    {/if}
+
+    {#snippet trashRows()}
+    <div class="trash-list">
+        {#each trash as t (t.id)}
+            <div class="trash-row">
+                <span class="trash-body">
+                    <button type="button" class="ad-title-btn trash-title" onclick={() => openTrashPreview(t)}
+                            title="תצוגה מקדימה של הפרסומת">{t.title}</button>
+                    <span class="trash-meta">
+                        <span class="status-pill {t.kind === 'deleted' ? 'rejected' : 'pending'}">{t.kind === 'deleted' ? 'נמחקה' : 'פג התוקף'}</span>
+                        {fmtDate(t.at)} · {t.advertiserName}
+                    </span>
+                </span>
+                <span class="trash-actions">
+                    {#if t.kind === 'deleted'}
+                        {#if data.superAdmin}
+                            <form method="POST" action="?/restore" use:enhance>
+                                <input type="hidden" name="id" value={t.id} />
+                                <button type="submit" class="a-btn approve" title="חזרה למצב שלפני המחיקה">♻ שחזר</button>
+                            </form>
+                            <form method="POST" action="?/purge" use:enhance>
+                                <input type="hidden" name="id" value={t.id} />
+                                <button type="submit" class="a-btn reject"
+                                        onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${t.title}"? אין דרך חזרה.`)) e.preventDefault(); }}>✕ מחק לצמיתות</button>
+                            </form>
+                        {/if}
+                    {:else}
+                        <form method="POST" action="?/approve" use:enhance>
+                                <input type="hidden" name="id" value={t.id} />
+                                <input type="hidden" name="durationDays" value={t.requestedDurationDays ?? ''} />
+                                <button type="submit" class="a-btn approve" title="פרסום מחדש לתקופה חדשה מהיום, באותו מקום בלוח">♻ חדש</button>
+                            </form>
+                        {#if data.superAdmin}
+                            <form method="POST" action="?/remove" use:enhance>
+                                <input type="hidden" name="id" value={t.id} />
+                                <button type="submit" class="a-btn ghost" title="העברה לאשפה — אפשר לשחזר">🗑 מחק</button>
+                            </form>
+                        {/if}
+                    {/if}
+                </span>
+            </div>
+        {/each}
+    </div>
+    {/snippet}
+
+    <!-- ═══ אשפה — קומה מתקפלת: כל המחוקים והפגי תוקף + שחזור ═══ -->
+    <section class="mt-6">
+        <button type="button" onclick={() => (trashOpen = !trashOpen)} aria-expanded={trashOpen}
+                class="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-right text-white font-black hover:bg-white/10">
+            <span>🗑 אשפה</span>
+            <span class="text-xs font-bold bg-white/10 text-gray-300 border border-white/20 px-2 py-0.5 rounded-full">{trash.length}</span>
+            <span class="mr-auto text-gray-400 text-xs">{trashOpen ? '▲' : '▼'}</span>
+        </button>
+        {#if trashOpen}
+            <div class="mt-2">
+                {#if trash.length === 0}
+                    <p class="empty">האשפה ריקה.</p>
+                {:else}
+                    {@render trashRows()}
+                {/if}
+            </div>
+        {/if}
+    </section>
+
+    {#if trashPreview}
+        <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+        <div class="trash-preview-backdrop" role="presentation" onclick={() => (trashPreview = null)}>
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+            <div class="trash-preview-dialog" role="dialog" aria-modal="true" aria-label="תצוגה מקדימה של הפרסומת"
+                 tabindex="-1" onclick={(e) => e.stopPropagation()}>
+                <AdCardPreview ad={trashPreview} />
+                <button type="button" class="a-btn ghost" onclick={() => (trashPreview = null)}>✕ סגור</button>
+            </div>
+        </div>
     {/if}
 </div>
 
