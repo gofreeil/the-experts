@@ -5,6 +5,7 @@
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/rightAdsData';
     import AdCardPreview from '$lib/components/AdCardPreview.svelte';
+    import AdRemoveDialog from '$lib/components/AdRemoveDialog.svelte';
 
     // מסך ניהול הפרסומות לסופר-אדמין:
     //   1. לוח מלאי — כמה משבצות תפוסות, עד מתי, וכמה פנויות לפרסום עכשיו
@@ -37,6 +38,20 @@
     let trashOpen = $state(false);
     function openTrashPreview(t: any) {
         trashPreview = (data.ads as any[]).find((a) => String(a.id) === t.id) ?? t;
+    }
+
+    // "מחק" פותח חלון עם כרטיס הפרסומת שנמחקת - לראות בדיוק מה מוחקים
+    let removeAsk = $state<{ form: HTMLFormElement; ad: any } | null>(null);
+    function askRemove(e: MouseEvent, id: unknown, question = '') {
+        const form = (e.currentTarget as HTMLButtonElement).form;
+        const ad = (data.ads as any[]).find((a) => String(a.id) === String(id));
+        if (form && ad) { e.preventDefault(); removeAsk = { form, ad }; return; }
+        if (question && !confirm(question)) e.preventDefault();
+    }
+    function finishRemove() {
+        const form = removeAsk?.form;
+        removeAsk = null;
+        form?.requestSubmit();
     }
 
     /** המודעות שתופסות משבצת כרגע — לפי הקרוב להתפנות */
@@ -547,7 +562,7 @@
                                                     <input type="hidden" name="id" value={s.id} />
                                                     <button type="submit"
                                                             class="h-7 w-full inline-flex items-center justify-center px-1 rounded-lg bg-red-600/20 border border-red-500/40 text-red-300 text-[11px] font-black hover:bg-red-600/30 whitespace-nowrap"
-                                                            onclick={(e) => { if (!confirm(`להעביר את "${s.title}" לאשפה? אפשר לשחזר אותה משם.`)) e.preventDefault(); }}>
+                                                            onclick={(e) => askRemove(e, s.id, `להעביר את "${s.title}" לאשפה? אפשר לשחזר אותה משם.`)}>
                                                         🗑 מחק
                                                     </button>
                                                 </form>
@@ -1017,7 +1032,8 @@
                         {#if data.superAdmin}
                             <form method="POST" action="?/remove" use:enhance>
                                 <input type="hidden" name="id" value={t.id} />
-                                <button type="submit" class="a-btn ghost" title="העברה לאשפה — אפשר לשחזר">🗑 מחק</button>
+                                <button type="submit" class="a-btn ghost" title="העברה לאשפה — אפשר לשחזר"
+                                        onclick={(e) => askRemove(e, t.id)}>🗑 מחק</button>
                             </form>
                         {/if}
                     {/if}
@@ -1058,6 +1074,11 @@
         </div>
     {/if}
 </div>
+
+<!-- "מחק": חלון אישור עם כרטיס הפרסומת שנמחקת -->
+{#if removeAsk}
+    <AdRemoveDialog ad={removeAsk.ad} onremove={finishRemove} onclose={() => (removeAsk = null)} />
+{/if}
 
 <svelte:window onkeydown={(e) => { if (e.key === 'Escape') { durationModal = null; modalPreviewId = null; hoverPreview = null; } }} />
 
