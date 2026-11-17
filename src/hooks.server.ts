@@ -1,4 +1,5 @@
 import { handle as authHandle } from './auth';
+import { shareSessionHandle } from '$lib/server/sharedSession';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, dirOf, isLocale, toLocale } from '$lib/i18n';
@@ -78,7 +79,7 @@ const authenticate: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 	try {
-		return await sequence(authHandle, skipAuthWhenAnonymous)({ event, resolve });
+		return await sequence(authHandle, skipAuthWhenAnonymous, shareSessionHandle)({ event, resolve });
 	} catch (err) {
 		console.warn('[hooks] auth handle threw - continuing anonymously:', err);
 		if (!event.locals.auth) {
