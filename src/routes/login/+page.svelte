@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FirstTimeTip from '$lib/components/FirstTimeTip.svelte';
 	import PasswordInput from '$lib/components/PasswordInput.svelte';
 	import { signIn } from '@auth/sveltekit/client';
 	import { useI18n } from '$lib/i18n/context';
@@ -79,13 +80,6 @@
 			<p class="mt-1 text-sm text-gray-400">{i18n.t('login.subtitle')}</p>
 		</div>
 
-		<!-- הודעה למשתמש חדש: הכניסה עם Google/Facebook היא גם ההרשמה -->
-		{#if !data.ssoName}
-			<p class="mb-5 text-center text-amber-200 text-[13px] sm:text-sm font-bold leading-relaxed">
-				{i18n.t('login.newUser')}
-			</p>
-		{/if}
-
 		{#if err || data.error}
 			<div class="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
 				{err ?? i18n.t('login.genericError')}
@@ -122,6 +116,11 @@
 			<span class="text-xs text-gray-500">{i18n.t('login.or')}</span>
 				<div class="h-px flex-1 bg-white/10"></div>
 			</div>
+		{/if}
+
+		<!-- משתמש חדש: בועה עם יד שמצביעה על כפתור Google — הכניסה היא גם ההרשמה -->
+		{#if !data.ssoName && (data.oauth?.google || data.oauth?.facebook)}
+			<FirstTimeTip text={i18n.t('login.newUser')} />
 		{/if}
 
 		{#if data.oauth?.google}
