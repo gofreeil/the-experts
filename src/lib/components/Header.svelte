@@ -4,6 +4,7 @@
     import { onMount } from "svelte";
     import { page } from '$app/state';
     import { useI18n } from '$lib/i18n/context';
+    import SignupTip from '$lib/components/SignupTip.svelte';
     import { LOCALES, LOCALE_META, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, type Locale } from '$lib/i18n';
 
     // פרטי המשתמש המחובר. רק username מגיע היום מה-layout; שאר השדות
@@ -43,6 +44,8 @@
 
     const languages = LOCALES.map((code) => ({ code, name: LOCALE_META[code].name, flag: LOCALE_META[code].flag }));
     const currentLang = $derived(LOCALE_META[i18n.locale]);
+    // בועת "לא רשום עדיין?" כתובה בעברית — מוצגת רק כשהאתר בעברית
+    const isHebrew = $derived(String(i18n.locale || 'he').startsWith('he'));
 
     let showLangDropdown = $state(false);
     let onlineUsers = $state(1);
@@ -284,22 +287,25 @@
                                 {/if}
                             </a>
                         {:else}
-                            <a
-                                href="/login?redirect=/profile"
-                                class="relative group flex-shrink-0"
-                                aria-label={i18n.t('header.login')}
-                            >
-                                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[38px] w-[38px] rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
-                                    <circle cx="20" cy="20" r="20" fill="#374151"/>
-                                    <circle cx="20" cy="16" r="7" fill="#6b7280"/>
-                                    <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
-                                </svg>
-                                <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
-                                             bg-gray-900 text-white text-[10px] font-bold rounded-lg px-2 py-1
-                                             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
-                                    {i18n.t('header.personalArea')}
-                                </span>
-                            </a>
+                            <span class="relative inline-flex flex-shrink-0">
+                                <a
+                                    href="/login?redirect=/profile"
+                                    class="relative group flex-shrink-0"
+                                    aria-label={i18n.t('header.login')}
+                                >
+                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[38px] w-[38px] rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
+                                        <circle cx="20" cy="20" r="20" fill="#374151"/>
+                                        <circle cx="20" cy="16" r="7" fill="#6b7280"/>
+                                        <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+                                    </svg>
+                                    <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
+                                                 bg-gray-900 text-white text-[10px] font-bold rounded-lg px-2 py-1
+                                                 whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
+                                        {i18n.t('header.personalArea')}
+                                    </span>
+                                </a>
+                                <SignupTip href="/login?redirect=/profile" from="#16a34a" to="#2563eb" hidden={!isHebrew} />
+                            </span>
                         {/if}
                     </div>
                 </div>
@@ -471,22 +477,26 @@
                             </a>
                         </div>
                     {:else}
-                        <a
-                            href="/login?redirect=/profile"
-                            class="relative group flex-shrink-0"
-                            aria-label={i18n.t('header.login')}
-                        >
-                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
-                                <circle cx="20" cy="20" r="20" fill="#374151"/>
-                                <circle cx="20" cy="16" r="7" fill="#6b7280"/>
-                                <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
-                            </svg>
-                            <span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
-                                         bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
-                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-                                {i18n.t('header.personalArea')}
-                            </span>
-                        </a>
+                        <!-- אורח: יד ובועה "לא רשום עדיין?" תלויות מתחת לכפתור (בעברית בלבד) -->
+                        <span class="relative inline-flex flex-shrink-0">
+                            <a
+                                href="/login?redirect=/profile"
+                                class="relative group flex-shrink-0"
+                                aria-label={i18n.t('header.login')}
+                            >
+                                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
+                                    <circle cx="20" cy="20" r="20" fill="#374151"/>
+                                    <circle cx="20" cy="16" r="7" fill="#6b7280"/>
+                                    <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+                                </svg>
+                                <span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
+                                             bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
+                                             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
+                                    {i18n.t('header.personalArea')}
+                                </span>
+                            </a>
+                            <SignupTip href="/login?redirect=/profile" from="#16a34a" to="#2563eb" hidden={!isHebrew} />
+                        </span>
                     {/if}
                 </div>
             {/if}
